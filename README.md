@@ -14,6 +14,12 @@
 - 游戏内置火球、命中、爆炸、受伤、升级和 BOSS 登场声效，不需要外部音频文件。
 - 地面树木、草丛和湖泊会随飞行向下视差移动，增强速度与立体感。
 
+## V2 难度
+
+- 前期适合熟悉操作；击败 BOSS 后，普通怪的生命、移速和刷新频率会逐阶段提升。
+- 火球最高 5 级，追踪导弹与激光各最高 3 级，避免后期无限叠加伤害。
+- 激光锁定后每 2 秒造成一次伤害；追踪导弹最短每 1.5 秒发射一次。
+
 ## 本地运行
 
 可直接双击 `index.html`，也可在项目目录启动本地服务：
@@ -28,6 +34,7 @@ python3 -m http.server 8000
 
 - `index.html`：当前最新可玩版本，也是 GitHub Pages 默认入口。
 - `versions/airplane-battle-v1.html`：V1 完整单文件快照。
+- `versions/airplane-battle-v2.html`：V2 完整单文件快照。
 - `docs/CHANGELOG.md`：版本变更记录。
 - `docs/superpowers/specs/`：设计规格。
 - `docs/superpowers/plans/`：实施计划。

@@ -22,24 +22,24 @@ test('enemy statistics match the approved combat rules', () => {
   });
 });
 
-test('boss health range rises by ten every five bosses', () => {
-  assert.deepEqual(plain(rules.bossHealthRange(1)), [50, 100]);
-  assert.deepEqual(plain(rules.bossHealthRange(5)), [50, 100]);
-  assert.deepEqual(plain(rules.bossHealthRange(6)), [60, 110]);
-  assert.deepEqual(plain(rules.bossHealthRange(11)), [70, 120]);
-});
-
-test('basic bullet damage doubles for every purchased attack level', () => {
+test('weapon damage and upgrade levels are capped for V2', () => {
+  assert.equal(rules.maxAttackLevel(), 5);
+  assert.equal(rules.maxWeaponLevel('laser'), 3);
   assert.equal(rules.bulletDamage(0), 2);
-  assert.equal(rules.bulletDamage(1), 4);
-  assert.equal(rules.bulletDamage(3), 16);
+  assert.equal(rules.bulletDamage(5), 12);
+  assert.equal(rules.bulletDamage(99), 12);
+  assert.equal(rules.specialDamage('homing', 1), 45);
+  assert.equal(rules.specialDamage('homing', 3), 85);
+  assert.equal(rules.specialDamage('laser', 3), 65);
+  assert.equal(rules.canUpgrade(5, 3, 'laser'), false);
 });
 
-test('special weapon damage scales linearly with its level', () => {
-  assert.equal(rules.specialDamage('homing', 1), 200);
-  assert.equal(rules.specialDamage('homing', 3), 600);
-  assert.equal(rules.specialDamage('laser', 1), 150);
-  assert.equal(rules.specialDamage('laser', 3), 450);
+test('V2 boss and enemy difficulty scales by defeated bosses', () => {
+  assert.deepEqual(plain(rules.bossHealthRange(1)), [160, 220]);
+  assert.deepEqual(plain(rules.bossHealthRange(3)), [336, 463]);
+  assert.deepEqual(plain(rules.difficulty(0)), { hp: 1, speed: 1, spawnInterval: 1.55 });
+  assert.deepEqual(plain(rules.difficulty(3)), { hp: 1.36, speed: 1.12, spawnInterval: 1.39 });
+  assert.deepEqual(plain(rules.bossScale(20)), { speed: 1.28, cooldown: .6 });
 });
 
 test('fragment upgrades spend five only after acceptance', () => {
@@ -47,6 +47,18 @@ test('fragment upgrades spend five only after acceptance', () => {
   assert.equal(rules.canUpgrade(5), true);
   assert.deepEqual(plain(rules.applyFragmentUpgrade(7, 2, false)), { fragments: 7, level: 2 });
   assert.deepEqual(plain(rules.applyFragmentUpgrade(7, 2, true)), { fragments: 2, level: 3 });
+});
+
+test('boss drops only a weapon fragment that can still upgrade', () => {
+  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 3, laser: 1 }, .2), 'laser');
+  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 3 }, .8), 'homing');
+  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 3, laser: 3 }, .5), null);
+  assert.deepEqual(plain(rules.applyAttackUpgrade(50, 5)), { xp: 50, level: 5, upgraded: false });
+});
+
+test('special weapon cadence prevents continuous laser damage', () => {
+  assert.equal(rules.specialWeaponInterval('homing'), 1.5);
+  assert.equal(rules.specialWeaponInterval('laser'), 2);
 });
 
 test('attack upgrade spends exactly fifty experience', () => {

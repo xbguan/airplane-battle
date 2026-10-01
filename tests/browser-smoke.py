@@ -12,6 +12,8 @@ def main():
         page.add_init_script(
             """
             window.__audioStats = { starts: 0, fireOscillators: 0, bufferStarts: 0 };
+            window.__testMode = true;
+            window.__combatStats = { laserHits: [], homingShots: [] };
             window.__renderStats = { gradients: 0 };
             const originalLinearGradient = CanvasRenderingContext2D.prototype.createLinearGradient;
             const originalRadialGradient = CanvasRenderingContext2D.prototype.createRadialGradient;
@@ -67,8 +69,9 @@ def main():
         page.goto("http://127.0.0.1:8765/index.html")
         page.wait_for_load_state("networkidle")
 
+        assert page.get_by_text("AIRPLANE BATTLE · V2", exact=True).is_visible()
         assert page.get_by_role("button", name="🚀 开始出击").is_visible()
-        assert page.get_by_text("空中玩具战场 · V1").is_visible()
+        assert page.get_by_text("空中玩具战场 · V2").is_visible()
         page.get_by_role("button", name="🚀 开始出击").click()
         page.wait_for_timeout(300)
 
@@ -169,6 +172,19 @@ def main():
             }"""
         )
         assert foreground_lake_pixels > 500, "The opening grassland should retain the left foreground lake"
+        page.evaluate("""() => {
+          window.__gameTest.addTarget();
+          window.__gameTest.equip('laser', 3);
+        }""")
+        page.wait_for_timeout(4200)
+        laser_hits = page.evaluate("window.__combatStats.laserHits")
+        assert len(laser_hits) >= 2, "Laser should damage a locked target more than once"
+        assert all(b - a >= 1950 for a, b in zip(laser_hits, laser_hits[1:])), "Laser damage must be spaced by two seconds"
+        page.evaluate("window.__gameTest.equip('homing', 3)")
+        page.wait_for_timeout(3200)
+        homing_shots = page.evaluate("window.__combatStats.homingShots")
+        assert len(homing_shots) >= 2, "Homing weapon should fire repeatedly at a target"
+        assert all(b - a >= 1450 for a, b in zip(homing_shots, homing_shots[1:])), "Homing shots must be spaced by 1.5 seconds"
         before = canvas.screenshot()
         page.wait_for_timeout(2000)
         after = canvas.screenshot(path=str(screenshot))
