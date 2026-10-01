@@ -73,15 +73,24 @@ def main():
         page.wait_for_timeout(300)
 
         assert page.locator("#hud").is_visible()
+        assert page.get_by_text("战机耐久", exact=True).is_visible()
+        assert page.get_by_text("作战经验", exact=True).is_visible()
+        assert page.get_by_text("本轮进度", exact=True).is_visible()
         assert page.locator("#hp-text").inner_text() == "100"
         assert page.locator("#kill-text").inner_text() == "0/10"
         assert page.locator("#upgrade-attack").is_disabled()
         assert "0/5" in page.locator("#homing-fragment").inner_text()
+        assert page.locator("#base-weapon").is_visible()
         upgrade_box = page.locator("#upgrade-attack").bounding_box()
         weapons_box = page.locator("#weapons").bounding_box()
         fragments_box = page.locator("#fragments").bounding_box()
         version_box = page.locator(".version").bounding_box()
         shell_box = page.locator("#game-shell").bounding_box()
+        assert page.locator("#hud .hud-chip").count() == 3
+        assert "237, 123, 53" in page.locator("#upgrade-attack").evaluate(
+            "node => getComputedStyle(node).backgroundImage"
+        )
+        assert weapons_box["x"] > shell_box["x"] + shell_box["width"] * 0.7
         assert upgrade_box["y"] > shell_box["y"] + shell_box["height"] * 0.75
         assert upgrade_box["x"] > fragments_box["x"] + fragments_box["width"]
         assert upgrade_box["x"] + upgrade_box["width"] < weapons_box["x"]
@@ -140,6 +149,26 @@ def main():
             }"""
         )
         assert clipped_plane_pixels < 5, "Player aircraft should remain fully inside the canvas"
+        bottom_center_is_grass = page.evaluate(
+            """() => {
+              const pixel = document.querySelector('#game-canvas')
+                .getContext('2d').getImageData(640, 680, 1, 1).data;
+              return pixel[1] > pixel[0] + 20 && pixel[1] > pixel[2] + 15;
+            }"""
+        )
+        assert bottom_center_is_grass, "The oversized center runway should be replaced by open grassland"
+        foreground_lake_pixels = page.evaluate(
+            """() => {
+              const pixels = document.querySelector('#game-canvas')
+                .getContext('2d').getImageData(130, 490, 140, 100).data;
+              let count = 0;
+              for (let index = 0; index < pixels.length; index += 4) {
+                if (pixels[index + 2] > pixels[index + 1] + 20 && pixels[index + 1] > pixels[index] + 70) count++;
+              }
+              return count;
+            }"""
+        )
+        assert foreground_lake_pixels > 500, "The opening grassland should retain the left foreground lake"
         before = canvas.screenshot()
         page.wait_for_timeout(2000)
         after = canvas.screenshot(path=str(screenshot))
