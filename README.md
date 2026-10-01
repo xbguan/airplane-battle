@@ -35,7 +35,9 @@ python3 -m http.server 8000
 
 ## GitHub Pages
 
-创建 GitHub 仓库并推送项目后，在仓库的 **Settings → Pages** 中选择从主分支根目录发布。GitHub Pages 会直接加载根目录的 `index.html`。
+试玩链接：[https://xbguan.github.io/airplane-battle/](https://xbguan.github.io/airplane-battle/)
+
+GitHub Pages 从主分支根目录发布，直接加载根目录的 `index.html`。
 
 ## 验证
 
