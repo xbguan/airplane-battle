@@ -42,6 +42,13 @@ test('V2 boss and enemy difficulty scales by defeated bosses', () => {
   assert.deepEqual(plain(rules.bossScale(20)), { speed: 1.28, cooldown: .6 });
 });
 
+test('boss entrance finishes once and does not restart below the old threshold', () => {
+  const entering = rules.advanceBossEntrance({ y: 110, entered: false, speedScale: 1 }, .1);
+  assert.deepEqual(plain(entering), { y: 119, entered: true });
+  const cruising = rules.advanceBossEntrance({ y: 98, entered: true, speedScale: 1 }, .1);
+  assert.deepEqual(plain(cruising), { y: 98, entered: true });
+});
+
 test('fragment upgrades spend five only after acceptance', () => {
   assert.equal(rules.canUpgrade(4), false);
   assert.equal(rules.canUpgrade(5), true);
@@ -49,9 +56,11 @@ test('fragment upgrades spend five only after acceptance', () => {
   assert.deepEqual(plain(rules.applyFragmentUpgrade(7, 2, true)), { fragments: 2, level: 3 });
 });
 
-test('boss drops only a weapon fragment that can still upgrade', () => {
+test('boss drops two fragments for the lower-level incomplete weapon', () => {
   assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 3, laser: 1 }, .2), 'laser');
   assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 3 }, .8), 'homing');
+  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 1 }, .2), 'homing');
+  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 1 }, .8), 'laser');
   assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 3, laser: 3 }, .5), null);
   assert.deepEqual(plain(rules.applyAttackUpgrade(50, 5)), { xp: 50, level: 5, upgraded: false });
 });
@@ -105,10 +114,10 @@ test('normal kills grant five experience and queue each tenth boss', () => {
   );
 });
 
-test('boss kills grant initial health as experience and one chosen fragment', () => {
+test('boss kills grant initial health as experience and two chosen fragments', () => {
   assert.deepEqual(
     plain(rules.awardBossKill({ xp: 20, bosses: 2, fragments: { homing: 1, laser: 4 } }, 87, 'laser')),
-    { xp: 107, bosses: 3, fragments: { homing: 1, laser: 5 } }
+    { xp: 107, bosses: 3, fragments: { homing: 1, laser: 6 } }
   );
 });
 

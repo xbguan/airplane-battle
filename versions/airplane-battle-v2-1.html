@@ -425,57 +425,8 @@ globalThis.GameRules = {
   let nextId = 1;
   let audioContext = null;
   const sprites = {};
-  const assets = {};
-  let assetsReady = false;
-  const activeSceneBackground = 'backgroundTopdown';
-  const AssetManifest = {
-    characters: {
-      player: 'assets/characters/player-fighter.png', orangeBoss: 'assets/characters/boss-orange-white.png',
-      blueBoss: 'assets/characters/boss-blue-white.png', owl: 'assets/characters/owl.png',
-      drone: 'assets/characters/drone.png', bat: 'assets/characters/bat.png', wizard: 'assets/characters/wizard.png'
-    },
-    weapons: {
-      bullet: 'assets/weapons/player-bullet.png', missile: 'assets/weapons/homing-missile.png', laser: 'assets/weapons/laser-segment.png',
-      enemyBullet: 'assets/weapons/enemy-bullet.png', magicOrb: 'assets/weapons/magic-orb.png', homingFragment: 'assets/weapons/fragment-homing.png',
-      laserFragment: 'assets/weapons/fragment-laser.png', hitSpark: 'assets/weapons/hit-spark.png', explosion: 'assets/weapons/explosion.png'
-    },
-    shadows: {
-      playerShadow: 'assets/shadows/player-shadow.png', bossShadow: 'assets/shadows/boss-shadow.png', enemyShadow: 'assets/shadows/enemy-shadow.png'
-    },
-    scenery: {
-      sky: 'assets/scenery/sky.png', cloud: 'assets/scenery/cloud-01.png', cliff: 'assets/scenery/cliff-mountain.png', grass: 'assets/scenery/grassland.png',
-      water: 'assets/scenery/river-lake.png', waterfall: 'assets/scenery/waterfall.png', pine: 'assets/scenery/pine-tree.png', broadleaf: 'assets/scenery/broadleaf-tree.png', bush: 'assets/scenery/bush-flower.png', rock: 'assets/scenery/rock.png'
-    },
-    sceneThemes: {
-      backgroundPerspective: 'assets/scenery/background-perspective.png', backgroundTopdown: 'assets/scenery/background-topdown.png'
-    }
-  };
   const soundCooldowns = {};
   const soundBuffers = {};
-
-  function preloadAssets() {
-    const entries = Object.values(AssetManifest).flatMap(group => Object.entries(group));
-    ui['start-button'].disabled = true;
-    ui['start-button'].textContent = '素材加载中…';
-    if (window.__testMode) window.__assetStats.expected = entries.map(([, path]) => path);
-    return Promise.all(entries.map(([key, path]) => new Promise(resolve => {
-      const image = new Image();
-      image.onload = () => {
-        assets[key] = image;
-        if (window.__testMode) window.__assetStats.loaded.push(path);
-        resolve(true);
-      };
-      image.onerror = () => {
-        if (window.__testMode) window.__assetStats.failed.push(path);
-        resolve(false);
-      };
-      image.src = path;
-    }))).then(results => {
-      assetsReady = results.every(Boolean);
-      ui['start-button'].disabled = !assetsReady;
-      ui['start-button'].textContent = assetsReady ? '🚀 开始出击' : '素材加载失败';
-    });
-  }
 
   function ensureAudio() {
     if (!audioContext) {
@@ -575,7 +526,6 @@ globalThis.GameRules = {
   }
 
   function startGame() {
-    if (!assetsReady) return;
     resetGame();
     game.running = true;
     playSound('start');
@@ -964,19 +914,30 @@ globalThis.GameRules = {
   }
 
   function drawBackground() {
-    const stripHeight = H;
-    const offset = (game.time * 12) % stripHeight;
-    drawSceneryAsset(activeSceneBackground, W / 2, offset - stripHeight / 2, W, stripHeight);
-    drawSceneryAsset(activeSceneBackground, W / 2, offset + stripHeight / 2, W, stripHeight);
-  }
-
-  function drawSceneryAsset(key, x, y, width, height, alpha = 1) {
-    const image = assets[key];
-    if (!image) return;
-    if (window.__testMode) window.__renderStats.sceneryDraws.push(key);
-    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = alpha;
-    ctx.drawImage(image, x - width / 2, y - height / 2, width, height);
-    ctx.restore();
+    ctx.fillStyle = skyPaint; ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = .68;
+    for (let i = 0; i < 5; i++) {
+      const x = ((i * 310 - game.time * (12 + i * 2)) % (W + 240)) - 100;
+      const y = 90 + (i % 3) * 82;
+      ellipse(x, y, 43, 13, '#fff'); ellipse(x - 21, y - 8, 22, 17, '#fff'); ellipse(x + 22, y - 10, 26, 21, '#fff');
+    }
+    ctx.globalAlpha = 1;
+    ellipse(150, 350, 330, 92, '#a8df89');
+    ellipse(575, 348, 390, 105, '#91d478');
+    ellipse(1050, 352, 390, 98, '#a3dd84');
+    ctx.fillStyle = '#6ec15d'; ctx.fillRect(0, 360, W, H - 360);
+    ctx.globalAlpha = .18; ctx.fillStyle = '#eaffd8';
+    for (let y = 430; y < H; y += 78) ctx.fillRect(0, y, W, 2);
+    ctx.strokeStyle = '#efffdc'; ctx.lineWidth = 2;
+    for (let x = -520; x <= 1800; x += 260) {
+      ctx.beginPath(); ctx.moveTo(640, 360); ctx.lineTo(x, H); ctx.stroke();
+    }
+    ctx.globalAlpha = .22; ctx.fillStyle = '#3d9953';
+    for (let x = 28; x < W; x += 82) {
+      const y = 420 + ((x * 17) % 250);
+      ctx.fillRect(x, y, 3, 11); ctx.fillRect(x + 5, y + 3, 3, 8);
+    }
+    ctx.globalAlpha = 1;
   }
 
   function drawScenery() {
@@ -1119,62 +1080,46 @@ globalThis.GameRules = {
     ctx.restore();
   }
 
-  function drawAsset(key, x, y, width, height, rotation = 0, alpha = 1) {
-    const image = assets[key];
-    if (!image) return;
-    if (window.__testMode) window.__renderStats.assetDraws.push(key);
-    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(x, y); ctx.rotate(rotation); ctx.globalAlpha = alpha;
-    ctx.drawImage(image, -width / 2, -height / 2, width, height);
-    ctx.restore();
-  }
-
-  function drawShadow(key, x, y, width, height, alpha = 1) {
-    const image = assets[key];
-    if (!image) return;
-    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = alpha;
-    ctx.drawImage(image, x - width / 2, y - height / 2, width, height);
-    ctx.restore();
-  }
-
   function drawPlayer(player) {
     const alpha = player.invulnerable > 0 && Math.floor(player.invulnerable * 12) % 2 === 0 ? .35 : 1;
-    drawShadow('playerShadow', player.x, player.y + 36, 74, 18, alpha);
-    drawAsset('player', player.x, player.y, 116, 85, 0, alpha);
+    drawCached(sprites.player, player.x, player.y, 0, alpha, .76);
   }
 
   function drawEagle(enemy) {
     const angle = enemy.phase === 'dive' ? Math.atan2(enemy.vy, enemy.vx) + Math.PI / 2 : Math.sin(enemy.age * 5) * .15;
-    drawShadow('enemyShadow', enemy.x, enemy.y + 34, 72, 18);
-    drawAsset('owl', enemy.x, enemy.y, 112, 90, angle);
+    drawCached(sprites.eagle, enemy.x, enemy.y, angle, 1, .8);
   }
 
-  function drawDrone(enemy) { drawShadow('enemyShadow', enemy.x, enemy.y + 29, 68, 16); drawAsset('drone', enemy.x, enemy.y, 92, 108, Math.sin(enemy.age * 3) * .12); }
-  function drawBat(enemy) { drawShadow('enemyShadow', enemy.x, enemy.y + 29, 76, 18); drawAsset('bat', enemy.x, enemy.y, 122, 95, Math.sin(enemy.age * 7) * .08); }
-  function drawWizard(enemy) { drawShadow('enemyShadow', enemy.x, enemy.y + 37, 78, 18); drawAsset('wizard', enemy.x, enemy.y, 110, 96, Math.sin(enemy.age * 3) * .04); }
+  function drawDrone(enemy) { drawCached(sprites.drone, enemy.x, enemy.y, Math.sin(enemy.age * 3) * .12, 1, .82); }
+  function drawBat(enemy) { drawCached(sprites.bat, enemy.x, enemy.y, Math.sin(enemy.age * 7) * .08, 1, .82); }
+  function drawWizard(enemy) { drawCached(sprites.wizard, enemy.x, enemy.y, Math.sin(enemy.age * 3) * .04, 1, .84); }
   function drawBoss(boss) {
     const angle = boss.charging ? Math.atan2(boss.vy, boss.vx) + Math.PI / 2 : 0;
-    const key = boss.variant === 'brown' ? 'orangeBoss' : 'blueBoss';
-    drawShadow('bossShadow', boss.x, boss.y + 62, 170, 36);
-    drawAsset(key, boss.x, boss.y, boss.variant === 'brown' ? 230 : 210, boss.variant === 'brown' ? 104 : 150, angle);
+    drawCached(sprites[boss.variant === 'brown' ? 'brownBoss' : 'blueBoss'], boss.x, boss.y, angle, 1, .8);
   }
 
   function drawProjectiles() {
     for (const bullet of game.bullets) {
       if(bullet.type==='homing'){
-        drawAsset('missile', bullet.x, bullet.y, 58, 35, Math.atan2(bullet.vy, bullet.vx));
+        drawCached(sprites.missile, bullet.x, bullet.y, Math.atan2(bullet.vy,bullet.vx)+Math.PI/2);
       } else {
-        drawAsset('bullet', bullet.x, bullet.y, 22, 12, Math.atan2(bullet.vy, bullet.vx) - Math.PI / 2);
+        drawCached(sprites.fireball, bullet.x, bullet.y);
       }
     }
     for (const shot of game.enemyBullets) {
-      drawAsset('enemyBullet', shot.x, shot.y, shot.r * 2.5, shot.r * 2.5);
+      pixelRect(shot.x - shot.r, shot.y - shot.r, shot.r * 2, shot.r * 2, '#24416d');
+      pixelRect(shot.x - shot.r + 3, shot.y - shot.r + 3, Math.max(3, shot.r * 2 - 6), Math.max(3, shot.r * 2 - 6), shot.color);
     }
     if (game.laserTarget) {
       const dx = game.laserTarget.x - game.player.x;
       const dy = game.laserTarget.y - (game.player.y - 38);
       const length = Math.hypot(dx, dy);
       const charge = clamp(game.laserTimer / GameRules.specialWeaponInterval('laser'), 0, 1);
-      drawAsset('laser', game.player.x + dx * charge / 2, game.player.y - 38 + dy * charge / 2, length * charge, 24, Math.atan2(dy, dx));
+      const segments = Math.floor(length / 14);
+      for (let i = 0; i <= segments * charge; i++) {
+        const progress = i / Math.max(1, segments);
+        pixelRect(game.player.x + dx * progress - 4, game.player.y - 38 + dy * progress - 4, 8, 8, i % 2 ? '#7af6ff' : '#effffe');
+      }
     }
   }
 
@@ -1192,6 +1137,7 @@ globalThis.GameRules = {
     ctx.save();
     if(game.shake){ctx.translate(random(-game.shake,game.shake),random(-game.shake,game.shake));}
     drawBackground();
+    drawScenery();
     for(const enemy of game.enemies){
       if(enemy.type==='eagle')drawEagle(enemy);else if(enemy.type==='drone')drawDrone(enemy);else if(enemy.type==='bat')drawBat(enemy);else if(enemy.type==='wizard')drawWizard(enemy);else drawBoss(enemy);
       drawEnemyHealth(enemy);
@@ -1252,7 +1198,7 @@ globalThis.GameRules = {
   ui['homing-weapon'].addEventListener('click',()=>setSpecialWeapon('homing'));ui['laser-weapon'].addEventListener('click',()=>setSpecialWeapon('laser'));
   ui['accept-upgrade'].addEventListener('click',acceptUpgrade);ui['defer-upgrade'].addEventListener('click',closeUpgrade);
 
-  buildSpriteCache();resetGame();preloadAssets();requestAnimationFrame(loop);
+  buildSpriteCache();resetGame();requestAnimationFrame(loop);
 })();
 </script>
 </body>

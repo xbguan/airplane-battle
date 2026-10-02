@@ -4,6 +4,7 @@ from playwright.sync_api import sync_playwright
 
 def main():
     errors = []
+    external_requests = []
     screenshot = Path("/tmp/airplane-battle-v1.png")
 
     with sync_playwright() as playwright:
@@ -14,7 +15,8 @@ def main():
             window.__audioStats = { starts: 0, fireOscillators: 0, bufferStarts: 0 };
             window.__testMode = true;
             window.__combatStats = { laserHits: [], homingShots: [] };
-            window.__renderStats = { gradients: 0 };
+            window.__renderStats = { gradients: 0, pixelSprites: [], assetDraws: [], sceneryDraws: [] };
+            window.__assetStats = { expected: [], loaded: [], failed: [], external: [] };
             const originalLinearGradient = CanvasRenderingContext2D.prototype.createLinearGradient;
             const originalRadialGradient = CanvasRenderingContext2D.prototype.createRadialGradient;
             CanvasRenderingContext2D.prototype.createLinearGradient = function(...args) {
@@ -66,16 +68,34 @@ def main():
             if message.type == "error"
             else None,
         )
+        page.on(
+            "request",
+            lambda request: external_requests.append(request.url)
+            if request.url.startswith(("http://", "https://"))
+            and not request.url.startswith(("http://127.0.0.1", "http://localhost"))
+            else None,
+        )
         page.goto("http://127.0.0.1:8765/index.html")
         page.wait_for_load_state("networkidle")
 
-        assert page.get_by_text("AIRPLANE BATTLE · V2", exact=True).is_visible()
+        assets = page.evaluate("window.__assetStats")
+        assert set(assets["expected"]) == set(assets["loaded"]), f"Unloaded assets: {assets}"
+        assert assets["failed"] == []
+        assert assets["external"] == []
+        assert external_requests == []
+        assert {"assets/scenery/background-perspective.png", "assets/scenery/background-topdown.png"} <= set(assets["loaded"])
+        assert len(assets["loaded"]) == 31
+        assert page.get_by_text("AIRPLANE BATTLE · V2.1", exact=True).is_visible()
         assert page.get_by_role("button", name="🚀 开始出击").is_visible()
-        assert page.get_by_text("空中玩具战场 · V2").is_visible()
+        assert page.get_by_text("空中玩具战场 · V2.1").is_visible()
         page.get_by_role("button", name="🚀 开始出击").click()
         page.wait_for_timeout(300)
 
         assert page.locator("#hud").is_visible()
+        asset_draws = page.evaluate("window.__renderStats.assetDraws")
+        assert {"player", "drone"} <= set(asset_draws), "Visible player and enemy must use local PNG assets"
+        scenery_draws = page.evaluate("window.__renderStats.sceneryDraws")
+        assert "backgroundTopdown" in scenery_draws, "Top-down background must be the initial active scene"
         assert page.get_by_text("战机耐久", exact=True).is_visible()
         assert page.get_by_text("作战经验", exact=True).is_visible()
         assert page.get_by_text("本轮进度", exact=True).is_visible()
@@ -178,7 +198,7 @@ def main():
         }""")
         page.wait_for_timeout(4200)
         laser_hits = page.evaluate("window.__combatStats.laserHits")
-        assert len(laser_hits) >= 2, "Laser should damage a locked target more than once"
+        assert len(laser_hits) >= 2, f"Laser should damage a locked target more than once; hits={laser_hits}"
         assert all(b - a >= 1950 for a, b in zip(laser_hits, laser_hits[1:])), "Laser damage must be spaced by two seconds"
         page.evaluate("window.__gameTest.equip('homing', 3)")
         page.wait_for_timeout(3200)
