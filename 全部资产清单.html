@@ -17,16 +17,16 @@
 </head>
 <body>
   <main>
-    <header class="hero"><p class="eyebrow">AIRPLANE BATTLE · RUNTIME ASSET CATALOG</p><h1>全部资产清单</h1><p>仅列出当前游戏加载和渲染的本地 PNG。两个完整背景保留；历史素材不再展示。</p></header>
-    <nav aria-label="资产目录"><a href="#characters">角色与 BOSS</a><a href="#weapons">武器与 HUD</a><a href="#shadows">独立投影</a><a href="#topdown-background">俯视背景层</a><a href="#perspective-background">斜视背景层</a><a href="#perspective-improvement-plan">斜视待确认</a><a href="#backgrounds">完整背景</a></nav>
+    <header class="hero"><p class="eyebrow">AIRPLANE BATTLE · RUNTIME ASSET CATALOG</p><h1>全部资产清单</h1><p>展示当前游戏运行素材与已确认的完整场景效果图；17 项海面与景物已按效果图统一蓝色配色，效果图本身不作为运行背景。</p></header>
+    <nav aria-label="资产目录"><a href="#scene-preview-plan">场景卡片预览</a><a href="#characters">角色与 BOSS</a><a href="#weapons">武器与 HUD</a><a href="#shadows">独立投影</a><a href="#topdown-background">俯视背景层</a><a href="#perspective-background">斜视背景层</a><a href="#backgrounds">完整场景效果图</a></nav>
+    <section id="scene-preview-plan"><h2>场景卡片预览</h2><p class="section-note">2026-10-04：已确认并从当前游戏背景渲染截取，640 × 360 PNG，16:9。保留真实景物比例，不含战机、敌人、弹幕、HUD 或弹框；仅用于开始页选择卡片，不替换游戏背景。</p><div class="backgrounds"><article class="background-card"><a href="assets/scenery/scene-preview-topdown.png"><img src="assets/scenery/scene-preview-topdown.png" alt="海岛俯瞰：蓝色海面上的岛屿与薄云"></a><div><h3>海岛俯瞰 · 俯视</h3><p>当前俯视循环海面、独立岛屿及薄云的实际合成。截取游戏时间 8 秒的背景层。</p><code>assets/scenery/scene-preview-topdown.png</code></div></article><article class="background-card"><a href="assets/scenery/scene-preview-perspective.png"><img src="assets/scenery/scene-preview-perspective.png" alt="海天远航：蓝天、海平线与灯塔礁岛"></a><div><h3>海天远航 · 斜视</h3><p>当前斜视蓝天、海平线、海面、白云与灯塔礁岛的实际合成。截取游戏时间 2 秒的背景层。</p><code>assets/scenery/scene-preview-perspective.png</code></div></article></div></section>
     <section id="characters"><h2>角色与 BOSS</h2><p class="section-note">透明可动对象。</p><div class="grid" id="character-grid"></div></section>
     <section id="weapons"><h2>武器、命中特效与 HUD</h2><p class="section-note">当前渲染的武器、效果与界面图标。</p><div class="grid" id="weapon-grid"></div></section>
     <section id="shadows"><h2>独立投影</h2><p class="section-note">跟随对象位置，不参与碰撞。</p><div class="grid" id="shadow-grid"></div></section>
     <section id="topdown-background"><h2>俯视背景层</h2><p class="section-note">循环水面、云雾与 7 项俯视景观。</p><div class="grid" id="topdown-background-grid"></div></section>
-    <section id="perspective-background"><h2>斜视背景层</h2><p class="section-note">真正斜视海空战场：天空、海平线、透视海面、左右横移云层及 7 类斜视景物。</p><div class="grid" id="perspective-background-grid"></div></section>
-    <section id="perspective-improvement-plan"><h2>斜视海空优化（待确认）</h2><p class="section-note">待确认：降低前景浪峰，令景物与海面尺度统一；新增两层可横向循环的晴天白云。确认前不生成、不覆盖、不接入。</p><div class="grid" id="perspective-improvement-plan-grid"></div></section>
-    <section id="backgrounds"><h2>完整背景</h2><p class="section-note">两个完整背景均保留并预加载。</p><div class="backgrounds"><article class="background-card"><img src="assets/scenery/background-topdown.png" alt="俯视河谷完整背景"><div><h3>俯视河谷</h3><p><span class="status">默认背景</span>。近 90° 俯视的河流、岛屿、岩壁与瀑布。</p><code>assets/scenery/background-topdown.png</code></div></article><article class="background-card"><img src="assets/scenery/background-perspective.png" alt="斜视海空完整背景"><div><h3>斜视海空</h3><p><span class="status">已保留并预加载</span>。蓝天、海平线与由远至近的透视海面。</p><code>assets/scenery/background-perspective.png</code></div></article></div></section>
-    <footer>本页与当前运行资产同步维护</footer>
+    <section id="perspective-background"><h2>斜视背景层</h2><p class="section-note">真正斜视海空战场：晴空、海平线、透视海面、双层循环白云及 7 类斜视景物。</p><div class="grid" id="perspective-background-grid"></div></section>
+    <section id="backgrounds"><h2>完整场景效果图</h2><p class="section-note">2026-10-04：以下两张效果图已确认，作为俯视与斜视统一配色参考。景物放大便于检查岸边融合，不代表游戏显示尺寸；运行素材已分别更新，仍保持背景与景物独立分层。</p><div class="backgrounds"><article class="background-card"><a href="docs/superpowers/specs/previews/blue-calm-topdown-sample.png"><img src="docs/superpowers/specs/previews/blue-calm-topdown-sample.png" alt="已确认的俯视蔚蓝平静海面与弯月岛完整效果图"></a><div><h3>俯视蔚蓝海面与弯月岛</h3><p><span class="status">已确认 · 非运行背景</span>。相对平静的蔚蓝海面、柔和水深变化与自然岛岸。</p><code>docs/superpowers/specs/previews/blue-calm-topdown-sample.png</code></div></article><article class="background-card"><a href="docs/superpowers/specs/previews/blue-calm-perspective-sample.png"><img src="docs/superpowers/specs/previews/blue-calm-perspective-sample.png" alt="已确认的斜视蔚蓝平静海面与灯塔礁岛完整效果图"></a><div><h3>斜视蔚蓝海面与灯塔礁岛</h3><p><span class="status">已确认 · 非运行背景</span>。保留蓝天与海平线，平静蓝海与灯塔岸边自然衔接。</p><code>docs/superpowers/specs/previews/blue-calm-perspective-sample.png</code></div></article></div><p class="section-note">运行方式不变：俯视使用循环水面＋独立景物；斜视使用海空背景＋独立景物。原俯视完整背景 <code>assets/scenery/background-topdown.png</code> 仍保留并预加载，但当前俯视海面由循环水面绘制。</p></section>
+    <footer>本页与当前运行资产同步维护；配色样张不属于运行资产</footer>
   </main>
   <script>
     const groups = {
@@ -40,30 +40,22 @@
         ['玩家机翼投影','投影','玩家投影。','assets/shadows/player-wing-shadow.png'], ['猫头鹰翼形投影','投影','猫头鹰投影。','assets/shadows/owl-wing-shadow.png'], ['无人机机身投影','投影','无人机投影。','assets/shadows/drone-body-shadow.png'], ['蝙蝠翼形投影','投影','蝙蝠投影。','assets/shadows/bat-wing-shadow.png'], ['魔法师帽袍投影','投影','魔法师投影。','assets/shadows/wizard-robes-shadow.png'], ['橙白 BOSS 引擎投影','投影','橙白 BOSS 投影。','assets/shadows/boss-orange-engine-shadow.png'], ['蓝白 BOSS 推进器投影','投影','蓝白 BOSS 投影。','assets/shadows/boss-blue-thruster-shadow.png']
       ],
       'topdown-background-grid': [
-        ['俯视循环水面','俯视背景','纵向循环水面。','assets/scenery/water-topdown-loop.png'], ['俯视云雾 01','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-01.png'], ['俯视云雾 02','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-02.png'], ['俯视云雾 03','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-03.png'], ['俯视透明岛屿 01','俯视景观','瀑布岩岛。','assets/scenery/topdown-island-01.png'], ['俯视透明岛屿 02','俯视景观','弯月岛。','assets/scenery/topdown-island-02.png'], ['俯视透明岛屿 03','俯视景观','斜向岩脊岛。','assets/scenery/topdown-island-03.png'], ['俯视弯月形浅海珊瑚礁','俯视景观','浅海礁盘与珊瑚。','assets/scenery/topdown-reef-01.png'], ['俯视分散小礁群与海草','俯视景观','礁石、珊瑚与海草。','assets/scenery/topdown-reef-02.png'], ['俯视岩石孤岛与松树','俯视景观','小型岩岛与松树。','assets/scenery/topdown-islet-01.png'], ['俯视低矮沙洲与小花','俯视景观','沙洲、礁石与小花。','assets/scenery/topdown-islet-02.png']
+        ['俯视循环水面','俯视背景','柔和蔚蓝、相对平静的循环海面；稀疏低对比微波纹。','assets/scenery/water-topdown-loop.png'], ['俯视云雾 01','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-01.png'], ['俯视云雾 02','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-02.png'], ['俯视云雾 03','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-03.png'], ['俯视透明岛屿 01','俯视景观','瀑布岩岛；溪水与岸边统一蓝色，局部保留瀑布落水水花。','assets/scenery/topdown-island-01.png'], ['俯视透明岛屿 02','俯视景观','弯月岛；蓝色溪水与细水线，保留植被和岩石本色。','assets/scenery/topdown-island-02.png'], ['俯视透明岛屿 03','俯视景观','斜向岩脊岛；平静蓝色水面与局部瀑布水花。','assets/scenery/topdown-island-03.png'], ['俯视弯月形浅海珊瑚礁','俯视景观','蓝色浅水礁盘与珊瑚；透明边缘融入蔚蓝海面。','assets/scenery/topdown-reef-01.png'], ['俯视分散小礁群与海草','俯视景观','礁石、珊瑚与海草本色保留；接水边缘为柔和蓝色。','assets/scenery/topdown-reef-02.png'], ['俯视岩石孤岛与松树','俯视景观','小型岩岛与松树；蓝色细水线与轻微涟漪。','assets/scenery/topdown-islet-01.png'], ['俯视低矮沙洲与小花','俯视景观','沙洲、礁石与小花；浅蓝岸边过渡，无青绿水垫。','assets/scenery/topdown-islet-02.png']
       ],
       'perspective-background-grid': [
-        ['斜视海空完整背景','斜视完整背景','蓝天、远云、海平线和透视海面。','assets/scenery/background-perspective.png'],
+        ['斜视海空完整背景','斜视完整背景','保留蓝天与海平线；近乎平静的蔚蓝海面，细小水平波纹与柔和反光。','assets/scenery/background-perspective.png'],
+        ['斜视景物轻微接水涟漪','斜视景观','稀疏透明浅蓝细水纹，在 7 类景物底部共享并随景深缩放，无厚泡沫浪圈。','assets/scenery/perspective-water-contact.png'],
         ['斜视透视海面','斜视背景','由远到近放大的浪纹，供无缝纵向循环。','assets/scenery/water-perspective-loop.png'],
         ['斜视晴空与海平线','斜视天空','蓝天、远白云和清晰海平线。','assets/scenery/perspective-sky-clear.png'],
-        ['斜视风暴天空与海平线','斜视天空','乌云下的低饱和天空、远雾和海平线。','assets/scenery/perspective-sky-storm.png'],
-        ['斜视远层乌云','斜视天气','透明云层，从左右缓慢进入中央。','assets/scenery/perspective-cloud-bank-far.png'],
-        ['斜视近层乌云','斜视天气','透明大云团，从左右较快进入中央。','assets/scenery/perspective-cloud-bank-near.png'],
-        ['斜视远海岛链','斜视景观','最远景，小体量、低速。','assets/scenery/perspective-island-chain.png'],
-        ['斜视灯塔礁岛','斜视景观','中远景，灯塔、岩礁和侧面阴影。','assets/scenery/perspective-lighthouse-reef.png'],
-        ['斜视小帆船','斜视景观','中景帆船。','assets/scenery/perspective-sailboat.png'],
-        ['斜视红白航标','斜视景观','中近景竖向航标。','assets/scenery/perspective-buoy.png'],
-        ['斜视浮上海礁','斜视景观','中近景海礁和浪花。','assets/scenery/perspective-reef.png'],
-        ['斜视海蚀石柱','斜视景观','近景立体岩柱与侧面阴影。','assets/scenery/perspective-sea-stack.png'],
-        ['斜视近景峭壁与瀑布礁岸','斜视景观','最大近景，立体峭壁、瀑布和礁岸。','assets/scenery/perspective-cliff-waterfall.png']
-      ],
-      'perspective-improvement-plan-grid': [
-        ['斜视海空完整背景（待调整）','斜视完整背景','待确认：保留海平线与天空，降低前景浪峰；由远至近逐渐加密，避免与景物底部浪花割裂。覆盖原路径。','assets/scenery/background-perspective.png','待确认'],
-        ['斜视晴天远层云带','斜视天气','待确认：透明长幅白云，低速横向循环，远离海平线与中央弹道。','assets/scenery/perspective-clear-cloud-far.png','待确认'],
-        ['斜视晴天近层云带','斜视天气','待确认：透明长幅白云，较快横向循环，形成细微纵深。','assets/scenery/perspective-clear-cloud-near.png','待确认'],
-        ['斜视风暴天空与海平线（待调整）','斜视天气','待确认：风暴天空保持同一海平线；海面纹理改为平缓、低对比，避免晴/阴切换时出现大浪或色块。覆盖原路径。','assets/scenery/perspective-sky-storm.png','待确认'],
-        ['斜视远层乌云（待调整）','斜视天气','待确认：透明远层乌云从左右进入，保留中央开口，降低遮挡感。覆盖原路径。','assets/scenery/perspective-cloud-bank-far.png','待确认'],
-        ['斜视近层乌云（待调整）','斜视天气','待确认：透明近层乌云从左右进入，体积更大但不形成整屏黑幕。覆盖原路径。','assets/scenery/perspective-cloud-bank-near.png','待确认']
+        ['斜视晴天远层云带','斜视天气','透明轻薄小白云，以每秒 1.5 像素横向循环。','assets/scenery/perspective-clear-cloud-far.png'],
+        ['斜视晴天近层云带','斜视天气','透明轻薄近云，以每秒 2.7 像素横向循环。','assets/scenery/perspective-clear-cloud-near.png'],
+        ['斜视远海岛链','斜视景观','最远景，小体量、低速；柔和蓝色接水边缘。','assets/scenery/perspective-island-chain.png'],
+        ['斜视灯塔礁岛','斜视景观','保留灯塔与岩礁；平静浅蓝贴岩水线和轻微倒影，无拍岸浪花。','assets/scenery/perspective-lighthouse-reef.png'],
+        ['斜视小帆船','斜视景观','保留帆船主体；浅蓝窄水线与短淡尾迹，无船首翻浪。','assets/scenery/perspective-sailboat.png'],
+        ['斜视红白航标','斜视景观','保留红白航标；基座浅蓝细涟漪与淡倒影，无白色飞沫。','assets/scenery/perspective-buoy.png'],
+        ['斜视浮上海礁','斜视景观','中近景海礁；平静蓝色水线和短淡倒影，无拍岸浪花。','assets/scenery/perspective-reef.png'],
+        ['斜视海蚀石柱','斜视景观','保留立体岩柱与植被；浅蓝贴岩细水线和柔和倒影，无浪峰泡沫。','assets/scenery/perspective-sea-stack.png'],
+        ['斜视近景峭壁与瀑布礁岸','斜视景观','保留立体峭壁与瀑布；仅落水点保留局部水花，其余礁岸为平静蓝色水面。','assets/scenery/perspective-cliff-waterfall.png']
       ]
     };
     for (const [target, entries] of Object.entries(groups)) document.getElementById(target).innerHTML = entries.map(([name, tag, note, path, state]) => `<article class="card"><div class="preview${state ? ' plan' : ''}">${state ? `<strong>${state}</strong><small>斜视素材方案</small>` : `<img src="${path}" alt="${name}">`}</div><div class="card-body"><h3>${name}</h3><span class="tag">${tag}</span><p>${note}</p><code>${path}</code></div></article>`).join('');

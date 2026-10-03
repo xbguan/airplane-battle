@@ -1,11 +1,21 @@
 from pathlib import Path
+import sys
 from playwright.sync_api import sync_playwright
 
 
 def main():
+    perspective_only = "--perspective-only" in sys.argv
+    modal_only = "--modal-only" in sys.argv
     errors = []
     external_requests = []
-    screenshot = Path("/tmp/airplane-battle-v1.png")
+    preview_responses = []
+    screenshot = Path(
+        "/tmp/airplane-modal-ui.png"
+        if modal_only
+        else "/tmp/airplane-clear-clouds.png"
+        if perspective_only
+        else "/tmp/airplane-battle-v1.png"
+    )
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
@@ -78,6 +88,12 @@ def main():
             and not request.url.startswith(("http://127.0.0.1", "http://localhost"))
             else None,
         )
+        page.on(
+            "response",
+            lambda response: preview_responses.append(response.url)
+            if "scene-preview-" in response.url and response.ok
+            else None,
+        )
         page.goto("http://127.0.0.1:8765/index.html")
         page.wait_for_load_state("networkidle")
 
@@ -87,6 +103,118 @@ def main():
         assert assets["external"] == []
         assert external_requests == []
         assert {"assets/scenery/background-perspective.png", "assets/scenery/background-topdown.png"} <= set(assets["loaded"])
+        assert {
+            "assets/scenery/perspective-sky-storm.png",
+            "assets/scenery/perspective-cloud-bank-far.png",
+            "assets/scenery/perspective-cloud-bank-near.png",
+        }.isdisjoint(assets["expected"]), f"Removed storm assets must not load: {assets}"
+        if modal_only:
+            def assert_inside(selector):
+                shell = page.locator("#game-shell").bounding_box()
+                panel = page.locator(selector).bounding_box()
+                assert shell and panel
+                assert panel["x"] >= shell["x"]
+                assert panel["y"] >= shell["y"]
+                assert panel["x"] + panel["width"] <= shell["x"] + shell["width"]
+                assert panel["y"] + panel["height"] <= shell["y"] + shell["height"]
+
+            for width, height in ((1280, 720), (1440, 900)):
+                page.set_viewport_size({"width": width, "height": height})
+                page.reload()
+                page.wait_for_load_state("networkidle")
+                assert page.get_by_role("button", name="海岛俯瞰 俯视").is_visible()
+                assert page.get_by_role("button", name="海天远航 斜视").is_visible()
+                topdown_preview = page.get_by_role("button", name="海岛俯瞰 俯视").evaluate(
+                    "node => getComputedStyle(node, '::before').backgroundImage"
+                )
+                perspective_preview = page.get_by_role("button", name="海天远航 斜视").evaluate(
+                    "node => getComputedStyle(node, '::before').backgroundImage"
+                )
+                assert "scene-preview-topdown.png" in topdown_preview
+                assert "scene-preview-perspective.png" in perspective_preview
+                assert any(url.endswith("/assets/scenery/scene-preview-topdown.png") for url in preview_responses)
+                assert any(url.endswith("/assets/scenery/scene-preview-perspective.png") for url in preview_responses)
+                page.get_by_role("button", name="海天远航 斜视").click()
+                assert "selected" in page.get_by_role("button", name="海天远航 斜视").get_attribute("class")
+                assert "selected" not in page.get_by_role("button", name="海岛俯瞰 俯视").get_attribute("class")
+                selected_border = page.get_by_role("button", name="海天远航 斜视").evaluate(
+                    "node => getComputedStyle(node).borderColor"
+                )
+                idle_border = page.get_by_role("button", name="海岛俯瞰 俯视").evaluate(
+                    "node => getComputedStyle(node).borderColor"
+                )
+                assert selected_border != idle_border, "Selected scene needs a distinct gold border"
+                page.keyboard.press("Tab")
+                page.keyboard.press("Shift+Tab")
+                assert page.get_by_role("button", name="海天远航 斜视").evaluate(
+                    "node => node.matches(':focus-visible')"
+                )
+                assert float(page.get_by_role("button", name="海天远航 斜视").evaluate(
+                    "node => parseFloat(getComputedStyle(node).outlineWidth)"
+                )) >= 4, "Keyboard focus needs a clear outline"
+                if width == 1440:
+                    page.locator("#start-screen .panel").screenshot(path="/tmp/airplane-modal-focus.png")
+                page.evaluate("document.activeElement.blur()")
+                assert_inside("#start-screen .panel")
+                lead_lines = page.locator("#start-screen .lead").evaluate(
+                    "node => Math.round(node.scrollHeight / parseFloat(getComputedStyle(node).lineHeight))"
+                )
+                assert lead_lines == 2, f"Start instructions should use two lines, got {lead_lines}"
+                assert page.locator("#start-screen .panel").evaluate(
+                    "node => getComputedStyle(node).clipPath !== 'none'"
+                )
+                assert float(page.locator("#upgrade-modal .panel").evaluate(
+                    "node => parseFloat(getComputedStyle(node).borderRadius)"
+                )) >= 20, "Upgrade modal must retain its rounded panel style"
+                if width == 1440:
+                    page.locator("#start-screen .panel").screenshot(path="/tmp/airplane-modal-start.png")
+
+                page.locator("#start-button").click()
+                assert page.locator("#start-screen").is_hidden()
+                page.evaluate("window.__gameTest.finish(12, 2, 3)")
+                assert page.locator("#game-over").is_visible()
+                assert_inside("#game-over .panel")
+                result_items = page.locator("#result-copy .result-stat")
+                assert result_items.count() == 3
+                assert result_items.nth(0).inner_text() == "怪物\n12"
+                assert result_items.nth(1).inner_text() == "BOSS\n2"
+                assert result_items.nth(2).inner_text() == "火球伤害\n8"
+                if width == 1440:
+                    page.locator("#game-over .panel").screenshot(path=str(screenshot))
+                page.locator("#restart-button").click()
+                assert page.locator("#game-over").is_hidden()
+                assert page.locator("#hud").is_visible()
+
+            assert not errors, f"Browser errors: {errors}"
+            browser.close()
+            print(f"modal browser smoke ok: {screenshot}")
+            return
+        if perspective_only:
+            assert {
+                "assets/scenery/perspective-clear-cloud-far.png",
+                "assets/scenery/perspective-clear-cloud-near.png",
+            } <= set(assets["loaded"])
+            page.locator('[data-scene-theme="backgroundPerspective"]').click()
+            page.evaluate("window.__renderStats.sceneryDraws = []")
+            page.locator("#start-button").click()
+            page.wait_for_timeout(500)
+            canvas = page.locator("#game-canvas")
+            before = canvas.screenshot()
+            page.wait_for_timeout(1000)
+            after = canvas.screenshot(path=str(screenshot))
+            assert before != after, "Perspective canvas should animate after the game starts"
+            page.wait_for_timeout(8500)
+            canvas.screenshot(path="/tmp/airplane-perspective-water-contact-far.png")
+            perspective_draws = page.evaluate("window.__renderStats.sceneryDraws")
+            assert "backgroundPerspective" in perspective_draws
+            assert "perspectiveClearCloudFar" in perspective_draws
+            assert "perspectiveClearCloudNear" in perspective_draws
+            assert "perspectiveWaterContact" in perspective_draws
+            assert "waterTopdownLoop" not in perspective_draws
+            assert not errors, f"Browser errors: {errors}"
+            browser.close()
+            print(f"perspective browser smoke ok: {screenshot}")
+            return
         required = {
             "assets/weapons/player-muzzle-flash.png",
             "assets/weapons/wizard-magic-orb.png",

@@ -213,17 +213,64 @@ test('background uses transparent landscape layers instead of rectangular segmen
   assert.doesNotMatch(html, /const prefix = topdown \? 'topdownSegment' : 'perspectiveSegment';/);
 });
 
-test('perspective background has a seamless sky weather cycle and seven perspective scenery types', () => {
-  assert.deepEqual(plain(rules.perspectiveWeather(0)), { phase: 'clear', storm: 0 });
-  assert.equal(rules.perspectiveWeather(42.5).phase, 'darken');
-  assert.deepEqual(plain(rules.perspectiveWeather(50)), { phase: 'storm', storm: 1 });
-  assert.equal(rules.perspectiveWeather(87.5).phase, 'clearUp');
-  assert.match(html, /const PerspectiveCloudLayers = \{/);
-  assert.match(html, /perspectiveCloudBankFar/);
-  assert.match(html, /perspectiveCloudBankNear/);
+test('perspective background keeps clear weather and seven perspective scenery types', () => {
+  assert.doesNotMatch(html, /perspectiveWeather/);
+  assert.doesNotMatch(html, /PerspectiveCloudLayers/);
+  assert.doesNotMatch(html, /perspectiveSkyStorm|perspectiveCloudBankFar|perspectiveCloudBankNear/);
   assert.match(html, /const PerspectiveScenerySequence = \{/);
   for (const key of ['perspectiveIslandChain', 'perspectiveLighthouseReef', 'perspectiveSailboat', 'perspectiveBuoy', 'perspectiveReef', 'perspectiveSeaStack', 'perspectiveCliffWaterfall']) assert.match(html, new RegExp(key));
   assert.doesNotMatch(html, /BackgroundLayouts\.backgroundPerspective/);
+});
+
+test('clear perspective weather preloads and drifts two seamless sky-only cloud layers', () => {
+  for (const [key, filename] of [
+    ['perspectiveClearCloudFar', 'perspective-clear-cloud-far.png'],
+    ['perspectiveClearCloudNear', 'perspective-clear-cloud-near.png']
+  ]) {
+    assert.ok(html.includes(`${key}: 'assets/scenery/${filename}'`));
+    assert.equal(fs.existsSync(new URL(`../assets/scenery/${filename}`, import.meta.url)), true);
+  }
+
+  const clearCloudLayers = html.match(/  const PerspectiveClearCloudLayers = \{[\s\S]*?\n  \};/)?.[0] || '';
+  const scenerySequence = html.match(/  const PerspectiveScenerySequence = \{[\s\S]*?\n  \};/)?.[0] || '';
+  const drawBackground = html.match(/  function drawBackground\(\) \{[\s\S]*?\n  \}(?=\n\n  function drawSceneryAsset)/)?.[0] || '';
+  const calls = [];
+  const renderContext = {
+    W: 1280, H: 720, activeSceneBackground: 'backgroundPerspective',
+    GameRules: rules,
+    game: { time: 0 }, clamp: (value, min, max) => Math.max(min, Math.min(max, value)),
+    drawSceneryAsset: (...args) => calls.push(args)
+  };
+  vm.createContext(renderContext);
+  vm.runInContext(`${clearCloudLayers}\n${scenerySequence}\n${drawBackground}`, renderContext);
+
+  const drawAt = time => {
+    calls.length = 0;
+    renderContext.game.time = time;
+    renderContext.drawBackground();
+    return calls.filter(call => call[0].startsWith('perspectiveClearCloud'));
+  };
+  const clearAtZero = drawAt(0);
+  const clearAtOneSecond = drawAt(1);
+  for (const [key, speed, alpha] of [
+    ['perspectiveClearCloudFar', 1.5, .24],
+    ['perspectiveClearCloudNear', 2.7, .32]
+  ]) {
+    const initial = clearAtZero.filter(call => call[0] === key);
+    const moved = clearAtOneSecond.filter(call => call[0] === key);
+    assert.ok(initial.length >= 2, `${key} must tile across the viewport`);
+    assert.ok(Math.abs(initial[0][1] - moved[0][1] - speed) < 1e-9, `${key} must drift at ${speed}px per second`);
+    assert.equal(initial[0][5], alpha);
+    assert.ok(initial.every(call => call[2] + call[4] / 2 <= 720 * .34), `${key} must remain above the real horizon`);
+    const period = initial[1][1] - initial[0][1];
+    assert.equal(period, initial[0][3], `${key} must tile using its rendered width`);
+    const looped = drawAt(period / speed).filter(call => call[0] === key);
+    assert.equal(looped.length, initial.length);
+    looped.forEach((call, index) => assert.ok(Math.abs(call[1] - initial[index][1]) < 1e-9, `${key} loop boundary must be continuous`));
+    for (const time of [0, 42.5, 50, 87.5]) {
+      assert.ok(drawAt(time).filter(call => call[0] === key).every(call => call[5] === alpha), `${key} alpha must stay constant at ${time}s`);
+    }
+  }
 });
 
 test('perspective scenery enters from the horizon and does not use a second water layer', () => {
@@ -233,9 +280,47 @@ test('perspective scenery enters from the horizon and does not use a second wate
   assert.match(html, /horizonY \+ loopY/);
 });
 
+test('perspective scenery draws one depth-scaled water contact before each asset', () => {
+  assert.match(html, /perspectiveWaterContact: 'assets\/scenery\/perspective-water-contact\.png'/);
+  assert.equal(fs.existsSync(new URL('../assets/scenery/perspective-water-contact.png', import.meta.url)), true);
+  const clearCloudLayers = html.match(/  const PerspectiveClearCloudLayers = \{[\s\S]*?\n  \};/)?.[0] || '';
+  const scenerySequence = html.match(/  const PerspectiveScenerySequence = \{[\s\S]*?\n  \};/)?.[0] || '';
+  const drawBackground = html.match(/  function drawBackground\(\) \{[\s\S]*?\n  \}(?=\n\n  function drawSceneryAsset)/)?.[0] || '';
+  const calls = [];
+  const renderContext = {
+    W: 1280, H: 720, activeSceneBackground: 'backgroundPerspective', GameRules: rules,
+    game: { time: 0 }, clamp: (value, min, max) => Math.max(min, Math.min(max, value)),
+    drawSceneryAsset: (...args) => calls.push(args)
+  };
+  vm.createContext(renderContext);
+  vm.runInContext(`${clearCloudLayers}\n${scenerySequence}\n${drawBackground}`, renderContext);
+  for (let time = 0; time <= 200; time += 5) {
+    renderContext.game.time = time;
+    renderContext.drawBackground();
+  }
+  const sceneryKeys = [
+    'perspectiveIslandChain', 'perspectiveLighthouseReef', 'perspectiveSailboat', 'perspectiveBuoy',
+    'perspectiveReef', 'perspectiveSeaStack', 'perspectiveCliffWaterfall'
+  ];
+  const pairs = [];
+  calls.forEach((call, index) => {
+    if (!sceneryKeys.includes(call[0])) return;
+    const contact = calls[index - 1];
+    assert.equal(contact[0], 'perspectiveWaterContact', `${call[0]} must follow its water contact`);
+    assert.ok(contact[2] > 720 * .42, `${call[0]} contact must stay below the horizon`);
+    assert.ok(call[2] >= 720 * .42, `${call[0]} must stay at or below the horizon`);
+    pairs.push({ key: call[0], y: call[2], alpha: contact[5] });
+  });
+  for (const key of sceneryKeys) {
+    const samples = pairs.filter(pair => pair.key === key).sort((a, b) => a.y - b.y);
+    assert.ok(samples.length > 1, `${key} must be drawn at multiple depths`);
+    assert.ok(samples[0].alpha < samples.at(-1).alpha, `${key} contact alpha must increase toward the foreground`);
+  }
+});
+
 test('clear perspective background uses its own sky without a second cloud overlay', () => {
-  assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyClear', W \/ 2, H \/ 2, W, H, 1 - weather\.storm\)/);
-  assert.match(html, /drawSceneryAsset\('perspectiveSkyStorm', W \/ 2, H \/ 2, W, H, weather\.storm\)/);
+  assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyClear'/);
+  assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyStorm'/);
 });
 
 test('machinegun uses a short cached dada cadence and the v2 muzzle asset', () => {
