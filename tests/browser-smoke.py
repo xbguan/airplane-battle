@@ -15,7 +15,10 @@ def main():
             window.__audioStats = { starts: 0, fireOscillators: 0, bufferStarts: 0 };
             window.__testMode = true;
             window.__combatStats = { laserHits: [], homingShots: [] };
-            window.__renderStats = { gradients: 0, pixelSprites: [], assetDraws: [], sceneryDraws: [] };
+            window.__renderStats = {
+              gradients: 0, pixelSprites: [], assetDraws: [], sceneryDraws: [],
+              projectileDraws: [], impactDraws: [], shadowDraws: [], backgroundDraws: []
+            };
             window.__assetStats = { expected: [], loaded: [], failed: [], external: [] };
             const originalLinearGradient = CanvasRenderingContext2D.prototype.createLinearGradient;
             const originalRadialGradient = CanvasRenderingContext2D.prototype.createRadialGradient;
@@ -84,7 +87,22 @@ def main():
         assert assets["external"] == []
         assert external_requests == []
         assert {"assets/scenery/background-perspective.png", "assets/scenery/background-topdown.png"} <= set(assets["loaded"])
-        assert len(assets["loaded"]) == 31
+        required = {
+            "assets/weapons/player-muzzle-flash.png",
+            "assets/weapons/wizard-magic-orb.png",
+            "assets/weapons/boss-orange-shell.png",
+            "assets/weapons/boss-blue-bolt.png",
+            "assets/shadows/player-wing-shadow.png",
+            "assets/shadows/boss-blue-thruster-shadow.png",
+            "assets/scenery/water-topdown-loop.png",
+            "assets/scenery/topdown-segment-01.png",
+            "assets/scenery/topdown-segment-06.png",
+            "assets/scenery/topdown-reef-01.png",
+            "assets/scenery/topdown-reef-02.png",
+            "assets/scenery/topdown-islet-01.png",
+            "assets/scenery/topdown-islet-02.png",
+        }
+        assert required <= set(assets["loaded"])
         assert page.get_by_text("AIRPLANE BATTLE · V2.1", exact=True).is_visible()
         assert page.get_by_role("button", name="🚀 开始出击").is_visible()
         assert page.get_by_text("空中玩具战场 · V2.1").is_visible()
@@ -95,7 +113,10 @@ def main():
         asset_draws = page.evaluate("window.__renderStats.assetDraws")
         assert {"player", "drone"} <= set(asset_draws), "Visible player and enemy must use local PNG assets"
         scenery_draws = page.evaluate("window.__renderStats.sceneryDraws")
-        assert "backgroundTopdown" in scenery_draws, "Top-down background must be the initial active scene"
+        assert {
+            "waterTopdownLoop", "topdownIsland01", "topdownIsland02", "topdownIsland03",
+            "topdownReef01", "topdownReef02", "topdownIslet01", "topdownIslet02",
+        } <= set(scenery_draws), "Top-down background must draw the complete seven-item scenery sequence"
         assert page.get_by_text("战机耐久", exact=True).is_visible()
         assert page.get_by_text("作战经验", exact=True).is_visible()
         assert page.get_by_text("本轮进度", exact=True).is_visible()

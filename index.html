@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>飞机大战 V2.1</title>
+  <title>飞机大战 V2.2</title>
   <style>
     :root {
       --ink: #294f68;
@@ -12,7 +12,7 @@
       --sun: #ffd76a;
       --danger: #ef725d;
       --magic: #7444c8;
-      --panel: rgba(255, 253, 242, .94);
+      --panel: #173a58;
     }
     * { box-sizing: border-box; }
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
@@ -54,31 +54,38 @@
       align-items: center;
       gap: .55vw;
       padding: .36vw .62vw;
-      border: .11vw solid rgba(255,255,255,.96);
+      border: .11vw solid #bfe9f4;
       border-radius: .86vw;
-      color: var(--ink);
-      background: linear-gradient(145deg, #fffef5, #e8f5f1);
-      box-shadow: 0 .22vw 0 #88aeb8, 0 .38vw .7vw rgba(45, 94, 112, .14);
+      color: #ecfbff;
+      background: linear-gradient(145deg, #315f7d, #173a58 58%, #102d49);
+      box-shadow: 0 .22vw 0 #09243b, inset 0 .11vw 0 rgba(255,255,255,.22), 0 .38vw .7vw rgba(15, 42, 67, .28);
       font-size: clamp(10px, .96vw, 18px);
       font-weight: 900;
       white-space: nowrap;
     }
     #hud > .hud-chip:nth-child(2) { position: absolute; left: 50%; transform: translateX(-50%); }
-    .hud-icon { font-size: 1.15em; }
+    .hud-icon { position: relative; width: 1.1em; height: 1.1em; flex: 0 0 1.1em; border: .12em solid #d8fbff; background: #40bde0; box-shadow: inset .12em .12em 0 #aaf4ff, .08em .1em 0 #0d2b45; }
+    .hull-icon { border-radius: 35% 35% 45% 45%; background: linear-gradient(#ffb1a2,#e75262); }
+    .mission-icon { overflow: visible; border-radius: 50%; border-color: #ffe985; background: radial-gradient(circle, #fff 0 14%, #173a58 15% 28%, #ffcf46 29% 52%, #d95a4d 53% 100%); }
+    .mission-icon::before, .mission-icon::after { content: ''; position: absolute; left: 50%; top: 50%; background: #ffe985; transform: translate(-50%, -50%); }
+    .mission-icon::before { width: 1.5em; height: .12em; }
+    .mission-icon::after { width: .12em; height: 1.5em; }
+    .xp-icon { clip-path: polygon(50% 0, 61% 34%, 100% 36%, 69% 58%, 80% 100%, 50% 75%, 20% 100%, 31% 58%, 0 36%, 39% 34%); background: #ffd14d; }
     .hud-copy { display: grid; gap: .16vw; text-align: left; }
-    .hud-copy small { color: #78909a; font-size: .62em; line-height: 1; letter-spacing: .08em; }
+    .hud-copy small { color: #b9e4ee; font-size: .62em; line-height: 1; letter-spacing: .08em; }
     .hud-value { min-width: 2.2em; text-align: right; }
-    .mission-chip { min-width: 8.8vw; justify-content: center; border-color: transparent; background: rgba(255,253,242,.58); box-shadow: none; }
+    .mission-chip { min-width: 8.8vw; justify-content: center; border-color: #f6d66a; background: linear-gradient(145deg, #3d6780, #244d69); }
     .mission-chip .hud-copy { text-align: center; }
-    .mission-chip strong { color: #dd713a; font-size: 1.08em; }
+    .mission-chip strong { color: #ffe67a; font-size: 1.08em; text-shadow: 0 .08em #a45d24; }
     .meter {
       width: 7.6vw;
       height: .62vw;
       min-height: 7px;
       overflow: hidden;
       border-radius: 99px;
-      background: #dce8e2;
-      box-shadow: inset 0 1px 2px rgba(48, 98, 93, .25);
+      border: 1px solid #0c2842;
+      background: #0d2f49;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.48);
     }
     .meter > i { display: block; height: 100%; border-radius: inherit; transition: width .18s ease; }
     #hp-fill { background: linear-gradient(#ff9486, #ef3653); box-shadow: inset 0 2px #ffd0c9; }
@@ -97,7 +104,12 @@
       box-shadow: 0 .32vw 0 #ae552a, 0 .58vw .9vw rgba(113, 75, 31, .22);
       text-shadow: 0 1px #9a4924;
       cursor: pointer;
+      min-height: 0;
+      gap: .5vw;
+      padding: .35vw .72vw;
+      font-size: clamp(11px, .82vw, 15px);
     }
+    #upgrade-attack .weapon-asset { width: clamp(34px, 2.5vw, 46px); height: clamp(34px, 2.5vw, 46px); margin: 0; flex: 0 0 auto; }
     #upgrade-attack:disabled { opacity: .95; animation: none; cursor: default; }
     #boss-panel {
       position: absolute;
@@ -130,7 +142,9 @@
       box-shadow: 0 .22vw 0 #83a4ad, 0 .45vw .75vw rgba(36, 80, 95, .18);
       cursor: pointer;
     }
-    .fragment-button { min-width: 7.2vw; padding: .42vw .62vw; border-radius: .85vw; font-size: clamp(9px, .82vw, 15px); font-weight: 900; }
+    .fragment-button { min-width: 8.2vw; display: flex; align-items: center; gap: .34vw; padding: .34vw .54vw; border-radius: .85vw; font-family: ui-monospace, "SFMono-Regular", "Microsoft YaHei", monospace; font-size: clamp(9px, .76vw, 14px); font-weight: 900; letter-spacing: 0; text-shadow: none; }
+    .fragment-button > img { width: clamp(20px, 1.55vw, 28px); height: clamp(20px, 1.55vw, 28px); object-fit: contain; image-rendering: pixelated; }
+    .fragment-count { margin-left: auto; color: #31546e; }
     .fragment-button.ready { color: #7c4823; background: linear-gradient(#ffe78d, #ffb54d); animation: bob 1s ease-in-out infinite; }
     #weapons { position: absolute; z-index: 6; right: 1.6%; bottom: 2.6%; display: flex; gap: .65vw; }
     .weapon-button {
@@ -145,6 +159,7 @@
       font-weight: 900;
     }
     .weapon-button small { display: block; font-size: .62em; }
+    .weapon-asset { display: block; width: 65%; height: 65%; margin: .12em auto -.08em; object-fit: contain; image-rendering: pixelated; }
     .missile-icon {
       position: relative;
       display: block;
@@ -195,16 +210,17 @@
     .panel {
       width: min(650px, 64vw);
       padding: clamp(22px, 3vw, 46px);
-      border: clamp(3px, .35vw, 7px) solid #fff;
+      border: clamp(3px, .35vw, 7px) solid #a9ebf5;
       border-radius: clamp(24px, 2.4vw, 46px);
-      background: linear-gradient(155deg, #fffef7, #e4f5ee);
-      box-shadow: 0 .62vw 0 #7ca5af, 0 1.4vw 4vw rgba(34, 75, 92, .25);
+      color: #effbff;
+      background: linear-gradient(155deg, #315f7d, #183b59 58%, #102d49);
+      box-shadow: 0 .62vw 0 #09243b, inset 0 .16vw 0 rgba(255,255,255,.2), 0 1.4vw 4vw rgba(8, 32, 56, .38);
     }
-    .eyebrow { margin: 0 0 .6rem; color: #5b8f8c; font-size: clamp(12px, 1vw, 18px); font-weight: 900; letter-spacing: .14em; }
+    .eyebrow { margin: 0 0 .6rem; color: #b7eefa; font-size: clamp(12px, 1vw, 18px); font-weight: 900; letter-spacing: .14em; }
     h1, h2, p { margin-top: 0; }
-    h1 { margin-bottom: .7rem; font-size: clamp(38px, 6vw, 90px); line-height: .9; letter-spacing: -.06em; color: #386b82; text-shadow: 0 .07em #fff, 0 .13em #ffc75d; }
-    h2 { color: #386b82; font-size: clamp(24px, 3vw, 46px); }
-    .lead { max-width: 31rem; margin: 0 auto 1.4rem; color: #647b82; font-size: clamp(13px, 1.2vw, 20px); line-height: 1.65; }
+    h1 { margin-bottom: .7rem; font-size: clamp(38px, 6vw, 90px); line-height: .9; letter-spacing: -.06em; color: #fff6b0; text-shadow: 0 .07em #d2802b, 0 .13em #0b2944; }
+    h2 { color: #fff6b0; font-size: clamp(24px, 3vw, 46px); text-shadow: 0 .08em #0b2944; }
+    .lead { max-width: 31rem; margin: 0 auto 1.4rem; color: #d8f4f8; font-size: clamp(13px, 1.2vw, 20px); line-height: 1.65; }
     .primary, .secondary {
       min-width: 9rem;
       padding: .8em 1.4em;
@@ -217,12 +233,18 @@
     .primary { color: #fff; background: linear-gradient(#ffbd52, #ed7b35); box-shadow: 0 .38em 0 #ae552a; text-shadow: 0 1px #9a4924; }
     .secondary { color: #fff; background: linear-gradient(#82a6ad, #547b89); box-shadow: 0 .38em 0 #365968; }
     .button-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+    .scene-choices { display: flex; justify-content: center; gap: .7rem; margin: 0 auto 1.35rem; }
+    .scene-choice { width: min(13rem, 24vw); padding: .45rem .55rem; border: 3px solid #85c8dc; border-radius: 1rem; color: #eafaff; background: #174360; box-shadow: 0 .26rem 0 #092943, inset 0 2px rgba(255,255,255,.15); cursor: pointer; font-weight: 900; }
+    .scene-choice::before { content: ''; display: block; height: 2.7rem; margin-bottom: .35rem; border-radius: .5rem; background: linear-gradient(135deg, #4dc9e5 20%, #2f99bd 21% 48%, #63ad62 49% 72%, #254c61 73%); }
+    .scene-choice[data-scene-theme="backgroundPerspective"]::before { background: linear-gradient(135deg, #6bd3ea 0 28%, #305b66 29% 52%, #4a8b70 53% 73%, #238bb2 74%); }
+    .scene-choice.selected { border-color: #ffe76e; color: #fff5b0; transform: translateY(-.14rem); }
     .version { position: absolute; right: 1.5%; top: 1.6%; z-index: 12; color: rgba(255,255,255,.82); font-size: clamp(10px, .85vw, 16px); font-weight: 900; pointer-events: none; }
     #toast { position: absolute; z-index: 8; left: 50%; top: 18%; transform: translate(-50%, -20px); padding: .7vw 1.2vw; border: 3px solid #fff; border-radius: 99px; color: #fff; background: #294d82e8; font-weight: 900; opacity: 0; transition: .2s ease; pointer-events: none; }
     #toast.show { opacity: 1; transform: translate(-50%, 0); }
-    .plane-mark { position: relative; width: clamp(96px, 12vw, 190px); height: clamp(76px, 9vw, 140px); margin: 0 auto .5rem; filter: drop-shadow(0 15px 10px rgba(20,53,86,.25)); animation: takeoff 2.5s ease-in-out infinite; }
-    .plane-mark::before { content: ''; position: absolute; left: 42%; top: 0; width: 16%; height: 88%; border-radius: 60% 60% 30% 30%; background: linear-gradient(90deg,#2e70ba,#e8f9ff 48%,#3d91d2); }
-    .plane-mark::after { content: ''; position: absolute; left: 8%; top: 48%; width: 84%; height: 24%; clip-path: polygon(0 60%,43% 0,57% 0,100% 60%,96% 100%,55% 67%,45% 67%,4% 100%); background: linear-gradient(#d9f6ff,#397fc0); }
+    .panel { width: min(500px, 48vw); padding: clamp(18px, 2.1vw, 32px); }
+    .pixel-copy, .panel h1, .panel h2, .panel button, .weapon-button, #upgrade-attack { font-family: ui-monospace, "SFMono-Regular", "Microsoft YaHei", monospace; letter-spacing: .04em; text-shadow: 1px 1px 0 #0b2944, 2px 2px 0 rgba(7,29,48,.62); }
+    .panel-version { margin: -.16rem 0 .54rem; color: #9eeefe; font-size: clamp(9px, .78vw, 13px); font-weight: 900; }
+    .modal-fighter { display: block; width: clamp(70px, 7.2vw, 118px); height: auto; margin: 0 auto .42rem; filter: drop-shadow(0 9px 5px rgba(5,29,50,.48)); image-rendering: pixelated; animation: takeoff 2.5s ease-in-out infinite; }
     @keyframes bob { 50% { translate: 0 -.25vw; filter: brightness(1.06); } }
     @keyframes takeoff { 50% { transform: translateY(-8px) rotate(-1deg); } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -233,12 +255,12 @@
   <canvas id="game-canvas" width="1280" height="720"></canvas>
 
   <section id="hud" class="hidden" aria-label="游戏状态">
-    <div class="hud-chip"><span class="hud-icon">❤️</span><span class="hud-copy"><small>战机耐久</small><span class="meter"><i id="hp-fill"></i></span></span><span id="hp-text" class="hud-value">100</span></div>
-    <div class="hud-chip mission-chip"><span class="hud-icon">🎯</span><span class="hud-copy"><small>本轮进度</small><strong id="kill-text">0/10</strong></span></div>
-    <div class="hud-chip"><span class="hud-icon">⭐</span><span class="hud-copy"><small>作战经验</small><span class="meter"><i id="xp-fill"></i></span></span><span id="xp-text" class="hud-value">0</span></div>
+    <div class="hud-chip"><span class="hud-icon hull-icon" aria-hidden="true"></span><span class="hud-copy"><small>战机耐久</small><span class="meter"><i id="hp-fill"></i></span></span><span id="hp-text" class="hud-value">100</span></div>
+    <div class="hud-chip mission-chip"><span class="hud-icon mission-icon" aria-hidden="true"></span><span class="hud-copy"><small>本轮进度</small><strong id="kill-text">0/10</strong></span></div>
+    <div class="hud-chip"><span class="hud-icon xp-icon" aria-hidden="true"></span><span class="hud-copy"><small>作战经验</small><span class="meter"><i id="xp-fill"></i></span></span><span id="xp-text" class="hud-value">0</span></div>
   </section>
 
-  <button id="upgrade-attack" class="hud-chip hidden" disabled>⬆ 攻击升级·50</button>
+  <button id="upgrade-attack" class="hud-chip hidden" disabled><img class="weapon-asset" src="assets/weapons/ui-attack-upgrade.png" alt=""><span id="attack-upgrade-copy">攻击升级·50</span></button>
 
   <section id="boss-panel" class="hidden" aria-label="BOSS 生命值">
     <span id="boss-name">BOSS</span>
@@ -246,25 +268,30 @@
   </section>
 
   <section id="fragments" class="hidden" aria-label="飞机碎片">
-    <button id="homing-fragment" class="fragment-button">🧩 追踪弹 <span>0/5</span></button>
-    <button id="laser-fragment" class="fragment-button">✨ 激光 <span>0/5</span></button>
+    <button id="homing-fragment" class="fragment-button"><img src="assets/weapons/ui-homing-missile.png" alt=""><span>追踪碎片</span><span class="fragment-count">0/5</span></button>
+    <button id="laser-fragment" class="fragment-button"><img src="assets/weapons/ui-laser-cannon.png" alt=""><span>激光碎片</span><span class="fragment-count">0/5</span></button>
   </section>
 
   <section id="weapons" class="hidden" aria-label="特殊武器">
-    <span id="base-weapon" class="base-weapon" aria-label="双列火球">🔥</span>
-    <button id="homing-weapon" class="weapon-button locked" aria-label="切换追踪导弹"><span class="missile-icon" aria-hidden="true"></span><small>Lv.0</small></button>
-    <button id="laser-weapon" class="weapon-button locked" aria-label="切换激光">⚡<small>Lv.0</small></button>
+    <span id="base-weapon" class="base-weapon" aria-label="双列机枪"><img class="weapon-asset" src="assets/weapons/ui-machinegun.png" alt=""></span>
+    <button id="homing-weapon" class="weapon-button locked" aria-label="切换追踪导弹"><img class="weapon-asset" src="assets/weapons/ui-homing-missile.png" alt=""><small>Lv.0</small></button>
+    <button id="laser-weapon" class="weapon-button locked" aria-label="切换激光"><img class="weapon-asset" src="assets/weapons/ui-laser-cannon.png" alt=""><small>Lv.0</small></button>
   </section>
 
   <div id="toast" role="status"></div>
 
   <section id="start-screen" class="screen">
     <div class="panel">
-      <p class="eyebrow">空中玩具战场 · V2.1</p>
-      <div class="plane-mark" aria-hidden="true"></div>
+      <p class="eyebrow pixel-copy">空中玩具战场 · 飞行机库</p>
+      <img class="modal-fighter" src="assets/characters/player-fighter.png" alt="蓝白小战机">
       <h1>飞机大战</h1>
+      <p class="panel-version pixel-copy">飞机大战 · V2.2</p>
       <p class="lead">移动鼠标驾驶战斗机，自动发射双列火球。击败怪物、挑战 BOSS，收集碎片解锁追踪弹和激光枪！</p>
-      <button id="start-button" class="primary">🚀 开始出击</button>
+      <div class="scene-choices" aria-label="选择游戏背景">
+        <button class="scene-choice selected" type="button" data-scene-theme="backgroundTopdown">俯视河谷</button>
+        <button class="scene-choice" type="button" data-scene-theme="backgroundPerspective">斜视峡谷</button>
+      </div>
+      <button id="start-button" class="primary">开始出击</button>
     </div>
   </section>
 
@@ -282,14 +309,15 @@
 
   <section id="game-over" class="screen hidden">
     <div class="panel">
-      <p class="eyebrow">本次飞行结束</p>
+      <p class="eyebrow pixel-copy">本次飞行结束</p>
+      <img class="modal-fighter" src="assets/characters/player-fighter.png" alt="蓝白小战机">
       <h2>战斗机返航啦！</h2>
+      <p class="panel-version pixel-copy">飞机大战 · V2.2</p>
       <p id="result-copy" class="lead"></p>
-      <button id="restart-button" class="primary">🔁 再来一局</button>
+      <button id="restart-button" class="primary">再来一局</button>
     </div>
   </section>
 
-  <div class="version">AIRPLANE BATTLE · V2.1</div>
 </main>
 <script id="game-rules">
 globalThis.GameRules = {
@@ -301,6 +329,12 @@ globalThis.GameRules = {
   },
   maxAttackLevel() { return 5; },
   maxWeaponLevel() { return 3; },
+  playerGunAnchors() {
+    return [{ x: -16, y: -19 }, { x: 16, y: -19 }];
+  },
+  sequenceLoopY(anchorY, offset, sequenceLength, reentryMargin) {
+    return ((anchorY + offset + reentryMargin) % sequenceLength) - reentryMargin;
+  },
   bossHealthRange(number) {
     const multiplier = 1.45 ** (number - 1);
     return [Math.round(160 * multiplier), Math.round(220 * multiplier)];
@@ -411,7 +445,7 @@ globalThis.GameRules = {
   skyPaint.addColorStop(.58, '#c9f5ff');
   skyPaint.addColorStop(1, '#eefcff');
   const ui = Object.fromEntries([
-    'hud', 'hp-fill', 'hp-text', 'xp-fill', 'xp-text', 'kill-text', 'upgrade-attack',
+    'hud', 'hp-fill', 'hp-text', 'xp-fill', 'xp-text', 'kill-text', 'upgrade-attack', 'attack-upgrade-copy',
     'boss-panel', 'boss-name', 'boss-fill', 'fragments', 'homing-fragment', 'laser-fragment',
     'weapons', 'homing-weapon', 'laser-weapon', 'start-screen', 'start-button',
     'upgrade-modal', 'upgrade-title', 'upgrade-copy', 'accept-upgrade', 'defer-upgrade',
@@ -427,7 +461,9 @@ globalThis.GameRules = {
   const sprites = {};
   const assets = {};
   let assetsReady = false;
-  const activeSceneBackground = 'backgroundTopdown';
+  let activeSceneBackground = 'backgroundTopdown';
+  const EnemyProjectileVisuals = { wizard: 'wizardMagicOrb', brown: 'orangeBossShell', blue: 'blueBossBolt' };
+  const ImpactVisuals = { bullet: 'hitMachinegun', homing: 'hitMissile', laser: 'hitLaser', wizardMagicOrb: 'hitMagic', orangeBossShell: 'hitOrangeBoss', blueBossBolt: 'hitBlueBoss' };
   const AssetManifest = {
     characters: {
       player: 'assets/characters/player-fighter.png', orangeBoss: 'assets/characters/boss-orange-white.png',
@@ -435,19 +471,23 @@ globalThis.GameRules = {
       drone: 'assets/characters/drone.png', bat: 'assets/characters/bat.png', wizard: 'assets/characters/wizard.png'
     },
     weapons: {
-      bullet: 'assets/weapons/player-bullet.png', missile: 'assets/weapons/homing-missile.png', laser: 'assets/weapons/laser-segment.png',
-      enemyBullet: 'assets/weapons/enemy-bullet.png', magicOrb: 'assets/weapons/magic-orb.png', homingFragment: 'assets/weapons/fragment-homing.png',
-      laserFragment: 'assets/weapons/fragment-laser.png', hitSpark: 'assets/weapons/hit-spark.png', explosion: 'assets/weapons/explosion.png'
+      missile: 'assets/weapons/homing-missile.png', laser: 'assets/weapons/laser-segment.png', enemyBullet: 'assets/weapons/enemy-bullet.png',
+      bulletCore: 'assets/weapons/player-bullet-core.png', bulletTrail: 'assets/weapons/player-bullet-trail.png', missileExhaust01: 'assets/weapons/missile-exhaust-01.png', missileExhaust02: 'assets/weapons/missile-exhaust-02.png', missileExhaust03: 'assets/weapons/missile-exhaust-03.png', missileSmoke01: 'assets/weapons/missile-smoke-01.png', missileSmoke02: 'assets/weapons/missile-smoke-02.png', missileSmoke03: 'assets/weapons/missile-smoke-03.png',
+      wizardMagicOrb: 'assets/weapons/wizard-magic-orb.png', orangeBossShell: 'assets/weapons/boss-orange-shell.png', blueBossBolt: 'assets/weapons/boss-blue-bolt.png',
+      hitMachinegun: 'assets/weapons/hit-machinegun.png', hitMissile: 'assets/weapons/hit-missile.png', hitLaser: 'assets/weapons/hit-laser.png',
+      hitMagic: 'assets/weapons/hit-magic.png', hitOrangeBoss: 'assets/weapons/hit-orange-boss.png', hitBlueBoss: 'assets/weapons/hit-blue-boss.png',
+      playerMuzzleFlashV2: 'assets/weapons/player-muzzle-flash-v2.png', uiAttackUpgrade: 'assets/weapons/ui-attack-upgrade.png', uiMachinegun: 'assets/weapons/ui-machinegun.png', uiHomingMissile: 'assets/weapons/ui-homing-missile.png', uiLaserCannon: 'assets/weapons/ui-laser-cannon.png'
     },
     shadows: {
-      playerShadow: 'assets/shadows/player-shadow.png', bossShadow: 'assets/shadows/boss-shadow.png', enemyShadow: 'assets/shadows/enemy-shadow.png'
-    },
-    scenery: {
-      sky: 'assets/scenery/sky.png', cloud: 'assets/scenery/cloud-01.png', cliff: 'assets/scenery/cliff-mountain.png', grass: 'assets/scenery/grassland.png',
-      water: 'assets/scenery/river-lake.png', waterfall: 'assets/scenery/waterfall.png', pine: 'assets/scenery/pine-tree.png', broadleaf: 'assets/scenery/broadleaf-tree.png', bush: 'assets/scenery/bush-flower.png', rock: 'assets/scenery/rock.png'
+      playerWingShadow: 'assets/shadows/player-wing-shadow.png', owlWingShadow: 'assets/shadows/owl-wing-shadow.png', droneBodyShadow: 'assets/shadows/drone-body-shadow.png', batWingShadow: 'assets/shadows/bat-wing-shadow.png', wizardRobesShadow: 'assets/shadows/wizard-robes-shadow.png', bossOrangeEngineShadow: 'assets/shadows/boss-orange-engine-shadow.png', bossBlueThrusterShadow: 'assets/shadows/boss-blue-thruster-shadow.png'
     },
     sceneThemes: {
-      backgroundPerspective: 'assets/scenery/background-perspective.png', backgroundTopdown: 'assets/scenery/background-topdown.png'
+      backgroundPerspective: 'assets/scenery/background-perspective.png', backgroundTopdown: 'assets/scenery/background-topdown.png',
+      waterPerspectiveLoop: 'assets/scenery/water-perspective-loop.png', waterTopdownLoop: 'assets/scenery/water-topdown-loop.png',
+      cloudMist01: 'assets/scenery/cloud-mist-01.png', cloudMist02: 'assets/scenery/cloud-mist-02.png', cloudMist03: 'assets/scenery/cloud-mist-03.png',
+      topdownIsland01: 'assets/scenery/topdown-island-01.png', topdownIsland02: 'assets/scenery/topdown-island-02.png', topdownIsland03: 'assets/scenery/topdown-island-03.png',
+      topdownReef01: 'assets/scenery/topdown-reef-01.png', topdownReef02: 'assets/scenery/topdown-reef-02.png', topdownIslet01: 'assets/scenery/topdown-islet-01.png', topdownIslet02: 'assets/scenery/topdown-islet-02.png',
+      perspectiveIsland01: 'assets/scenery/perspective-island-01.png', perspectiveIsland02: 'assets/scenery/perspective-island-02.png', perspectiveIsland03: 'assets/scenery/perspective-island-03.png'
     }
   };
   const soundCooldowns = {};
@@ -473,8 +513,14 @@ globalThis.GameRules = {
     }))).then(results => {
       assetsReady = results.every(Boolean);
       ui['start-button'].disabled = !assetsReady;
-      ui['start-button'].textContent = assetsReady ? '🚀 开始出击' : '素材加载失败';
+      ui['start-button'].textContent = assetsReady ? '开始出击' : '素材加载失败';
     });
+  }
+
+  function setSceneTheme(theme) {
+    if (theme !== 'backgroundTopdown' && theme !== 'backgroundPerspective') return;
+    activeSceneBackground = theme;
+    document.querySelectorAll('[data-scene-theme]').forEach(button => button.classList.toggle('selected', button.dataset.sceneTheme === theme));
   }
 
   function ensureAudio() {
@@ -491,6 +537,10 @@ globalThis.GameRules = {
     if (!audio) return null;
     const definitions = {
       fire: [650, 390, .065, .16, 'square'],
+      machinegun: [205, 108, .052, .14, 'square'],
+      'wizard-shot': [420, 760, .18, .16, 'triangle'],
+      'orange-shot': [170, 92, .2, .22, 'square'],
+      'blue-shot': [820, 1280, .13, .16, 'saw'],
       hit: [260, 160, .075, .19, 'triangle'],
       laser: [760, 1050, .11, .13, 'saw'],
       hurt: [155, 72, .2, .26, 'square'],
@@ -523,7 +573,7 @@ globalThis.GameRules = {
 
   function playSound(name) {
     const now = performance.now();
-    const limits = { fire: 360, hit: 110, laser: 150 };
+    const limits = { fire: 120, machinegun: 70, hit: 110, laser: 150, 'wizard-shot': 280, 'orange-shot': 180, 'blue-shot': 140 };
     if (limits[name] && now - (soundCooldowns[name] || 0) < limits[name]) return;
     soundCooldowns[name] = now;
     const audio = ensureAudio();
@@ -547,6 +597,7 @@ globalThis.GameRules = {
       scenery: [createScenery(H * .71, 'lake', 190), ...Array.from({ length: 11 }, (_, index) => createScenery(H * .66 + index * 27))],
       enemyBullets: [],
       particles: [],
+      impacts: [],
       floaters: [],
       xp: 0,
       normalKills: 0,
@@ -558,9 +609,11 @@ globalThis.GameRules = {
       boss: null,
       spawnTimer: .7,
       fireTimer: 0,
+      machinegunBeat: -1,
       specialTimer: 0,
       laserTimer: 0,
       laserTargetId: null,
+      laserFlash: null,
       hudTimer: 0,
       laserTarget: null
     };
@@ -621,6 +674,10 @@ globalThis.GameRules = {
     }
   }
 
+  function addImpact(x, y, key) {
+    if (game.impacts.length < 24) game.impacts.push({ x, y, key, life: .26, maxLife: .26 });
+  }
+
   function addFloater(x, y, text, color = '#fff') {
     game.floaters.push({ x, y, text, color, life: .8 });
   }
@@ -643,6 +700,14 @@ globalThis.GameRules = {
     addFloater(player.x, player.y - 38, `-${amount}`, '#ffecf0');
     updateHud();
     if (player.hp <= 0) endGame();
+    return true;
+  }
+
+  function resolveEnemyCollision(enemy, player) {
+    if (enemy.dead || !GameRules.circlesOverlap(enemy, player)) return false;
+    const damage = enemy.type === 'bat' ? GameRules.enemyStats.bat.dps : GameRules.enemyStats[enemy.type].damage;
+    damagePlayer(damage);
+    killEnemy(enemy);
     return true;
   }
 
@@ -681,8 +746,8 @@ globalThis.GameRules = {
     showToast(`BOSS ${number} 来了！`);
   }
 
-  function shootEnemyBullet(x, y, angle, speed, damage, color = '#ff724d', destructible = false) {
-    game.enemyBullets.push({ id: nextId++, x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, r: destructible ? 13 : 8, damage, color, destructible, life: 7 });
+  function shootEnemyBullet(x, y, angle, speed, damage, color = '#ff724d', destructible = false, visualKey = 'enemyBullet') {
+    game.enemyBullets.push({ id: nextId++, x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, r: destructible ? 13 : 8, damage, color, destructible, visualKey, life: 7 });
   }
 
   function aimAngle(from, to) { return Math.atan2(to.y - from.y, to.x - from.x); }
@@ -719,28 +784,19 @@ globalThis.GameRules = {
       const angle = aimAngle(enemy, player);
       enemy.x += Math.cos(angle) * 160 * speedScale * dt;
       enemy.y += Math.sin(angle) * 160 * speedScale * dt;
-      if (GameRules.circlesOverlap(enemy, player)) {
-        player.hp = Math.max(0, player.hp - GameRules.enemyStats.bat.dps * dt);
-        enemy.attached = true;
-        if (player.hp <= 0) endGame();
-      } else enemy.attached = false;
     } else if (enemy.type === 'wizard') {
       if (enemy.y < enemy.targetY) enemy.y += 75 * speedScale * dt;
       else enemy.x += Math.sin(enemy.age * 2.2) * 38 * speedScale * dt;
       enemy.shootTimer -= dt;
       if (enemy.shootTimer <= 0 && enemy.y > 0) {
         const angle = aimAngle(enemy, player);
-        shootEnemyBullet(enemy.x - 12, enemy.y + 13, angle, 165, 30, '#8b62ff', true);
+        playSound('wizard-shot');
+        shootEnemyBullet(enemy.x - 12, enemy.y + 13, angle, 165, 30, '#8b62ff', true, EnemyProjectileVisuals.wizard);
         enemy.shootTimer = random(2, 2.7);
       }
     }
 
-    if ((enemy.type === 'eagle' || enemy.type === 'drone') && GameRules.circlesOverlap(enemy, player)) {
-      const damage = GameRules.enemyStats[enemy.type].damage;
-      damagePlayer(damage);
-      enemy.dead = true;
-      addParticle(enemy.x, enemy.y, enemy.type === 'eagle' ? '#f4b45c' : '#8deaff', 22, 250);
-    }
+    if (enemy.type === 'eagle' || enemy.type === 'drone' || enemy.type === 'bat' || enemy.type === 'wizard') resolveEnemyCollision(enemy, player);
     if (enemy.y > H + 100 || enemy.x < -160 || enemy.x > W + 160) enemy.dead = true;
   }
 
@@ -764,7 +820,8 @@ globalThis.GameRules = {
         boss.x = W / 2 + Math.sin(boss.age * .8) * 330;
         if (boss.shootTimer <= 0) {
           const base = aimAngle(boss, player);
-          for (let i = -2; i <= 2; i++) shootEnemyBullet(boss.x, boss.y + 48, base + i * .18, 175, 15, '#ff6a45');
+          playSound('orange-shot');
+          for (let i = -2; i <= 2; i++) shootEnemyBullet(boss.x, boss.y + 48, base + i * .18, 175, 15, '#ff6a45', false, EnemyProjectileVisuals[boss.variant]);
           boss.shootTimer = 1.55 * boss.cooldownScale;
         }
         if (boss.actionTimer <= 0) {
@@ -779,8 +836,9 @@ globalThis.GameRules = {
       boss.y = 120 + Math.sin(boss.age * 2.4) * 22;
       if (boss.shootTimer <= 0) {
         const base = aimAngle(boss, player);
-        shootEnemyBullet(boss.x - 55, boss.y + 30, base - .09, 240, 15, '#55e8ff');
-        shootEnemyBullet(boss.x + 55, boss.y + 30, base + .09, 240, 15, '#55e8ff');
+        playSound('blue-shot');
+        shootEnemyBullet(boss.x - 55, boss.y + 30, base - .09, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
+        shootEnemyBullet(boss.x + 55, boss.y + 30, base + .09, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
         boss.shootTimer = .82 * boss.cooldownScale;
       }
     }
@@ -789,10 +847,9 @@ globalThis.GameRules = {
 
   function firePlayer() {
     const damage = GameRules.bulletDamage(game.attackLevel);
-    for (const offset of [-13, 13]) {
-      game.bullets.push({ id: nextId++, type: 'fire', x: game.player.x + offset, y: game.player.y - 34, vx: 0, vy: -720, r: 7, damage, life: 2 });
+    for (const gun of GameRules.playerGunAnchors()) {
+      game.bullets.push({ id: nextId++, type: 'fire', x: game.player.x + gun.x, y: game.player.y - 34, vx: 0, vy: -720, r: 7, damage, life: 2 });
     }
-    playSound('fire');
   }
 
   function fireHoming() {
@@ -827,17 +884,18 @@ globalThis.GameRules = {
       shot.life -= dt;
       if (shot.life <= 0 || shot.y > H + 60 || shot.x < -60 || shot.x > W + 60) shot.dead = true;
       if (!shot.dead && GameRules.circlesOverlap(shot, game.player)) {
-        damagePlayer(shot.damage);
+        if (damagePlayer(shot.damage)) addImpact(shot.x, shot.y, ImpactVisuals[shot.visualKey] || 'hitMachinegun');
         shot.dead = true;
       }
     }
   }
 
-  function damageEnemy(enemy, damage, color = '#fff') {
+  function damageEnemy(enemy, damage, color = '#fff', impactKey = 'hitMachinegun') {
     if (enemy.dead) return;
     enemy.hp -= damage;
     playSound(color === '#7ff8ff' ? 'laser' : 'hit');
     addFloater(enemy.x, enemy.y - enemy.r, `-${Math.round(damage)}`, color);
+    addImpact(enemy.x, enemy.y, impactKey);
     if (enemy.hp <= 0) killEnemy(enemy);
   }
 
@@ -879,7 +937,7 @@ globalThis.GameRules = {
       if (bullet.dead) continue;
       for (const enemy of game.enemies) {
         if (!enemy.dead && GameRules.circlesOverlap(bullet, enemy)) {
-          damageEnemy(enemy, bullet.damage, bullet.type === 'homing' ? '#ffe66a' : '#fff');
+          damageEnemy(enemy, bullet.damage, bullet.type === 'homing' ? '#ffe66a' : '#fff', ImpactVisuals[bullet.type]);
           bullet.dead = true;
           break;
         }
@@ -898,7 +956,12 @@ globalThis.GameRules = {
     if (game.laserTimer >= GameRules.specialWeaponInterval('laser')) {
       game.laserTimer = 0;
       if (window.__testMode) window.__combatStats.laserHits.push(performance.now());
-      damageEnemy(target, GameRules.specialDamage('laser', game.weaponLevels.laser), '#7ff8ff');
+      const x = game.player.x;
+      const y = game.player.y - 38;
+      const dx = target.x - x;
+      const dy = target.y - y;
+      game.laserFlash = { x: game.player.x, y, rotation: Math.atan2(dy, dx), length: Math.hypot(dx, dy), life: .14, maxLife: .14 };
+      damageEnemy(target, GameRules.specialDamage('laser', game.weaponLevels.laser), '#7ff8ff', ImpactVisuals.laser);
     }
     if (Math.random() < .35) addParticle(target.x + random(-8, 8), target.y + random(-8, 8), '#72f5ff', 1, 50);
   }
@@ -912,6 +975,12 @@ globalThis.GameRules = {
     }
     for (const floater of game.floaters) { floater.y -= 45 * dt; floater.life -= dt; }
     game.particles = game.particles.filter(p => p.life > 0);
+    if (game.laserFlash) {
+      game.laserFlash.life -= dt;
+      if (game.laserFlash.life <= 0) game.laserFlash = null;
+    }
+    for (const impact of game.impacts) impact.life -= dt;
+    game.impacts = game.impacts.filter(impact => impact.life > 0);
     game.floaters = game.floaters.filter(f => f.life > 0);
   }
 
@@ -921,6 +990,8 @@ globalThis.GameRules = {
     game.shake = Math.max(0, game.shake - 45 * dt);
     updateScenery(dt);
     game.player.invulnerable = Math.max(0, game.player.invulnerable - dt);
+    const machinegunBeat = Math.floor(game.time / .09);
+    if (machinegunBeat !== game.machinegunBeat) { game.machinegunBeat = machinegunBeat; playSound('machinegun'); }
     game.fireTimer -= dt;
     if (game.fireTimer <= 0) { firePlayer(); game.fireTimer = .19; }
     game.specialTimer -= dt;
@@ -963,11 +1034,37 @@ globalThis.GameRules = {
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width; ctx.stroke(); }
   }
 
+  const BackgroundLayouts = {
+    backgroundPerspective: [['perspectiveIsland01', .22, 70, 314, 216], ['perspectiveIsland02', .80, 335, 282, 204], ['perspectiveIsland03', .47, 610, 326, 228]]
+  };
+  const TopdownScenerySequence = {
+    length: 1815,
+    entries: [
+      ['topdownIslet02', .31, -780, 236, 156], ['topdownIslet01', .64, -570, 220, 176], ['topdownReef02', .23, -360, 246, 164], ['topdownReef01', .72, -150, 258, 150],
+      ['topdownIsland01', .18, 55, 292, 208], ['topdownIsland02', .79, 300, 270, 198], ['topdownIsland03', .42, 555, 308, 220]
+    ]
+  };
+
   function drawBackground() {
-    const stripHeight = H;
-    const offset = (game.time * 12) % stripHeight;
-    drawSceneryAsset(activeSceneBackground, W / 2, offset - stripHeight / 2, W, stripHeight);
-    drawSceneryAsset(activeSceneBackground, W / 2, offset + stripHeight / 2, W, stripHeight);
+    const topdown = activeSceneBackground === 'backgroundTopdown';
+    const waterKey = topdown ? 'waterTopdownLoop' : 'waterPerspectiveLoop';
+    const offset = (game.time * 12) % 720;
+    for (let y = -360 + offset; y < H + 360; y += 720) drawSceneryAsset(waterKey, W / 2, y, W, 720);
+    if (topdown) {
+      const landscapeOffset = (game.time * 12) % TopdownScenerySequence.length;
+      TopdownScenerySequence.entries.forEach(([key, x, y, width, height]) => {
+        drawSceneryAsset(key, W * x, GameRules.sequenceLoopY(y, landscapeOffset, TopdownScenerySequence.length, 260), width, height);
+      });
+    } else {
+      BackgroundLayouts.backgroundPerspective.forEach(([key, x, y, width, height], index) => {
+        const speed = 1 + index * .14;
+        const loopY = ((y + offset * speed + 260) % (H + 520)) - 260;
+        drawSceneryAsset(key, W * x, loopY, width, height);
+      });
+    }
+    drawSceneryAsset('cloudMist01', W * .68, ((190 + offset * .45) % (H + 180)) - 90, 330, 126, .42);
+    drawSceneryAsset('cloudMist02', W * .24, ((430 + offset * .32) % (H + 180)) - 90, 270, 96, .32);
+    drawSceneryAsset('cloudMist03', W * .84, ((640 + offset * .58) % (H + 180)) - 90, 250, 72, .26);
   }
 
   function drawSceneryAsset(key, x, y, width, height, alpha = 1) {
@@ -1138,23 +1235,28 @@ globalThis.GameRules = {
 
   function drawPlayer(player) {
     const alpha = player.invulnerable > 0 && Math.floor(player.invulnerable * 12) % 2 === 0 ? .35 : 1;
-    drawShadow('playerShadow', player.x, player.y + 36, 74, 18, alpha);
-    drawAsset('player', player.x, player.y, 116, 85, 0, alpha);
+    drawShadow('playerWingShadow', player.x, player.y + 36, 74, 22, alpha);
+    drawAsset('player', player.x + 13, player.y, 116, 85, 0, alpha);
+    if (game.running && game.time % .09 < .06) {
+      for (const gun of GameRules.playerGunAnchors()) {
+        drawAsset('playerMuzzleFlashV2', player.x + gun.x, player.y + gun.y, 8, 8, 0, alpha);
+      }
+    }
   }
 
   function drawEagle(enemy) {
     const angle = enemy.phase === 'dive' ? Math.atan2(enemy.vy, enemy.vx) + Math.PI / 2 : Math.sin(enemy.age * 5) * .15;
-    drawShadow('enemyShadow', enemy.x, enemy.y + 34, 72, 18);
+    drawShadow('owlWingShadow', enemy.x, enemy.y + 34, 72, 22);
     drawAsset('owl', enemy.x, enemy.y, 112, 90, angle);
   }
 
-  function drawDrone(enemy) { drawShadow('enemyShadow', enemy.x, enemy.y + 29, 68, 16); drawAsset('drone', enemy.x, enemy.y, 92, 108, Math.sin(enemy.age * 3) * .12); }
-  function drawBat(enemy) { drawShadow('enemyShadow', enemy.x, enemy.y + 29, 76, 18); drawAsset('bat', enemy.x, enemy.y, 122, 95, Math.sin(enemy.age * 7) * .08); }
-  function drawWizard(enemy) { drawShadow('enemyShadow', enemy.x, enemy.y + 37, 78, 18); drawAsset('wizard', enemy.x, enemy.y, 110, 96, Math.sin(enemy.age * 3) * .04); }
+  function drawDrone(enemy) { drawShadow('droneBodyShadow', enemy.x, enemy.y + 29, 68, 18); drawAsset('drone', enemy.x, enemy.y, 92, 108, Math.sin(enemy.age * 3) * .12); }
+  function drawBat(enemy) { drawShadow('batWingShadow', enemy.x, enemy.y + 29, 76, 18); drawAsset('bat', enemy.x, enemy.y, 122, 95, Math.sin(enemy.age * 7) * .08); }
+  function drawWizard(enemy) { drawShadow('wizardRobesShadow', enemy.x, enemy.y + 37, 78, 21); drawAsset('wizard', enemy.x, enemy.y, 110, 96, Math.sin(enemy.age * 3) * .04); }
   function drawBoss(boss) {
     const angle = boss.charging ? Math.atan2(boss.vy, boss.vx) + Math.PI / 2 : 0;
     const key = boss.variant === 'brown' ? 'orangeBoss' : 'blueBoss';
-    drawShadow('bossShadow', boss.x, boss.y + 62, 170, 36);
+    drawShadow(boss.variant === 'brown' ? 'bossOrangeEngineShadow' : 'bossBlueThrusterShadow', boss.x, boss.y + 62, 170, 36);
     drawAsset(key, boss.x, boss.y, boss.variant === 'brown' ? 230 : 210, boss.variant === 'brown' ? 104 : 150, angle);
   }
 
@@ -1162,23 +1264,27 @@ globalThis.GameRules = {
     for (const bullet of game.bullets) {
       if(bullet.type==='homing'){
         drawAsset('missile', bullet.x, bullet.y, 58, 35, Math.atan2(bullet.vy, bullet.vx));
+        const exhaustKey = `missileExhaust${String(Math.floor(game.time * 15) % 3 + 1).padStart(2, '0')}`;
+        const smokeKey = `missileSmoke${String(Math.floor(game.time * 9) % 3 + 1).padStart(2, '0')}`;
+        drawAsset(exhaustKey, bullet.x - bullet.vx / 18, bullet.y - bullet.vy / 18, 24, 31, Math.atan2(bullet.vy, bullet.vx) + Math.PI / 2, .82);
+        drawAsset(smokeKey, bullet.x - bullet.vx / 10, bullet.y - bullet.vy / 10, 30, 20, Math.atan2(bullet.vy, bullet.vx), .46);
       } else {
-        drawAsset('bullet', bullet.x, bullet.y, 22, 12, Math.atan2(bullet.vy, bullet.vx) - Math.PI / 2);
+        drawAsset('bulletTrail', bullet.x - bullet.vx / 26, bullet.y - bullet.vy / 26, 8, 26, Math.atan2(bullet.vy, bullet.vx) - Math.PI / 2, .6);
+        drawAsset('bulletCore', bullet.x, bullet.y, 12, 25, Math.atan2(bullet.vy, bullet.vx) - Math.PI / 2);
       }
     }
     for (const shot of game.enemyBullets) {
-      drawAsset('enemyBullet', shot.x, shot.y, shot.r * 2.5, shot.r * 2.5);
+      drawAsset(shot.visualKey || 'enemyBullet', shot.x, shot.y, shot.r * 2.8, shot.r * 2.8);
     }
-    if (game.laserTarget) {
-      const dx = game.laserTarget.x - game.player.x;
-      const dy = game.laserTarget.y - (game.player.y - 38);
-      const length = Math.hypot(dx, dy);
-      const charge = clamp(game.laserTimer / GameRules.specialWeaponInterval('laser'), 0, 1);
-      drawAsset('laser', game.player.x + dx * charge / 2, game.player.y - 38 + dy * charge / 2, length * charge, 24, Math.atan2(dy, dx));
+    if (game.laserTarget) drawAsset('laser', game.laserTarget.x, game.laserTarget.y, 20, 20, 0, .36);
+    if (game.laserFlash) {
+      const flash = game.laserFlash;
+      drawAsset('laser', flash.x + Math.cos(flash.rotation) * flash.length / 2, flash.y + Math.sin(flash.rotation) * flash.length / 2, flash.length, 24, flash.rotation, flash.life / flash.maxLife);
     }
   }
 
   function drawEffects() {
+    for (const impact of game.impacts) drawAsset(impact.key, impact.x, impact.y, 42, 42, 0, impact.life / impact.maxLife);
     for(const p of game.particles){ctx.globalAlpha=clamp(p.life/p.maxLife,0,1);ellipse(p.x,p.y,p.size,p.size,p.color);}ctx.globalAlpha=1;
     ctx.textAlign='center';ctx.font='900 20px Arial';for(const f of game.floaters){ctx.globalAlpha=clamp(f.life/.8,0,1);ctx.fillStyle=f.color;ctx.fillText(f.text,f.x,f.y);}ctx.globalAlpha=1;
   }
@@ -1207,9 +1313,9 @@ globalThis.GameRules = {
     ui['hp-fill'].style.width=`${game.player.hp}%`;ui['hp-text'].textContent=Math.ceil(game.player.hp);
     ui['xp-fill'].style.width=`${Math.min(100,(game.xp/50)*100)}%`;ui['xp-text'].textContent=game.xp;
     ui['kill-text'].textContent=`${game.normalKills%10}/10`;
-    const attackMaxed=game.attackLevel>=GameRules.maxAttackLevel();ui['upgrade-attack'].disabled=attackMaxed||game.xp<50;ui['upgrade-attack'].textContent=attackMaxed?'攻击已满级':`⬆ 攻击升级·50 · 当前 ${GameRules.bulletDamage(game.attackLevel)}`;
+    const attackMaxed=game.attackLevel>=GameRules.maxAttackLevel();ui['upgrade-attack'].disabled=attackMaxed||game.xp<50;ui['attack-upgrade-copy'].textContent=attackMaxed?'攻击已满级':`攻击升级·50 · 当前 ${GameRules.bulletDamage(game.attackLevel)}`;
     for(const type of ['homing','laser']){
-      const fragmentButton=ui[`${type}-fragment`];fragmentButton.querySelector('span').textContent=`${game.fragments[type]}/5`;fragmentButton.classList.toggle('ready',GameRules.canUpgrade(game.fragments[type],game.weaponLevels[type],type));
+      const fragmentButton=ui[`${type}-fragment`];fragmentButton.querySelector('.fragment-count').textContent=`${game.fragments[type]}/5`;fragmentButton.classList.toggle('ready',GameRules.canUpgrade(game.fragments[type],game.weaponLevels[type],type));
       const weaponButton=ui[`${type}-weapon`];const level=game.weaponLevels[type];weaponButton.querySelector('small').textContent=`Lv.${level}`;weaponButton.classList.toggle('locked',level===0);weaponButton.classList.toggle('active',game.activeWeapon===type);
     }
     if(game.boss){ui['boss-fill'].style.width=`${Math.max(0,game.boss.hp/game.boss.maxHp*100)}%`;}
@@ -1251,6 +1357,7 @@ globalThis.GameRules = {
   ui['homing-fragment'].addEventListener('click',()=>openUpgrade('homing'));ui['laser-fragment'].addEventListener('click',()=>openUpgrade('laser'));
   ui['homing-weapon'].addEventListener('click',()=>setSpecialWeapon('homing'));ui['laser-weapon'].addEventListener('click',()=>setSpecialWeapon('laser'));
   ui['accept-upgrade'].addEventListener('click',acceptUpgrade);ui['defer-upgrade'].addEventListener('click',closeUpgrade);
+  document.querySelectorAll('[data-scene-theme]').forEach(button => button.addEventListener('click', () => setSceneTheme(button.dataset.sceneTheme)));
 
   buildSpriteCache();resetGame();preloadAssets();requestAnimationFrame(loop);
 })();

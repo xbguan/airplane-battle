@@ -6,6 +6,21 @@ import vm from 'node:vm';
 const html = fs.existsSync(new URL('../index.html', import.meta.url))
   ? fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8')
   : '<script id="game-rules">globalThis.GameRules = {};</script>';
+const assetCatalog = fs.readFileSync(new URL('../全部资产清单.html', import.meta.url), 'utf8');
+const removedAssetPaths = [
+  'assets/source/master-pixel-assets.png',
+  ...Array.from({ length: 6 }, (_, index) => `assets/scenery/topdown-segment-0${index + 1}.png`),
+  ...Array.from({ length: 6 }, (_, index) => `assets/scenery/perspective-segment-0${index + 1}.png`),
+  'assets/scenery/sky.png', 'assets/scenery/cloud-01.png', 'assets/scenery/cliff-mountain.png',
+  'assets/scenery/grassland.png', 'assets/scenery/river-lake.png', 'assets/scenery/waterfall.png',
+  'assets/scenery/pine-tree.png', 'assets/scenery/broadleaf-tree.png', 'assets/scenery/bush-flower.png', 'assets/scenery/rock.png',
+  'assets/shadows/player-shadow.png', 'assets/shadows/boss-shadow.png', 'assets/shadows/enemy-shadow.png',
+  'assets/weapons/player-bullet.png', 'assets/weapons/magic-orb.png', 'assets/weapons/fragment-homing.png',
+  'assets/weapons/fragment-laser.png', 'assets/weapons/hit-spark.png', 'assets/weapons/explosion.png', 'assets/weapons/player-muzzle-flash.png'
+];
+const retainedBackgroundPaths = [
+  'assets/scenery/background-topdown.png', 'assets/scenery/background-perspective.png'
+];
 const match = html.match(/<script id="game-rules">([\s\S]*?)<\/script>/);
 const context = {};
 vm.createContext(context);
@@ -125,4 +140,123 @@ test('normal enemy spawning stops at ten or during a boss fight', () => {
   assert.equal(rules.canSpawnEnemy(9, false), true);
   assert.equal(rules.canSpawnEnemy(10, false), false);
   assert.equal(rules.canSpawnEnemy(0, true), false);
+});
+
+test('V2.3 remote visuals only map attacks that already exist', () => {
+  assert.match(html, /const EnemyProjectileVisuals = \{ wizard: 'wizardMagicOrb', brown: 'orangeBossShell', blue: 'blueBossBolt' \};/);
+  assert.match(html, /shootEnemyBullet\([^\n]+EnemyProjectileVisuals\.wizard/);
+  assert.match(html, /shootEnemyBullet\([^\n]+EnemyProjectileVisuals\[boss\.variant\]/);
+});
+
+test('V2.3 maps each existing weapon and remote projectile to its own hit visual', () => {
+  assert.match(html, /const ImpactVisuals = \{ bullet: 'hitMachinegun', homing: 'hitMissile', laser: 'hitLaser', wizardMagicOrb: 'hitMagic', orangeBossShell: 'hitOrangeBoss', blueBossBolt: 'hitBlueBoss' \};/);
+  assert.match(html, /function addImpact\(x, y, key\)/);
+});
+
+test('all normal enemy body collisions use one kill-and-progress resolver', () => {
+  assert.match(html, /function resolveEnemyCollision\(enemy, player\)/);
+  assert.match(html, /enemy\.type === 'eagle' \|\| enemy\.type === 'drone' \|\| enemy\.type === 'bat' \|\| enemy\.type === 'wizard'/);
+  assert.match(html, /killEnemy\(enemy\)/);
+});
+
+test('laser is rendered only through a short flash state after the two-second hit', () => {
+  assert.match(html, /laserFlash: null/);
+  assert.match(html, /game\.laserFlash = \{ x: game\.player\.x/);
+  assert.match(html, /if \(game\.laserFlash\)/);
+});
+
+test('start screen exposes both retained scene themes and HUD avoids emoji labels', () => {
+  assert.match(html, /data-scene-theme="backgroundTopdown"/);
+  assert.match(html, /data-scene-theme="backgroundPerspective"/);
+  assert.match(html, /function setSceneTheme\(theme\)/);
+  assert.doesNotMatch(html, /❤️|🎯|⭐/);
+});
+
+test('pixel UI uses local assets and gameplay has no floating version label', () => {
+  assert.match(html, /playerMuzzleFlashV2: 'assets\/weapons\/player-muzzle-flash-v2\.png'/);
+  assert.match(html, /uiAttackUpgrade: 'assets\/weapons\/ui-attack-upgrade\.png'/);
+  assert.match(html, /uiMachinegun: 'assets\/weapons\/ui-machinegun\.png'/);
+  assert.match(html, /uiHomingMissile: 'assets\/weapons\/ui-homing-missile\.png'/);
+  assert.match(html, /uiLaserCannon: 'assets\/weapons\/ui-laser-cannon\.png'/);
+  assert.doesNotMatch(html, /<div class="version">/);
+});
+
+test('background uses transparent landscape layers instead of rectangular segments', () => {
+  assert.match(html, /topdownIsland0[1-3]/);
+  assert.match(html, /perspectiveIsland0[1-3]/);
+  assert.doesNotMatch(html, /const prefix = topdown \? 'topdownSegment' : 'perspectiveSegment';/);
+});
+
+test('machinegun uses a short cached dada cadence and the v2 muzzle asset', () => {
+  assert.match(html, /machinegun: \[205, 108, \.052, \.14, 'square'\]/);
+  assert.match(html, /playerMuzzleFlashV2/);
+  assert.match(html, /Math\.floor\(game\.time \/ \.09\)/);
+});
+
+test('combat HUD uses a clear progress icon and compact readable controls', () => {
+  assert.match(html, /\.mission-icon::before/);
+  assert.match(html, /\.mission-icon::after/);
+  assert.doesNotMatch(html, /\.mission-icon \{ transform: rotate\(45deg\)/);
+  assert.match(html, /id="homing-fragment"[^>]*><img src="assets\/weapons\/ui-homing-missile\.png"/);
+  assert.match(html, /id="laser-fragment"[^>]*><img src="assets\/weapons\/ui-laser-cannon\.png"/);
+  assert.match(html, /\.fragment-button \{[^}]*text-shadow: none/s);
+  assert.match(html, /#upgrade-attack \.weapon-asset \{[^}]*width: clamp\(34px, 2\.5vw, 46px\)/s);
+});
+
+test('player machinegun bullets and flashes share the aircraft gun anchors', () => {
+  assert.deepEqual(plain(rules.playerGunAnchors()), [
+    { x: -16, y: -19 },
+    { x: 16, y: -19 }
+  ]);
+  assert.equal((html.match(/GameRules\.playerGunAnchors\(\)/g) || []).length, 2);
+  assert.match(html, /x: game\.player\.x \+ gun\.x, y: game\.player\.y - 34/);
+  assert.match(html, /drawAsset\('player', player\.x \+ 13, player\.y, 116, 85/);
+  assert.match(html, /drawAsset\('playerMuzzleFlashV2', player\.x \+ gun\.x, player\.y \+ gun\.y, 8, 8/);
+});
+
+test('confirmed top-down scenery is listed as previewable assets before it is rendered', () => {
+  assert.doesNotMatch(assetCatalog, /id="pending-background-plan-grid"/);
+  assert.match(assetCatalog, /id="topdown-background"/);
+  assert.match(assetCatalog, /'topdown-background-grid'/);
+  for (const name of [
+    '俯视弯月形浅海珊瑚礁', '俯视分散小礁群与海草',
+    '俯视岩石孤岛与松树', '俯视低矮沙洲与小花'
+  ]) assert.match(assetCatalog, new RegExp(name));
+  for (const filename of [
+    'topdown-reef-01.png', 'topdown-reef-02.png',
+    'topdown-islet-01.png', 'topdown-islet-02.png'
+  ]) assert.match(assetCatalog, new RegExp(filename.replace('.', '\\.')));
+});
+
+test('top-down scenery uses one seven-item sequence and returns outside the viewport', () => {
+  assert.equal(rules.sequenceLoopY(55, 0, 1815, 260), 55);
+  assert.equal(rules.sequenceLoopY(55, 1815, 1815, 260), 55);
+  assert.equal(rules.sequenceLoopY(-150, 150, 1815, 260), 0);
+  assert.equal(rules.sequenceLoopY(55, 1500, 1815, 260), -260);
+  assert.match(html, /length: 1815/);
+  assert.match(html, /\['topdownReef01', \.72, -150, 258, 150\]/);
+  assert.match(html, /\['topdownReef02', \.23, -360, 246, 164\]/);
+  assert.match(html, /\['topdownIslet01', \.64, -570, 220, 176\]/);
+  assert.match(html, /\['topdownIslet02', \.31, -780, 236, 156\]/);
+  for (const key of [
+    'topdownIsland01', 'topdownIsland02', 'topdownIsland03', 'topdownReef01',
+    'topdownReef02', 'topdownIslet01', 'topdownIslet02'
+  ]) assert.match(html, new RegExp(`\\['${key}'`));
+  assert.match(html, /TopdownScenerySequence\.entries\.forEach\(\(\[key, x, y, width, height\]\) =>/);
+  assert.match(html, /GameRules\.sequenceLoopY\(y, landscapeOffset, TopdownScenerySequence\.length, 260\)/);
+});
+
+test('runtime asset catalog excludes removed files and retains both full backgrounds', () => {
+  for (const path of removedAssetPaths) {
+    const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.equal(fs.existsSync(new URL(`../${path}`, import.meta.url)), false, `${path} must be deleted`);
+    assert.doesNotMatch(html, new RegExp(escaped));
+    assert.doesNotMatch(assetCatalog, new RegExp(escaped));
+  }
+  for (const path of retainedBackgroundPaths) {
+    const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.equal(fs.existsSync(new URL(`../${path}`, import.meta.url)), true, `${path} must remain`);
+    assert.match(html, new RegExp(escaped));
+    assert.match(assetCatalog, new RegExp(escaped));
+  }
 });

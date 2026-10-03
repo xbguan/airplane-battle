@@ -5,142 +5,47 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>飞机大战 · 全部资产清单</title>
   <style>
-    :root { --ink:#12283c; --paper:#edf7f7; --panel:#ffffff; --blue:#177cb8; --cyan:#37d7e9; --orange:#ff9c28; --line:#c8e3e5; --muted:#63818c; }
-    * { box-sizing:border-box; }
-    body { margin:0; color:var(--ink); background:linear-gradient(160deg,#bceaf1,#edf7f7 42%,#d7f0df); font:15px/1.6 ui-rounded,"PingFang SC","Microsoft YaHei",sans-serif; }
-    main { max-width:1440px; margin:auto; padding:28px; }
-    .hero { overflow:hidden; position:relative; min-height:236px; padding:34px; border:5px solid #fff; border-radius:28px; color:#fff; background:#12425c url("assets/scenery/background-perspective.png") center/cover; box-shadow:0 18px 45px #4d8a924d; isolation:isolate; }
-    .hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,#092e4bf2 0%,#0c4263d9 43%,#0a355a66); z-index:-1; }
-    .eyebrow { margin:0; color:#9df3ff; font-weight:900; letter-spacing:.12em; }
-    h1 { margin:4px 0 6px; font-size:clamp(31px,5vw,58px); line-height:1.05; letter-spacing:.04em; text-shadow:3px 4px #08314e; }
-    .hero p { max-width:720px; margin:0; font-size:17px; }
-    .stats { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
-    .stats span { padding:5px 12px; border:1px solid #a7edee; border-radius:999px; background:#10364ebd; font-weight:800; }
-    nav { display:flex; gap:8px; flex-wrap:wrap; margin:22px 0; }
-    nav a { padding:7px 13px; border:2px solid var(--line); border-radius:999px; color:var(--ink); background:#fff; text-decoration:none; font-weight:900; }
-    nav a:hover, nav a:focus { border-color:var(--blue); outline:none; color:#075b9a; }
-    .rules { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:24px 0 40px; }
-    .rule { padding:16px; border:2px solid var(--line); border-radius:17px; background:#faffff; }
-    .rule b { display:block; color:#0e6c9e; font-size:17px; }
-    section { scroll-margin-top:16px; margin-top:40px; }
-    h2 { display:flex; align-items:center; gap:10px; margin:0 0 4px; font-size:28px; }
-    h2::before { width:10px; height:28px; border-radius:6px; background:var(--orange); content:""; }
-    .section-note { margin:0 0 16px; color:var(--muted); }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
-    .card { overflow:hidden; min-width:0; border:2px solid var(--line); border-radius:18px; background:var(--panel); box-shadow:0 8px 18px #39798b12; }
-    .card.planned { border-style:dashed; border-color:#edb34b; background:#fffdf5; }
-    .preview { display:grid; min-height:178px; place-items:center; padding:15px; background:radial-gradient(circle at 50% 25%,#315f73,#10283b); }
-    .preview img { max-width:100%; max-height:150px; object-fit:contain; image-rendering:auto; }
-    .planned-preview { color:#9d6408; background:repeating-linear-gradient(-45deg,#fff3cb,#fff3cb 10px,#fffae8 10px,#fffae8 20px); font-weight:900; letter-spacing:.08em; }
-    .card-body { padding:13px 14px 15px; }
-    h3 { margin:0; font-size:18px; line-height:1.3; }
-    .tag { display:inline-block; margin-top:7px; padding:2px 8px; border-radius:999px; color:#126386; background:#d9f5f6; font-size:12px; font-weight:900; }
-    .card p { min-height:48px; margin:8px 0; color:#496774; }
-    code { display:block; overflow-wrap:anywhere; color:#24566b; font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; }
-    .backgrounds { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
-    .background-card { overflow:hidden; border:3px solid var(--line); border-radius:20px; background:#fff; }
-    .background-card img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; }
-    .background-card div { padding:16px; }
-    .status { color:#b85800; font-weight:900; }
-    footer { margin:46px 0 10px; color:#577783; text-align:center; }
-    @media (max-width:760px) { main { padding:14px; } .hero { padding:25px; border-radius:20px; } .rules,.backgrounds { grid-template-columns:1fr; } .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .preview { min-height:130px; } .preview img { max-height:105px; } .card-body { padding:10px; } h3 { font-size:15px; } .card p { display:none; } }
+    :root { --ink:#12283c; --panel:#fff; --blue:#177cb8; --orange:#ff9c28; --line:#c8e3e5; --muted:#63818c; }
+    * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:linear-gradient(160deg,#bceaf1,#edf7f7 42%,#d7f0df); font:15px/1.6 ui-rounded,"PingFang SC","Microsoft YaHei",sans-serif; }
+    main { max-width:1440px; margin:auto; padding:28px; } .hero { overflow:hidden; position:relative; min-height:220px; padding:34px; border:5px solid #fff; border-radius:28px; color:#fff; background:#12425c url("assets/scenery/background-perspective.png") center/cover; box-shadow:0 18px 45px #4d8a924d; isolation:isolate; }
+    .hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,#092e4bf2 0%,#0c4263d9 43%,#0a355a66); z-index:-1; } .eyebrow { margin:0; color:#9df3ff; font-weight:900; letter-spacing:.12em; } h1 { margin:4px 0 6px; font-size:clamp(31px,5vw,58px); line-height:1.05; text-shadow:3px 4px #08314e; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; margin:22px 0; } nav a { padding:7px 13px; border:2px solid var(--line); border-radius:999px; color:var(--ink); background:#fff; text-decoration:none; font-weight:900; } section { scroll-margin-top:16px; margin-top:40px; } h2 { display:flex; align-items:center; gap:10px; margin:0 0 4px; font-size:28px; } h2::before { width:10px; height:28px; border-radius:6px; background:var(--orange); content:""; } .section-note { margin:0 0 16px; color:var(--muted); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; } .card { overflow:hidden; min-width:0; border:2px solid var(--line); border-radius:18px; background:var(--panel); box-shadow:0 8px 18px #39798b12; } .preview { display:grid; min-height:178px; place-items:center; padding:15px; background:radial-gradient(circle at 50% 25%,#315f73,#10283b); } .preview img { max-width:100%; max-height:150px; object-fit:contain; } .card-body { padding:13px 14px 15px; } h3 { margin:0; font-size:18px; line-height:1.3; } .tag { display:inline-block; margin-top:7px; padding:2px 8px; border-radius:999px; color:#126386; background:#d9f5f6; font-size:12px; font-weight:900; } .card p { min-height:48px; margin:8px 0; color:#496774; } code { display:block; overflow-wrap:anywhere; color:#24566b; font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .backgrounds { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; } .background-card { overflow:hidden; border:3px solid var(--line); border-radius:20px; background:#fff; } .background-card img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; } .background-card div { padding:16px; } .status { color:#b85800; font-weight:900; } footer { margin:46px 0 10px; color:#577783; text-align:center; }
+    @media (max-width:760px) { main { padding:14px; } .hero { padding:25px; border-radius:20px; } .backgrounds { grid-template-columns:1fr; } .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .preview { min-height:130px; } .preview img { max-height:105px; } .card-body { padding:10px; } h3 { font-size:15px; } .card p { display:none; } }
   </style>
 </head>
 <body>
   <main>
-    <header class="hero">
-      <p class="eyebrow">AIRPLANE BATTLE · ASSET RULEBOOK</p>
-      <h1>全部资产清单</h1>
-      <p>后续视觉开发、替换与验收以本页为准。所有对象均为项目内原创本地 PNG；不允许使用 emoji、外链图片或扁平方块替代。</p>
-      <div class="stats"><span>角色 7</span><span>武器与道具 9</span><span>独立投影 3</span><span>景观 10</span><span>完整背景 2</span></div>
-    </header>
-
-    <nav aria-label="资产目录"><a href="#characters">角色与 BOSS</a><a href="#weapons">武器与道具</a><a href="#shadows">独立投影</a><a href="#scenery">景观图块</a><a href="#backgrounds">完整背景</a><a href="#v23-planned">V2.3 待确认</a></nav>
-
-    <div class="rules" aria-label="资产规则">
-      <article class="rule"><b>可动对象</b>角色、BOSS、武器和道具必须使用透明背景 PNG；一个文件只含一个完整对象。</article>
-      <article class="rule"><b>投影分层</b>投影独立跟随角色位置，不随角色旋转，不得烘焙进角色 PNG。</article>
-      <article class="rule"><b>场景隔离</b>景观不含角色、武器或 HUD；完整背景不作为角色素材裁切来源。</article>
-      <article class="rule"><b>运行规则</b>进入战斗前预加载并缓存全部声明素材；主循环不创建 Image 或高频视觉对象。</article>
-    </div>
-
-    <section id="characters">
-      <h2>角色与 BOSS</h2><p class="section-note">均为透明可动对象；普通敌人与 BOSS 均保持圆润卡通、粗深轮廓和多级高光。</p>
-      <div class="grid" id="character-grid"></div>
-    </section>
-
-    <section id="weapons">
-      <h2>武器与道具</h2><p class="section-note">均为透明可动/特效对象。武器强度、发射节奏与碎片规则由游戏逻辑控制，不由素材改变。</p>
-      <div class="grid" id="weapon-grid"></div>
-    </section>
-
-    <section id="shadows">
-      <h2>独立投影</h2><p class="section-note">角色绘制后单独绘制，不旋转；仅表达高度与落点，不参与碰撞。</p>
-      <div class="grid" id="shadow-grid"></div>
-    </section>
-
-    <section id="scenery">
-      <h2>景观图块</h2><p class="section-note">景观只表达环境；树、灌木和岩石可作为前景图块，水体、草地和山崖用于场景层。</p>
-      <div class="grid" id="scenery-grid"></div>
-    </section>
-
-    <section id="backgrounds">
-      <h2>完整背景</h2><p class="section-note">两版均完整保留、自然不对称，并保持中央飞行走廊；当前默认使用俯视河谷。</p>
-      <div class="backgrounds">
-        <article class="background-card"><img src="assets/scenery/background-perspective.png" alt="斜视峡谷完整背景"><div><h3>斜视峡谷</h3><p><span class="status">已保存并预加载</span>。两侧山崖、瀑布与松林不镜像，中央留出清晰航线。</p><code>assets/scenery/background-perspective.png</code></div></article>
-        <article class="background-card"><img src="assets/scenery/background-topdown.png" alt="俯视河谷完整背景"><div><h3>俯视河谷</h3><p><span class="status">当前默认启用</span>。近 90° 俯视河流、岛屿、岩壁和瀑布错位分布。</p><code>assets/scenery/background-topdown.png</code></div></article>
-      </div>
-    </section>
-
-    <section id="v23-planned">
-      <h2>V2.3 待确认新增素材</h2><p class="section-note">以下 42 项尚未制作或接入游戏。它们只为既有远程攻击、角色投影和无缝背景服务；猫头鹰、无人机、蝙蝠不新增远程攻击。</p>
-      <h3>已有远程攻击的特效与命中反馈（18 项）</h3><div class="grid" id="effect-plan-grid"></div>
-      <h3>按角色轮廓区分的投影（7 项）</h3><div class="grid" id="shadow-plan-grid"></div>
-      <h3>俯视与斜视主题的无缝背景层（17 项）</h3><div class="grid" id="background-plan-grid"></div>
-    </section>
-
-    <footer>规则文档版本：V2.2（开发中） · 本页与 <code>assets/</code> 目录同步维护</footer>
+    <header class="hero"><p class="eyebrow">AIRPLANE BATTLE · RUNTIME ASSET CATALOG</p><h1>全部资产清单</h1><p>仅列出当前游戏加载和渲染的本地 PNG。两个完整背景保留；历史素材不再展示。</p></header>
+    <nav aria-label="资产目录"><a href="#characters">角色与 BOSS</a><a href="#weapons">武器与 HUD</a><a href="#shadows">独立投影</a><a href="#topdown-background">俯视背景层</a><a href="#perspective-background">斜视背景层</a><a href="#backgrounds">完整背景</a></nav>
+    <section id="characters"><h2>角色与 BOSS</h2><p class="section-note">透明可动对象。</p><div class="grid" id="character-grid"></div></section>
+    <section id="weapons"><h2>武器、命中特效与 HUD</h2><p class="section-note">当前渲染的武器、效果与界面图标。</p><div class="grid" id="weapon-grid"></div></section>
+    <section id="shadows"><h2>独立投影</h2><p class="section-note">跟随对象位置，不参与碰撞。</p><div class="grid" id="shadow-grid"></div></section>
+    <section id="topdown-background"><h2>俯视背景层</h2><p class="section-note">循环水面、云雾与 7 项俯视景观。</p><div class="grid" id="topdown-background-grid"></div></section>
+    <section id="perspective-background"><h2>斜视背景层</h2><p class="section-note">循环水面与 3 项斜视峡谷景观。</p><div class="grid" id="perspective-background-grid"></div></section>
+    <section id="backgrounds"><h2>完整背景</h2><p class="section-note">两个完整背景均保留并预加载。</p><div class="backgrounds"><article class="background-card"><img src="assets/scenery/background-topdown.png" alt="俯视河谷完整背景"><div><h3>俯视河谷</h3><p><span class="status">默认背景</span>。近 90° 俯视的河流、岛屿、岩壁与瀑布。</p><code>assets/scenery/background-topdown.png</code></div></article><article class="background-card"><img src="assets/scenery/background-perspective.png" alt="斜视峡谷完整背景"><div><h3>斜视峡谷</h3><p><span class="status">已保留并预加载</span>。两侧山崖、瀑布与松林。</p><code>assets/scenery/background-perspective.png</code></div></article></div></section>
+    <footer>本页与当前运行资产同步维护</footer>
   </main>
   <script>
     const groups = {
       'character-grid': [
-        ['玩家蓝白小战机','角色','玩家控制的主战机。','assets/characters/player-fighter.png'], ['橙白星徽重装 BOSS','BOSS','重装 BOSS，对应现有 brown 行为。','assets/characters/boss-orange-white.png'], ['蓝白星徽高速 BOSS','BOSS','高速 BOSS，对应现有 blue 行为。','assets/characters/boss-blue-white.png'], ['猫头鹰','普通敌人','保留俯冲敌人行为。','assets/characters/owl.png'], ['独眼无人机','普通敌人','远程普通敌人。','assets/characters/drone.png'], ['独眼蝙蝠','普通敌人','快速摆动敌人。','assets/characters/bat.png'], ['紫袍魔法师','普通敌人','使用魔法弹的普通敌人。','assets/characters/wizard.png']
+        ['玩家蓝白小战机','角色','玩家控制的主战机。','assets/characters/player-fighter.png'], ['橙白星徽重装 BOSS','BOSS','重装 BOSS。','assets/characters/boss-orange-white.png'], ['蓝白星徽高速 BOSS','BOSS','高速 BOSS。','assets/characters/boss-blue-white.png'], ['猫头鹰','普通敌人','俯冲敌人。','assets/characters/owl.png'], ['独眼无人机','普通敌人','远程敌人。','assets/characters/drone.png'], ['独眼蝙蝠','普通敌人','快速摆动敌人。','assets/characters/bat.png'], ['紫袍魔法师','普通敌人','使用魔法弹。','assets/characters/wizard.png']
       ],
       'weapon-grid': [
-        ['机枪弹','基础武器','玩家双列自动机枪弹。','assets/weapons/player-bullet.png'], ['追踪导弹','特殊武器','碎片解锁后自动追踪目标。','assets/weapons/homing-missile.png'], ['蓄能激光','特殊武器','每 2 秒结算一次伤害。','assets/weapons/laser-segment.png'], ['敌方能量弹','敌方武器','普通敌人的远程弹。','assets/weapons/enemy-bullet.png'], ['魔法球','敌方武器','魔法师的法术投射物。','assets/weapons/magic-orb.png'], ['追踪弹碎片','升级道具','5 枚用于升级追踪导弹。','assets/weapons/fragment-homing.png'], ['激光碎片','升级道具','5 枚用于升级激光。','assets/weapons/fragment-laser.png'], ['命中特效','战斗特效','命中反馈，不参与碰撞。','assets/weapons/hit-spark.png'], ['爆炸特效','战斗特效','击毁反馈，不参与碰撞。','assets/weapons/explosion.png']
+        ['追踪导弹','特殊武器','自动追踪目标。','assets/weapons/homing-missile.png'], ['蓄能激光','特殊武器','短暂瞬发。','assets/weapons/laser-segment.png'], ['敌方能量弹','敌方武器','远程弹的默认视觉。','assets/weapons/enemy-bullet.png'], ['机枪弹芯','机枪','金色弹芯。','assets/weapons/player-bullet-core.png'], ['机枪曳光','机枪','短距离曳光。','assets/weapons/player-bullet-trail.png'], ['机枪炮口闪光','机枪','当前双侧炮口闪光。','assets/weapons/player-muzzle-flash-v2.png'], ['导弹尾焰 01','导弹','循环尾焰。','assets/weapons/missile-exhaust-01.png'], ['导弹尾焰 02','导弹','循环尾焰。','assets/weapons/missile-exhaust-02.png'], ['导弹尾焰 03','导弹','循环尾焰。','assets/weapons/missile-exhaust-03.png'], ['导弹烟尾 01','导弹','循环烟尾。','assets/weapons/missile-smoke-01.png'], ['导弹烟尾 02','导弹','循环烟尾。','assets/weapons/missile-smoke-02.png'], ['导弹烟尾 03','导弹','循环烟尾。','assets/weapons/missile-smoke-03.png'], ['魔法师魔法球','敌方武器','魔法师远程弹。','assets/weapons/wizard-magic-orb.png'], ['橙白 BOSS 炮弹','敌方武器','橙白 BOSS 远程弹。','assets/weapons/boss-orange-shell.png'], ['蓝白 BOSS 能量弹','敌方武器','蓝白 BOSS 远程弹。','assets/weapons/boss-blue-bolt.png'], ['机枪命中火星','命中','机枪命中反馈。','assets/weapons/hit-machinegun.png'], ['导弹命中爆炸','命中','导弹命中反馈。','assets/weapons/hit-missile.png'], ['激光命中碎光','命中','激光命中反馈。','assets/weapons/hit-laser.png'], ['魔法球命中旋涡','命中','魔法球命中反馈。','assets/weapons/hit-magic.png'], ['橙白 BOSS 炮弹命中','命中','BOSS 炮弹命中反馈。','assets/weapons/hit-orange-boss.png'], ['蓝白 BOSS 能量弹命中','命中','BOSS 能量弹命中反馈。','assets/weapons/hit-blue-boss.png'], ['攻击升级图标','HUD','攻击升级按钮。','assets/weapons/ui-attack-upgrade.png'], ['双列机枪图标','HUD','基础武器格。','assets/weapons/ui-machinegun.png'], ['追踪导弹图标','HUD','追踪导弹格。','assets/weapons/ui-homing-missile.png'], ['激光炮图标','HUD','激光格。','assets/weapons/ui-laser-cannon.png']
       ],
       'shadow-grid': [
-        ['玩家投影','投影','跟随玩家位置，不旋转。','assets/shadows/player-shadow.png'], ['BOSS 投影','投影','跟随两类 BOSS 位置，不旋转。','assets/shadows/boss-shadow.png'], ['普通敌人投影','投影','跟随猫头鹰、无人机、蝙蝠和魔法师。','assets/shadows/enemy-shadow.png']
+        ['玩家机翼投影','投影','玩家投影。','assets/shadows/player-wing-shadow.png'], ['猫头鹰翼形投影','投影','猫头鹰投影。','assets/shadows/owl-wing-shadow.png'], ['无人机机身投影','投影','无人机投影。','assets/shadows/drone-body-shadow.png'], ['蝙蝠翼形投影','投影','蝙蝠投影。','assets/shadows/bat-wing-shadow.png'], ['魔法师帽袍投影','投影','魔法师投影。','assets/shadows/wizard-robes-shadow.png'], ['橙白 BOSS 引擎投影','投影','橙白 BOSS 投影。','assets/shadows/boss-orange-engine-shadow.png'], ['蓝白 BOSS 推进器投影','投影','蓝白 BOSS 投影。','assets/shadows/boss-blue-thruster-shadow.png']
       ],
-      'scenery-grid': [
-        ['天空层','远景','天空与远处氛围层。','assets/scenery/sky.png'], ['白云','远景','独立云层景观。','assets/scenery/cloud-01.png'], ['山崖','中景','峡谷岩壁与山体。','assets/scenery/cliff-mountain.png'], ['草地','中景','草地与岛屿表层。','assets/scenery/grassland.png'], ['河流湖泊','中景','水体层。','assets/scenery/river-lake.png'], ['瀑布','中景','独立瀑布层。','assets/scenery/waterfall.png'], ['松树','前景','可复用透明针叶树。','assets/scenery/pine-tree.png'], ['阔叶树','前景','可复用透明阔叶树。','assets/scenery/broadleaf-tree.png'], ['灌木花草','前景','可复用近景植物。','assets/scenery/bush-flower.png'], ['岩石','前景','可复用岩石图块。','assets/scenery/rock.png']
+      'topdown-background-grid': [
+        ['俯视循环水面','俯视背景','纵向循环水面。','assets/scenery/water-topdown-loop.png'], ['俯视云雾 01','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-01.png'], ['俯视云雾 02','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-02.png'], ['俯视云雾 03','俯视背景','低速漂移云雾。','assets/scenery/cloud-mist-03.png'], ['俯视透明岛屿 01','俯视景观','瀑布岩岛。','assets/scenery/topdown-island-01.png'], ['俯视透明岛屿 02','俯视景观','弯月岛。','assets/scenery/topdown-island-02.png'], ['俯视透明岛屿 03','俯视景观','斜向岩脊岛。','assets/scenery/topdown-island-03.png'], ['俯视弯月形浅海珊瑚礁','俯视景观','浅海礁盘与珊瑚。','assets/scenery/topdown-reef-01.png'], ['俯视分散小礁群与海草','俯视景观','礁石、珊瑚与海草。','assets/scenery/topdown-reef-02.png'], ['俯视岩石孤岛与松树','俯视景观','小型岩岛与松树。','assets/scenery/topdown-islet-01.png'], ['俯视低矮沙洲与小花','俯视景观','沙洲、礁石与小花。','assets/scenery/topdown-islet-02.png']
+      ],
+      'perspective-background-grid': [
+        ['斜视循环水面','斜视背景','纵向循环水面。','assets/scenery/water-perspective-loop.png'], ['斜视透明峡谷 01','斜视景观','独立前景峡谷。','assets/scenery/perspective-island-01.png'], ['斜视透明峡谷 02','斜视景观','独立双岛石桥。','assets/scenery/perspective-island-02.png'], ['斜视透明峡谷 03','斜视景观','独立岩峰岛。','assets/scenery/perspective-island-03.png']
       ]
     };
-    for (const [target, entries] of Object.entries(groups)) {
-      document.getElementById(target).innerHTML = entries.map(([name, tag, note, path]) => `<article class="card"><div class="preview"><img src="${path}" alt="${name}"></div><div class="card-body"><h3>${name}</h3><span class="tag">${tag}</span><p>${note}</p><code>${path}</code></div></article>`).join('');
-    }
-    const planned = {
-      'effect-plan-grid': [
-        ['机枪炮口闪光','机枪','双侧炮口短促金黄闪光。','player-muzzle-flash.png'], ['机枪弹芯','机枪','清晰可见的金色弹芯。','player-bullet-core.png'], ['机枪曳光','机枪','短距离暖白曳光。','player-bullet-trail.png'],
-        ['导弹尾焰 01','导弹','橙蓝尾焰循环的第一帧。','missile-exhaust-01.png'], ['导弹尾焰 02','导弹','橙蓝尾焰循环的第二帧。','missile-exhaust-02.png'], ['导弹尾焰 03','导弹','橙蓝尾焰循环的第三帧。','missile-exhaust-03.png'],
-        ['导弹烟尾 01','导弹','灰白短烟团循环的第一帧。','missile-smoke-01.png'], ['导弹烟尾 02','导弹','灰白短烟团循环的第二帧。','missile-smoke-02.png'], ['导弹烟尾 03','导弹','灰白短烟团循环的第三帧。','missile-smoke-03.png'],
-        ['魔法师魔法球','魔法师','大号紫粉球、亮粉核心与星点环绕。','wizard-magic-orb.png'], ['橙白 BOSS 炮弹','橙白 BOSS','五发扇形使用的橙金爆裂弹。','boss-orange-shell.png'], ['蓝白 BOSS 能量弹','蓝白 BOSS','双发青蓝电弧能量弹。','boss-blue-bolt.png'],
-        ['机枪命中火星','命中','金黄火星和白色闪点。','hit-machinegun.png'], ['导弹命中爆炸','命中','橙蓝爆炸、火焰和短烟团。','hit-missile.png'], ['激光命中碎光','命中','青白晶体碎光与消散光环。','hit-laser.png'],
-        ['魔法球命中旋涡','命中','紫粉旋涡与星点。','hit-magic.png'], ['橙白 BOSS 炮弹命中','命中','橙黄火星。','hit-orange-boss.png'], ['蓝白 BOSS 能量弹命中','命中','冰蓝晶体碎片。','hit-blue-boss.png']
-      ],
-      'shadow-plan-grid': [
-        ['玩家机翼投影','投影','机翼与机身轮廓。','player-wing-shadow.png'], ['猫头鹰翼形投影','投影','展开双翼轮廓。','owl-wing-shadow.png'], ['无人机机身投影','投影','圆机身与侧轮轮廓。','drone-body-shadow.png'], ['蝙蝠翼形投影','投影','翼形轮廓。','bat-wing-shadow.png'], ['魔法师帽袍投影','投影','帽檐、袍摆和法杖轮廓。','wizard-robes-shadow.png'], ['橙白 BOSS 引擎投影','投影','宽引擎轮廓。','boss-orange-engine-shadow.png'], ['蓝白 BOSS 推进器投影','投影','圆形推进器轮廓。','boss-blue-thruster-shadow.png']
-      ],
-      'background-plan-grid': [
-        ['斜视水面循环底图','斜视背景','纯水面，纵向无缝循环。','water-perspective-loop.png'], ['俯视水面循环底图','俯视背景','纯水面，纵向无缝循环。','water-topdown-loop.png'],
-        ['斜视地形区块 01','斜视背景','不对称峡谷、岛屿和瀑布；上下边缘仅保留连续水面。','perspective-segment-01.png'], ['斜视地形区块 02','斜视背景','不对称峡谷、岛屿和瀑布；上下边缘仅保留连续水面。','perspective-segment-02.png'], ['斜视地形区块 03','斜视背景','不对称峡谷、岛屿和瀑布；上下边缘仅保留连续水面。','perspective-segment-03.png'], ['斜视地形区块 04','斜视背景','不对称峡谷、岛屿和瀑布；上下边缘仅保留连续水面。','perspective-segment-04.png'], ['斜视地形区块 05','斜视背景','不对称峡谷、岛屿和瀑布；上下边缘仅保留连续水面。','perspective-segment-05.png'], ['斜视地形区块 06','斜视背景','不对称峡谷、岛屿和瀑布；上下边缘仅保留连续水面。','perspective-segment-06.png'],
-        ['俯视地形区块 01','俯视背景','不对称岩壁、岛屿和瀑布；上下边缘仅保留连续水面。','topdown-segment-01.png'], ['俯视地形区块 02','俯视背景','不对称岩壁、岛屿和瀑布；上下边缘仅保留连续水面。','topdown-segment-02.png'], ['俯视地形区块 03','俯视背景','不对称岩壁、岛屿和瀑布；上下边缘仅保留连续水面。','topdown-segment-03.png'], ['俯视地形区块 04','俯视背景','不对称岩壁、岛屿和瀑布；上下边缘仅保留连续水面。','topdown-segment-04.png'], ['俯视地形区块 05','俯视背景','不对称岩壁、岛屿和瀑布；上下边缘仅保留连续水面。','topdown-segment-05.png'], ['俯视地形区块 06','俯视背景','不对称岩壁、岛屿和瀑布；上下边缘仅保留连续水面。','topdown-segment-06.png'],
-        ['云雾前层 01','景深','透明云团、薄雾和波光，以不同速度漂移。','cloud-mist-01.png'], ['云雾前层 02','景深','透明云团、薄雾和波光，以不同速度漂移。','cloud-mist-02.png'], ['云雾前层 03','景深','透明云团、薄雾和波光，以不同速度漂移。','cloud-mist-03.png']
-      ]
-    };
-    for (const [target, entries] of Object.entries(planned)) {
-      document.getElementById(target).innerHTML = entries.map(([name, tag, note, path]) => `<article class="card planned"><div class="preview planned-preview">待制作</div><div class="card-body"><h3>${name}</h3><span class="tag">${tag} · 待确认</span><p>${note}</p><code>assets/…/${path}</code></div></article>`).join('');
-    }
+    for (const [target, entries] of Object.entries(groups)) document.getElementById(target).innerHTML = entries.map(([name, tag, note, path]) => `<article class="card"><div class="preview"><img src="${path}" alt="${name}"></div><div class="card-body"><h3>${name}</h3><span class="tag">${tag}</span><p>${note}</p><code>${path}</code></div></article>`).join('');
   </script>
 </body>
 </html>
