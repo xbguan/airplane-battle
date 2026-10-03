@@ -346,7 +346,20 @@ globalThis.GameRules = {
     const values = type === 'homing' ? [0, 45, 65, 85] : [0, 35, 50, 65];
     return values[Math.min(level, this.maxWeaponLevel(type))];
   },
-  specialWeaponInterval(type) { return type === 'homing' ? 1.5 : 2; },
+  specialWeaponInterval(type) { return 1.5; },
+  perspectiveWeather(time) {
+    const cycle = ((time % 90) + 90) % 90;
+    if (cycle < 40) return { phase: 'clear', storm: 0 };
+    if (cycle < 45) return { phase: 'darken', storm: (cycle - 40) / 5 };
+    if (cycle < 85) return { phase: 'storm', storm: 1 };
+    return { phase: 'clearUp', storm: 1 - (cycle - 85) / 5 };
+  },
+  damageState(hp, maxHp) {
+    const ratio = maxHp > 0 ? hp / maxHp : 1;
+    if (ratio < .35) return 'fire';
+    if (ratio < .65) return 'smoke';
+    return 'none';
+  },
   difficulty(bosses) {
     const steps = Math.max(0, bosses - 1);
     return {
@@ -487,7 +500,9 @@ globalThis.GameRules = {
       cloudMist01: 'assets/scenery/cloud-mist-01.png', cloudMist02: 'assets/scenery/cloud-mist-02.png', cloudMist03: 'assets/scenery/cloud-mist-03.png',
       topdownIsland01: 'assets/scenery/topdown-island-01.png', topdownIsland02: 'assets/scenery/topdown-island-02.png', topdownIsland03: 'assets/scenery/topdown-island-03.png',
       topdownReef01: 'assets/scenery/topdown-reef-01.png', topdownReef02: 'assets/scenery/topdown-reef-02.png', topdownIslet01: 'assets/scenery/topdown-islet-01.png', topdownIslet02: 'assets/scenery/topdown-islet-02.png',
-      perspectiveIsland01: 'assets/scenery/perspective-island-01.png', perspectiveIsland02: 'assets/scenery/perspective-island-02.png', perspectiveIsland03: 'assets/scenery/perspective-island-03.png'
+      perspectiveSkyClear: 'assets/scenery/perspective-sky-clear.png', perspectiveSkyStorm: 'assets/scenery/perspective-sky-storm.png',
+      perspectiveCloudBankFar: 'assets/scenery/perspective-cloud-bank-far.png', perspectiveCloudBankNear: 'assets/scenery/perspective-cloud-bank-near.png',
+      perspectiveIslandChain: 'assets/scenery/perspective-island-chain.png', perspectiveLighthouseReef: 'assets/scenery/perspective-lighthouse-reef.png', perspectiveSailboat: 'assets/scenery/perspective-sailboat.png', perspectiveBuoy: 'assets/scenery/perspective-buoy.png', perspectiveReef: 'assets/scenery/perspective-reef.png', perspectiveSeaStack: 'assets/scenery/perspective-sea-stack.png', perspectiveCliffWaterfall: 'assets/scenery/perspective-cliff-waterfall.png'
     }
   };
   const soundCooldowns = {};
@@ -538,6 +553,7 @@ globalThis.GameRules = {
     const definitions = {
       fire: [650, 390, .065, .16, 'square'],
       machinegun: [205, 108, .052, .14, 'square'],
+      'missile-launch': [120, 310, .14, .16, 'saw'],
       'wizard-shot': [420, 760, .18, .16, 'triangle'],
       'orange-shot': [170, 92, .2, .22, 'square'],
       'blue-shot': [820, 1280, .13, .16, 'saw'],
@@ -573,7 +589,7 @@ globalThis.GameRules = {
 
   function playSound(name) {
     const now = performance.now();
-    const limits = { fire: 120, machinegun: 70, hit: 110, laser: 150, 'wizard-shot': 280, 'orange-shot': 180, 'blue-shot': 140 };
+    const limits = { fire: 120, machinegun: 70, 'missile-launch': 120, hit: 110, laser: 150, 'wizard-shot': 280, 'orange-shot': 180, 'blue-shot': 140 };
     if (limits[name] && now - (soundCooldowns[name] || 0) < limits[name]) return;
     soundCooldowns[name] = now;
     const audio = ensureAudio();
@@ -591,12 +607,14 @@ globalThis.GameRules = {
       paused: false,
       time: 0,
       shake: 0,
-      player: { x: W / 2, y: H - 105, tx: W / 2, ty: H - 105, r: 26, hp: 100, invulnerable: 0, hasTarget: false },
+      player: { id: 'player', x: W / 2, y: H - 105, tx: W / 2, ty: H - 105, r: 26, hp: 100, maxHp: 100, invulnerable: 0, hasTarget: false },
       bullets: [],
       enemies: [],
       scenery: [createScenery(H * .71, 'lake', 190), ...Array.from({ length: 11 }, (_, index) => createScenery(H * .66 + index * 27))],
       enemyBullets: [],
       particles: [],
+      damageEffects: [],
+      damageEffectTimer: 0,
       impacts: [],
       floaters: [],
       xp: 0,
@@ -855,7 +873,9 @@ globalThis.GameRules = {
   function fireHoming() {
     const target = GameRules.nearestForwardTarget(game.player, game.enemies.filter(enemy => !enemy.dead));
     if (!target) return;
-    game.bullets.push({ id: nextId++, type: 'homing', x: game.player.x, y: game.player.y - 34, vx: 0, vy: -360, r: 11, damage: GameRules.specialDamage('homing', game.weaponLevels.homing), life: 5, targetId: target.id });
+    const bullet = { id: nextId++, type: 'homing', x: game.player.x, y: game.player.y - 34, vx: 0, vy: -360, r: 11, damage: GameRules.specialDamage('homing', game.weaponLevels.homing), life: 5, targetId: target.id };
+    game.bullets.push(bullet);
+    playSound('missile-launch');
     if (window.__testMode) window.__combatStats.homingShots.push(performance.now());
   }
 
@@ -960,7 +980,7 @@ globalThis.GameRules = {
       const y = game.player.y - 38;
       const dx = target.x - x;
       const dy = target.y - y;
-      game.laserFlash = { x: game.player.x, y, rotation: Math.atan2(dy, dx), length: Math.hypot(dx, dy), life: .14, maxLife: .14 };
+      game.laserFlash = { x: game.player.x, y, rotation: Math.atan2(dy, dx), length: Math.hypot(dx, dy), life: .18, maxLife: .18 };
       damageEnemy(target, GameRules.specialDamage('laser', game.weaponLevels.laser), '#7ff8ff', ImpactVisuals.laser);
     }
     if (Math.random() < .35) addParticle(target.x + random(-8, 8), target.y + random(-8, 8), '#72f5ff', 1, 50);
@@ -982,6 +1002,34 @@ globalThis.GameRules = {
     for (const impact of game.impacts) impact.life -= dt;
     game.impacts = game.impacts.filter(impact => impact.life > 0);
     game.floaters = game.floaters.filter(f => f.life > 0);
+  }
+
+  function updateDamageEffects(dt) {
+    game.damageEffectTimer -= dt;
+    if (game.damageEffectTimer <= 0) {
+      game.damageEffectTimer = .18;
+      const owners = [game.player, game.boss].filter(Boolean);
+      for (const owner of owners) {
+        const state = GameRules.damageState(owner.hp, owner.maxHp);
+        if (state === 'none') continue;
+        if (game.damageEffects.length < 18) {
+          const kind = state === 'fire' && Math.random() < .42 ? 'fire' : 'smoke';
+          const x = owner.x + random(-18, 18);
+          const y = owner.y + random(-14, 16);
+          game.damageEffects.push({ ownerId: owner.id, kind, x, y, ownerX: owner.x, ownerY: owner.y, vx: random(-9, 9), vy: kind === 'fire' ? random(-25, -12) : random(-38, -20), life: kind === 'fire' ? .42 : .7, maxLife: kind === 'fire' ? .42 : .7 });
+        }
+      }
+    }
+    for (const effect of game.damageEffects) {
+      const owner = effect.ownerId === 'player' ? game.player : game.boss;
+      if (owner && !owner.dead) {
+        effect.x += owner.x - effect.ownerX;
+        effect.y += owner.y - effect.ownerY;
+        effect.ownerX = owner.x; effect.ownerY = owner.y;
+      }
+      effect.x += effect.vx * dt; effect.y += effect.vy * dt; effect.life -= dt;
+    }
+    game.damageEffects = game.damageEffects.filter(effect => effect.life > 0);
   }
 
   function update(dt) {
@@ -1012,6 +1060,7 @@ globalThis.GameRules = {
     updateLaser(dt);
     checkCollisions();
     updateParticles(dt);
+    updateDamageEffects(dt);
     game.bullets = game.bullets.filter(b => !b.dead);
     game.enemyBullets = game.enemyBullets.filter(b => !b.dead);
     game.enemies = game.enemies.filter(e => !e.dead);
@@ -1034,8 +1083,18 @@ globalThis.GameRules = {
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width; ctx.stroke(); }
   }
 
-  const BackgroundLayouts = {
-    backgroundPerspective: [['perspectiveIsland01', .22, 70, 314, 216], ['perspectiveIsland02', .80, 335, 282, 204], ['perspectiveIsland03', .47, 610, 326, 228]]
+  const PerspectiveCloudLayers = {
+    far: ['perspectiveCloudBankFar', .09, 1450, 260, 126],
+    near: ['perspectiveCloudBankNear', .16, 1620, 360, 188]
+  };
+  const PerspectiveScenerySequence = {
+    length: 2360,
+    entries: [
+      ['perspectiveIslandChain', .52, -120, 220, 88], ['perspectiveLighthouseReef', .21, 180, 176, 132],
+      ['perspectiveSailboat', .76, 420, 92, 68], ['perspectiveBuoy', .39, 660, 42, 78],
+      ['perspectiveReef', .63, 900, 164, 96], ['perspectiveSeaStack', .15, 1180, 214, 178],
+      ['perspectiveCliffWaterfall', .82, 1500, 360, 270]
+    ]
   };
   const TopdownScenerySequence = {
     length: 1815,
@@ -1047,6 +1106,27 @@ globalThis.GameRules = {
 
   function drawBackground() {
     const topdown = activeSceneBackground === 'backgroundTopdown';
+    if (!topdown) {
+      const weather = GameRules.perspectiveWeather(game.time);
+      drawSceneryAsset('backgroundPerspective', W / 2, H / 2, W, H);
+      drawSceneryAsset('perspectiveSkyStorm', W / 2, H / 2, W, H, weather.storm);
+      const landscapeOffset = (game.time * 12) % PerspectiveScenerySequence.length;
+      const horizonY = H * .42;
+      PerspectiveScenerySequence.entries.forEach(([key, x, y, width, height]) => {
+        const loopY = GameRules.sequenceLoopY(y, landscapeOffset, PerspectiveScenerySequence.length, 260);
+        if (loopY < 0) return;
+        const depth = clamp(loopY / (H - horizonY), 0, 1);
+        const scale = .38 + depth * .72;
+        drawSceneryAsset(key, W * x, horizonY + loopY, width * scale, height * scale);
+      });
+      for (const [key, speed, travel, width, height] of Object.values(PerspectiveCloudLayers)) {
+        const drift = ((game.time * speed * 60) % 90) - 45;
+        const entrance = (1 - weather.storm) * travel;
+        drawSceneryAsset(key, W / 2 - entrance + drift, H * .23, width * 4.6, height * 2.1, weather.storm * .52);
+        drawSceneryAsset(key, W / 2 + entrance + drift, H * .23, width * 4.6, height * 2.1, weather.storm * .52);
+      }
+      return;
+    }
     const waterKey = topdown ? 'waterTopdownLoop' : 'waterPerspectiveLoop';
     const offset = (game.time * 12) % 720;
     for (let y = -360 + offset; y < H + 360; y += 720) drawSceneryAsset(waterKey, W / 2, y, W, 720);
@@ -1054,12 +1134,6 @@ globalThis.GameRules = {
       const landscapeOffset = (game.time * 12) % TopdownScenerySequence.length;
       TopdownScenerySequence.entries.forEach(([key, x, y, width, height]) => {
         drawSceneryAsset(key, W * x, GameRules.sequenceLoopY(y, landscapeOffset, TopdownScenerySequence.length, 260), width, height);
-      });
-    } else {
-      BackgroundLayouts.backgroundPerspective.forEach(([key, x, y, width, height], index) => {
-        const speed = 1 + index * .14;
-        const loopY = ((y + offset * speed + 260) % (H + 520)) - 260;
-        drawSceneryAsset(key, W * x, loopY, width, height);
       });
     }
     drawSceneryAsset('cloudMist01', W * .68, ((190 + offset * .45) % (H + 180)) - 90, 330, 126, .42);
@@ -1279,13 +1353,19 @@ globalThis.GameRules = {
     if (game.laserTarget) drawAsset('laser', game.laserTarget.x, game.laserTarget.y, 20, 20, 0, .36);
     if (game.laserFlash) {
       const flash = game.laserFlash;
-      drawAsset('laser', flash.x + Math.cos(flash.rotation) * flash.length / 2, flash.y + Math.sin(flash.rotation) * flash.length / 2, flash.length, 24, flash.rotation, flash.life / flash.maxLife);
+      drawAsset('laser', flash.x + Math.cos(flash.rotation) * flash.length / 2, flash.y + Math.sin(flash.rotation) * flash.length / 2, flash.length, 34, flash.rotation, flash.life / flash.maxLife);
     }
   }
 
   function drawEffects() {
     for (const impact of game.impacts) drawAsset(impact.key, impact.x, impact.y, 42, 42, 0, impact.life / impact.maxLife);
     for(const p of game.particles){ctx.globalAlpha=clamp(p.life/p.maxLife,0,1);ellipse(p.x,p.y,p.size,p.size,p.color);}ctx.globalAlpha=1;
+    for (const effect of game.damageEffects) {
+      ctx.globalAlpha = clamp(effect.life / effect.maxLife, 0, 1) * (effect.kind === 'fire' ? .95 : .58);
+      if (effect.kind === 'fire') { ellipse(effect.x, effect.y, 7, 10, '#ff6b35'); ellipse(effect.x, effect.y + 2, 3, 5, '#ffe46e'); }
+      else ellipse(effect.x, effect.y, 9, 7, '#516879');
+    }
+    ctx.globalAlpha = 1;
     ctx.textAlign='center';ctx.font='900 20px Arial';for(const f of game.floaters){ctx.globalAlpha=clamp(f.life/.8,0,1);ctx.fillStyle=f.color;ctx.fillText(f.text,f.x,f.y);}ctx.globalAlpha=1;
   }
 
@@ -1331,7 +1411,7 @@ globalThis.GameRules = {
     modalWeapon=type;game.paused=true;ui['upgrade-modal'].classList.remove('hidden');
     const name=type==='homing'?'追踪弹':'激光枪';const next=game.weaponLevels[type]+1;
     ui['upgrade-title'].textContent=`${name} 可升到 Lv.${next}`;
-    ui['upgrade-copy'].textContent=type==='homing'?`升级后每枚自动追踪弹造成 ${GameRules.specialDamage(type,next)} 伤害。`:`升级后激光每 2 秒造成 ${GameRules.specialDamage(type,next)} 伤害。`;
+        ui['upgrade-copy'].textContent=type==='homing'?`升级后每枚自动追踪弹造成 ${GameRules.specialDamage(type,next)} 伤害。`:`升级后激光每 1.5 秒造成 ${GameRules.specialDamage(type,next)} 伤害。`;
   }
 
   function acceptUpgrade() {

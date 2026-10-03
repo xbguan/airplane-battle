@@ -82,7 +82,7 @@ test('boss drops two fragments for the lower-level incomplete weapon', () => {
 
 test('special weapon cadence prevents continuous laser damage', () => {
   assert.equal(rules.specialWeaponInterval('homing'), 1.5);
-  assert.equal(rules.specialWeaponInterval('laser'), 2);
+  assert.equal(rules.specialWeaponInterval('laser'), 1.5);
 });
 
 test('attack upgrade spends exactly fifty experience', () => {
@@ -159,10 +159,36 @@ test('all normal enemy body collisions use one kill-and-progress resolver', () =
   assert.match(html, /killEnemy\(enemy\)/);
 });
 
-test('laser is rendered only through a short flash state after the two-second hit', () => {
+test('laser is rendered only through a short flash state after the 1.5-second hit', () => {
   assert.match(html, /laserFlash: null/);
   assert.match(html, /game\.laserFlash = \{ x: game\.player\.x/);
   assert.match(html, /if \(game\.laserFlash\)/);
+  assert.match(html, /life: \.18, maxLife: \.18/);
+  assert.match(html, /flash\.length, 34, flash\.rotation/);
+});
+
+test('blue boss bolt keeps its dedicated high-contrast local asset', () => {
+  assert.match(html, /blueBossBolt: 'assets\/weapons\/boss-blue-bolt\.png'/);
+  assert.match(html, /const EnemyProjectileVisuals = \{ wizard: 'wizardMagicOrb', brown: 'orangeBossShell', blue: 'blueBossBolt' \};/);
+  assert.match(assetCatalog, /蓝白 BOSS 能量弹（调整版）/);
+  assert.equal(fs.existsSync(new URL('../assets/weapons/boss-blue-bolt.png', import.meta.url)), true);
+});
+
+test('damage state uses smoke below 65 percent and fire below 35 percent', () => {
+  assert.equal(rules.damageState(65, 100), 'none');
+  assert.equal(rules.damageState(64, 100), 'smoke');
+  assert.equal(rules.damageState(35, 100), 'smoke');
+  assert.equal(rules.damageState(34, 100), 'fire');
+  assert.match(html, /damageEffects: \[\]/);
+  assert.match(html, /game\.damageEffects\.length < 18/);
+});
+
+test('homing missiles play only the cached launch sound without a flight engine', () => {
+  assert.match(html, /'missile-launch': \[120, 310, \.14, \.16, 'saw'\]/);
+  assert.match(html, /playSound\('missile-launch'\);/);
+  assert.doesNotMatch(html, /missileEngines/);
+  assert.doesNotMatch(html, /startMissileEngine/);
+  assert.doesNotMatch(html, /stopMissileEngine/);
 });
 
 test('start screen exposes both retained scene themes and HUD avoids emoji labels', () => {
@@ -183,8 +209,33 @@ test('pixel UI uses local assets and gameplay has no floating version label', ()
 
 test('background uses transparent landscape layers instead of rectangular segments', () => {
   assert.match(html, /topdownIsland0[1-3]/);
-  assert.match(html, /perspectiveIsland0[1-3]/);
+  assert.match(html, /perspectiveIslandChain/);
   assert.doesNotMatch(html, /const prefix = topdown \? 'topdownSegment' : 'perspectiveSegment';/);
+});
+
+test('perspective background has a seamless sky weather cycle and seven perspective scenery types', () => {
+  assert.deepEqual(plain(rules.perspectiveWeather(0)), { phase: 'clear', storm: 0 });
+  assert.equal(rules.perspectiveWeather(42.5).phase, 'darken');
+  assert.deepEqual(plain(rules.perspectiveWeather(50)), { phase: 'storm', storm: 1 });
+  assert.equal(rules.perspectiveWeather(87.5).phase, 'clearUp');
+  assert.match(html, /const PerspectiveCloudLayers = \{/);
+  assert.match(html, /perspectiveCloudBankFar/);
+  assert.match(html, /perspectiveCloudBankNear/);
+  assert.match(html, /const PerspectiveScenerySequence = \{/);
+  for (const key of ['perspectiveIslandChain', 'perspectiveLighthouseReef', 'perspectiveSailboat', 'perspectiveBuoy', 'perspectiveReef', 'perspectiveSeaStack', 'perspectiveCliffWaterfall']) assert.match(html, new RegExp(key));
+  assert.doesNotMatch(html, /BackgroundLayouts\.backgroundPerspective/);
+});
+
+test('perspective scenery enters from the horizon and does not use a second water layer', () => {
+  assert.doesNotMatch(html, /drawSceneryAsset\('waterPerspectiveLoop'/);
+  assert.match(html, /const horizonY = H \* \.42/);
+  assert.match(html, /if \(loopY < 0\) return/);
+  assert.match(html, /horizonY \+ loopY/);
+});
+
+test('clear perspective background uses its own sky without a second cloud overlay', () => {
+  assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyClear', W \/ 2, H \/ 2, W, H, 1 - weather\.storm\)/);
+  assert.match(html, /drawSceneryAsset\('perspectiveSkyStorm', W \/ 2, H \/ 2, W, H, weather\.storm\)/);
 });
 
 test('machinegun uses a short cached dada cadence and the v2 muzzle asset', () => {
