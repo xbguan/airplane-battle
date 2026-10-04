@@ -1,0 +1,45 @@
+= 玩家飞机装备素材生成记录
+:toc: left
+:toclevels: 2
+:sectnums:
+
+== 范围与状态
+
+2026-10-04：用户确认清单中的激光型与导弹型设计后，使用内置 image_gen 工具分别生成两张透明 PNG；再次确认后已接入游戏，按当前已解锁并装备的特殊武器切换外观。
+
+* 激光型：`assets/characters/player-fighter-laser.png`
+* 导弹型：`assets/characters/player-fighter-missile.png`
+* 两张均为 1467 × 1072 RGBA；完整保留生成输出与透明通道，未进行程序抠图或重绘。
+* 清单提供大图与按实际游戏绘制参数校准的小图预览。
+* 按用户要求，三种玩家形态统一归入“角色与 BOSS”，移除独立装备形态标题与导航；游戏尺寸对比保留为该分类下的可展开内容。
+
+== 生成阶段验证
+
+* 两张 PNG 均包含真实透明通道，透明像素占比分别约为 67.0% 和 72.3%，主体未触及图像边界。
+* 浏览器实际加载清单中的 5 张对比图片，无页面脚本错误；小图可区分中轴激光炮与双侧导弹。受限环境中浏览器启动退出，换至允许的执行环境后通过。
+* 新素材机体占图比例大于基础型，同为 116 × 85 显示框时显得更大；后续接入需校准显示缩放与枪口，不应直接假定相同画框尺寸即可对齐。
+* 常规规则测试 43/43 通过。本轮未修改游戏代码，未执行游戏内接入验证或全量浏览器烟测。
+
+== 游戏接入与验证
+
+* 分工：Sol 子代理修改 `index.html` 与对应规则测试；主代理核对改动、测量主体尺寸、执行浏览器视觉与交互验证并维护文档。
+* 两张素材纳入现有预加载机制；当前装备为已解锁激光时使用激光型，为已解锁追踪导弹时使用导弹型，否则使用基础型。新一局重置回基础型。
+* 基础型保持绘制框 116 × 85、横向偏移 +13；激光型使用 93 × 68、纵向偏移 -12；导弹型使用 108 × 79、纵向偏移 -8。各图透明留白不同，使用不同绘制框保持接近的机体大小与枪口对齐。
+* 保留原机枪枪口坐标、激光光束起点、导弹生成位置、独立投影、无敌闪烁、碰撞范围与全部战斗数值。
+* 新增两项测试执行实际素材预加载与玩家绘制函数：修改前 43 通过、2 失败，接入后 45/45 通过。
+* 两种场景专项验证：锁定武器无法切换；激光、导弹、激光往返切换正确；实际射击、画布动画、独立投影与重开恢复基础型正常；切换期间素材未重复请求，无控制台错误。
+* 项目现有 `tests/browser-smoke.py --perspective-only` 通过；未执行历史全量浏览器烟测。
+
+== 激光型提示词
+
+[source,text]
+----
+Use case: precise-object-edit. Asset type: transparent player aircraft sprite for a children's 2.5D cartoon pixel-art shooter. Input image is the existing blue-white player fighter identity reference; disregard all scenery and loose projectiles visible around it. Produce ONE LASER EQUIPPED variant of this exact aircraft, nose pointing straight UP, wings symmetrical, same near-top-down camera and same rounded blue-white fuselage, glossy cyan cockpit, dark navy chunky outlines, layered pixel highlights and shadows, small orange trim and twin rear engine nozzles. Add one clearly recognizable short substantial central laser emitter extending forward from the nose along the vertical centerline, with a cyan energy core and bright cyan lens. Preserve cockpit and small side machineguns. Keep central laser short and readable, not a long beam. Pixel-art edges and clustered shading matching reference, not smooth vector art or photorealism. Standalone aircraft on genuine transparent alpha, no ground, island, sea, scenery, cast shadow, text, labels, bullets, beam, smoke or disconnected effects. Center aircraft in landscape 26:19 canvas, occupy about 80 percent canvas width and 85 percent height, wings and nose fully visible with padding. Do not draw a checkerboard. Keep the silhouette compact, baseline proportions. This is the laser loadout, no missiles.
+----
+
+== 导弹型提示词
+
+[source,text]
+----
+Use case: precise-object-edit. Asset type: transparent player aircraft sprite for children's 2.5D cartoon pixel-art shooter. Image 1 is original player fighter identity and basic silhouette reference (ignore all landscape and loose bullets). Image 2 is newly approved-direction laser variant STYLE and shading reference. Generate ONE MISSILE EQUIPPED variant of same blue-white fighter. Match image 2's crisp chunky pixel-art, rich layered highlights and shadows, dark navy outlines, glossy cyan cockpit, white and blue rounded wings, orange tips, little gold round fuselage emblem, twin rear blue engines with short attached yellow-orange flames. Nose pointing straight UP, symmetric near-top-down view. REMOVE image 2's central laser cannon completely: use original short plain white rounded nose. Add TWO unmistakable chunky missile racks on OUTER wings, each carrying a short stout WHITE missile with a large ORANGE-RED pointed warhead facing upward and small tail fins. Missiles should be visibly larger than original tiny machineguns, occupying the outer wing area, no giant extensions beyond wing tips. Preserve the original small inner machineguns. Make white missile bodies and red warheads clearly distinguishable from engines and cockpit even at small game size. Keep same compact overall scale and proportion as original fighter. Single centered aircraft, transparent alpha background, landscape 26:19 composition with padding on all sides, no cropping. No laser emitter, cyan nose cannon, beam, ground, landscape, cast shadow, smoke, flying detached projectiles, labels, text, grid, checkerboard or background. Preserve image 2's precise pixel clusters, avoid smooth vector art and photorealism.
+----

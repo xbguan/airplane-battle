@@ -28,6 +28,110 @@ vm.runInContext(match?.[1] || 'globalThis.GameRules = {};', context);
 const rules = context.GameRules;
 const plain = value => JSON.parse(JSON.stringify(value));
 
+function createAudioRuntime(sampleRate = 44100) {
+  const buffers = [];
+  const sources = [];
+  let now = 200;
+  const audio = {
+    sampleRate,
+    destination: {},
+    createBuffer(channels, length, rate) {
+      const data = new Float32Array(length);
+      const buffer = { channels, length, sampleRate: rate, getChannelData: () => data };
+      buffers.push(buffer);
+      return buffer;
+    },
+    createBufferSource() {
+      const source = {
+        buffer: null, connected: false, started: false, disconnected: false,
+        connect(destination) { this.connected = destination === audio.destination; },
+        start() { this.started = true; },
+        disconnect() { this.disconnected = true; }
+      };
+      sources.push(source);
+      return source;
+    }
+  };
+  const runtime = vm.createContext({
+    audioContext: audio,
+    soundBuffers: {},
+    soundCooldowns: {},
+    window: {},
+    performance: { now: () => now }
+  });
+  for (const name of ['ensureAudio', 'createSoundBuffer', 'playSound']) {
+    const start = html.indexOf(`  function ${name}(`);
+    assert.ok(start >= 0, `Missing production function: ${name}`);
+    vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
+  }
+  return { runtime, buffers, sources, setNow(value) { now = value; } };
+}
+
+function decodeMonoPcm16Wav(fileUrl) {
+  const wav = fs.readFileSync(fileUrl);
+  assert.equal(wav.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(wav.toString('ascii', 8, 12), 'WAVE');
+  assert.equal(wav.readUInt16LE(22), 1);
+  assert.equal(wav.readUInt16LE(34), 16);
+  const samples = new Float32Array((wav.length - 44) / 2);
+  for (let i = 0; i < samples.length; i++) samples[i] = wav.readInt16LE(44 + i * 2) / 32768;
+  return { sampleRate: wav.readUInt32LE(24), samples };
+}
+
+function legacySoundSamples([startFrequency, endFrequency, duration, volume, wave], sampleRate) {
+  const length = Math.ceil(sampleRate * duration);
+  const samples = new Float32Array(length);
+  let phase = 0;
+  for (let i = 0; i < length; i++) {
+    const progress = i / length;
+    phase += Math.PI * 2 * (startFrequency + (endFrequency - startFrequency) * progress) / sampleRate;
+    const envelope = (1 - progress) ** 2;
+    const sample = wave === 'square'
+      ? (Math.sin(phase) >= 0 ? 1 : -1)
+      : ((phase / Math.PI) % 2) - 1;
+    samples[i] = sample * envelope * volume;
+  }
+  return samples;
+}
+
+test('missile launch buffer matches the approved 0.4 second preview', () => {
+  const { runtime } = createAudioRuntime();
+  const approved = decodeMonoPcm16Wav(new URL('../docs/superpowers/specs/previews/missile-audio/candidate.wav', import.meta.url));
+  const actual = vm.runInContext(`createSoundBuffer('missile-launch').getChannelData(0)`, runtime);
+  assert.equal(approved.sampleRate, 44100);
+  assert.equal(actual.length, 17640);
+  assert.equal(actual.length, approved.samples.length);
+  for (let i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i] - approved.samples[i]) <= 1 / 32768 + 1e-7, `PCM differs at sample ${i}`);
+  }
+});
+
+test('playing missile launch reuses its cached buffer and disconnects ended sources', () => {
+  const { runtime, buffers, sources, setNow } = createAudioRuntime();
+  vm.runInContext(`playSound('missile-launch')`, runtime);
+  setNow(400);
+  vm.runInContext(`playSound('missile-launch')`, runtime);
+  assert.equal(buffers.length, 1);
+  assert.equal(sources.length, 2);
+  assert.equal(sources[0].buffer, sources[1].buffer);
+  assert.equal(sources.every(source => source.connected && source.started), true);
+  sources[0].onended();
+  sources[1].onended();
+  assert.equal(sources.every(source => source.disconnected), true);
+});
+
+test('missile synthesis leaves machinegun and laser buffers unchanged', () => {
+  const { runtime } = createAudioRuntime();
+  for (const [name, definition] of [
+    ['machinegun', [205, 108, .052, .14, 'square']],
+    ['laser', [760, 1050, .11, .13, 'saw']]
+  ]) {
+    const actual = vm.runInContext(`createSoundBuffer('${name}').getChannelData(0)`, runtime);
+    const expected = legacySoundSamples(definition, 44100);
+    assert.deepEqual(Array.from(actual), Array.from(expected));
+  }
+});
+
 for (const [name, actor] of [
   ['drawEagle', { phase: 'dive' }],
   ['drawBoss', { variant: 'brown', charging: true }]
@@ -311,7 +415,6 @@ test('damage state uses smoke below 65 percent and fire below 35 percent', () =>
 });
 
 test('homing missiles play only the cached launch sound without a flight engine', () => {
-  assert.match(html, /'missile-launch': \[120, 310, \.14, \.16, 'saw'\]/);
   assert.match(html, /playSound\('missile-launch'\);/);
   assert.doesNotMatch(html, /missileEngines/);
   assert.doesNotMatch(html, /startMissileEngine/);
@@ -519,6 +622,79 @@ test('player machinegun bullets and flashes share the aircraft gun anchors', () 
   assert.match(html, /x: game\.player\.x \+ gun\.x, y: game\.player\.y - 34/);
   assert.match(html, /drawAsset\('player', player\.x \+ 13, player\.y, 116, 85/);
   assert.match(html, /drawAsset\('playerMuzzleFlashV2', player\.x \+ gun\.x, player\.y \+ gun\.y, 8, 8/);
+});
+
+test('player aircraft variants are preloaded through the production asset loader', async () => {
+  const manifestStart = html.indexOf('  const AssetManifest = {');
+  const manifestEnd = html.indexOf('\n  const soundCooldowns', manifestStart);
+  const preloadStart = html.indexOf('  function preloadAssets()');
+  const preloadEnd = html.indexOf('\n  function setSceneTheme', preloadStart);
+  assert.ok(manifestStart >= 0 && manifestEnd > manifestStart && preloadStart >= 0 && preloadEnd > preloadStart);
+
+  class LoadedImage {
+    set src(path) { this.path = path; this.onload(); }
+  }
+  const runtime = vm.createContext({
+    Image: LoadedImage,
+    assets: {},
+    assetsReady: false,
+    ui: { 'start-button': { disabled: false, textContent: '' } },
+    window: { __testMode: true, __assetStats: { expected: [], loaded: [], failed: [] } }
+  });
+  vm.runInContext(`${html.slice(manifestStart, manifestEnd)}\n${html.slice(preloadStart, preloadEnd)}\nglobalThis.runPreload = preloadAssets;`, runtime);
+  await runtime.runPreload();
+
+  assert.equal(runtime.assets.playerLaser.path, 'assets/characters/player-fighter-laser.png');
+  assert.equal(runtime.assets.playerMissile.path, 'assets/characters/player-fighter-missile.png');
+  assert.equal(runtime.assetsReady, true);
+});
+
+test('drawPlayer selects only unlocked aircraft variants while preserving shared effects', () => {
+  const calls = [];
+  const runtime = vm.createContext({
+    game: { running: true, time: 0, activeWeapon: null, weaponLevels: { homing: 0, laser: 0 } },
+    GameRules: { playerGunAnchors: () => [{ x: -16, y: -19 }, { x: 16, y: -19 }] },
+    drawShadow(...args) { calls.push(['shadow', ...args]); },
+    drawAsset(...args) { calls.push(['asset', ...args]); }
+  });
+  const start = html.indexOf('  function drawPlayer(');
+  assert.ok(start >= 0);
+  vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
+
+  const draw = (activeWeapon, weaponLevels, invulnerable = 0) => {
+    calls.length = 0;
+    runtime.game.activeWeapon = activeWeapon;
+    runtime.game.weaponLevels = weaponLevels;
+    runtime.player = { x: 640, y: 600, invulnerable };
+    vm.runInContext('drawPlayer(player);', runtime);
+    return structuredClone(calls);
+  };
+
+  for (const [activeWeapon, weaponLevels] of [
+    [null, { homing: 0, laser: 0 }],
+    ['laser', { homing: 0, laser: 0 }],
+    ['homing', { homing: 0, laser: 0 }]
+  ]) {
+    const draws = draw(activeWeapon, weaponLevels);
+    assert.deepEqual(draws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, 1]);
+    assert.deepEqual(draws[1], ['asset', 'player', 653, 600, 116, 85, 0, 1]);
+  }
+
+  const laserDraws = draw('laser', { homing: 0, laser: 1 }, .5);
+  assert.deepEqual(laserDraws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, .35]);
+  assert.deepEqual(laserDraws[1], ['asset', 'playerLaser', 640, 588, 93, 68, 0, .35]);
+  assert.deepEqual(laserDraws.slice(2), [
+    ['asset', 'playerMuzzleFlashV2', 624, 581, 8, 8, 0, .35],
+    ['asset', 'playerMuzzleFlashV2', 656, 581, 8, 8, 0, .35]
+  ]);
+
+  const missileDraws = draw('homing', { homing: 1, laser: 0 });
+  assert.deepEqual(missileDraws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, 1]);
+  assert.deepEqual(missileDraws[1], ['asset', 'playerMissile', 640, 592, 108, 79, 0, 1]);
+  assert.deepEqual(missileDraws.slice(2).map(call => call.slice(0, 4)), [
+    ['asset', 'playerMuzzleFlashV2', 624, 581],
+    ['asset', 'playerMuzzleFlashV2', 656, 581]
+  ]);
 });
 
 test('confirmed top-down scenery is listed as previewable assets before it is rendered', () => {
