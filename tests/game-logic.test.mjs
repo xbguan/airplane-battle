@@ -28,6 +28,78 @@ vm.runInContext(match?.[1] || 'globalThis.GameRules = {};', context);
 const rules = context.GameRules;
 const plain = value => JSON.parse(JSON.stringify(value));
 
+for (const [name, actor] of [
+  ['drawEagle', { phase: 'dive' }],
+  ['drawBoss', { variant: 'brown', charging: true }]
+]) {
+  test(`${name} faces its travel direction during a downward charge`, () => {
+    let rotation;
+    const runtime = vm.createContext({
+      drawShadow() {},
+      drawAsset(key, x, y, width, height, angle) { rotation = angle; }
+    });
+    const start = html.indexOf(`  function ${name}(`);
+    assert.ok(start >= 0);
+    vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
+    for (const [vx, vy] of [[0, 1], [-1, 1], [1, 1]]) {
+      runtime.actor = { ...actor, x: 640, y: 120, vx, vy };
+      vm.runInContext(`${name}(actor);`, runtime);
+      // Both source images face down: rotating (0, 1) must align with velocity.
+      const length = Math.hypot(vx, vy);
+      assert.ok(Math.abs(-Math.sin(rotation) - vx / length) < 1e-10, `Wrong horizontal facing for ${vx}, ${vy}`);
+      assert.ok(Math.abs(Math.cos(rotation) - vy / length) < 1e-10, `Wrong vertical facing for ${vx}, ${vy}`);
+    }
+  });
+}
+
+for (const variant of ['blue', 'brown']) {
+  test(`${variant} boss HUD is hidden after death and restart, then reappears for the next boss`, () => {
+    const elements = new Map();
+    const makeElement = () => {
+      const classes = new Set(['hidden']);
+      return {
+        style: {}, textContent: '',
+        classList: {
+          add: name => classes.add(name),
+          remove: name => classes.delete(name),
+          contains: name => classes.has(name),
+          toggle(name, enabled) { enabled ? classes.add(name) : classes.delete(name); }
+        },
+        querySelector: makeElement
+      };
+    };
+    const ui = new Proxy({}, { get(_, id) {
+      if (!elements.has(id)) elements.set(id, makeElement());
+      return elements.get(id);
+    } });
+    const runtime = vm.createContext({
+      ui, window: {}, performance: { now: () => 0 }, W: 1280, H: 720,
+      nextId: 1, assetsReady: true, lastTime: 0, game: null,
+      createScenery: () => ({}), drawScene() {}, playSound() {}, showToast() {},
+      addParticle() {}, addFloater() {}, random: (min, max) => (min + max) / 2
+    });
+    vm.runInContext(match[1], runtime);
+    for (const name of ['resetGame', 'startGame', 'spawnBoss', 'damagePlayer', 'updateHud', 'endGame']) {
+      const start = html.indexOf(`  function ${name}(`);
+      assert.ok(start >= 0, `Missing production function: ${name}`);
+      vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
+    }
+    vm.runInContext(`Math.random = () => ${variant === 'blue' ? '.75' : '.25'}; startGame(); spawnBoss(); game.boss.hp = game.boss.maxHp * .4; updateHud();`, runtime);
+    assert.equal(runtime.game.boss.variant, variant);
+    assert.equal(ui['boss-panel'].classList.contains('hidden'), false);
+    assert.equal(ui['boss-fill'].style.width, '40%');
+    vm.runInContext('damagePlayer(100);', runtime);
+    assert.equal(runtime.game.running, false);
+    vm.runInContext('startGame();', runtime);
+    assert.equal(runtime.game.boss, null);
+    assert.equal(runtime.game.enemies.length, 0);
+    assert.equal(ui['boss-panel'].classList.contains('hidden'), true);
+    vm.runInContext('spawnBoss(); updateHud();', runtime);
+    assert.equal(ui['boss-panel'].classList.contains('hidden'), false);
+    assert.equal(ui['boss-fill'].style.width, '100%');
+  });
+}
+
 test('enemy statistics match the approved combat rules', () => {
   assert.deepEqual(plain(rules.enemyStats), {
     eagle: { hp: 20, damage: 10 },
@@ -150,13 +222,68 @@ test('V2.3 remote visuals only map attacks that already exist', () => {
 
 test('V2.3 maps each existing weapon and remote projectile to its own hit visual', () => {
   assert.match(html, /const ImpactVisuals = \{ bullet: 'hitMachinegun', homing: 'hitMissile', laser: 'hitLaser', wizardMagicOrb: 'hitMagic', orangeBossShell: 'hitOrangeBoss', blueBossBolt: 'hitBlueBoss' \};/);
-  assert.match(html, /function addImpact\(x, y, key\)/);
+  assert.match(html, /function addImpact\(x, y, key, target = null\)/);
 });
 
 test('all normal enemy body collisions use one kill-and-progress resolver', () => {
   assert.match(html, /function resolveEnemyCollision\(enemy, player\)/);
   assert.match(html, /enemy\.type === 'eagle' \|\| enemy\.type === 'drone' \|\| enemy\.type === 'bat' \|\| enemy\.type === 'wizard'/);
   assert.match(html, /killEnemy\(enemy\)/);
+});
+
+test('laser flash and impact follow the hit target without repeating damage or retargeting', () => {
+  const target = { id: 1, x: 640, y: 180, hp: 200, r: 25, dead: false };
+  const game = {
+    player: { x: 640, y: 600 }, activeWeapon: 'laser', weaponLevels: { laser: 1 },
+    laserTargetId: 1, laserTimer: 1.49, enemies: [target], particles: [], impacts: [], floaters: []
+  };
+  const runtime = vm.createContext({
+    game, window: {}, ImpactVisuals: { laser: 'hitLaser' },
+    playSound() {}, addFloater() {}, addParticle() {}, random: () => 0,
+    killEnemy(enemy) { enemy.dead = true; }
+  });
+  vm.runInContext(match[1], runtime);
+  for (const name of ['addImpact', 'damageEnemy', 'updateLaser', 'updateParticles']) {
+    const start = html.indexOf(`  function ${name}(`);
+    vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
+  }
+  const endpoint = () => [
+    game.laserFlash.x + Math.cos(game.laserFlash.rotation) * game.laserFlash.length,
+    game.laserFlash.y + Math.sin(game.laserFlash.rotation) * game.laserFlash.length
+  ];
+  const checkPoint = (actual, expected) => actual.forEach((value, index) => assert.ok(Math.abs(value - expected[index]) < 1e-8));
+  vm.runInContext('updateLaser(.02);', runtime);
+  assert.equal(target.hp, 165);
+  target.x = 720; target.y = 220;
+  game.player.x = 580; game.player.y = 620;
+  const other = { id: 2, x: 580, y: 500, hp: 200, dead: false };
+  game.enemies.push(other);
+  vm.runInContext('updateLaser(.02); updateParticles(.02);', runtime);
+  checkPoint(endpoint(), [720, 220]);
+  checkPoint([game.laserFlash.x, game.laserFlash.y], [580, 582]);
+  checkPoint([game.impacts[0].x, game.impacts[0].y], [720, 220]);
+  assert.equal(target.hp, 165);
+  assert.equal(other.hp, 200);
+  target.x = 750; target.dead = true;
+  vm.runInContext('updateParticles(.02);', runtime);
+  checkPoint(endpoint(), [750, 220]);
+  target.x = 900;
+  vm.runInContext('updateParticles(.02);', runtime);
+  checkPoint(endpoint(), [750, 220]);
+  checkPoint([game.impacts[0].x, game.impacts[0].y], [750, 220]);
+  vm.runInContext('updateParticles(.21);', runtime);
+  assert.equal(game.laserFlash, null);
+  assert.equal(game.impacts.length, 0);
+  assert.equal(target.hp, 165);
+  target.hp = 20; target.dead = false;
+  game.enemies = [target]; game.laserTargetId = target.id; game.laserTimer = 1.49;
+  vm.runInContext('updateLaser(.02); updateParticles(.02);', runtime);
+  assert.equal(target.dead, true);
+  checkPoint(endpoint(), [900, 220]);
+  target.x = 1000;
+  vm.runInContext('updateParticles(.02);', runtime);
+  checkPoint(endpoint(), [900, 220]);
+  checkPoint([game.impacts[0].x, game.impacts[0].y], [900, 220]);
 });
 
 test('laser is rendered only through a short flash state after the 1.5-second hit', () => {

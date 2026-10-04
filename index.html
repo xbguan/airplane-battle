@@ -648,6 +648,7 @@ globalThis.GameRules = {
   }
 
   function resetGame() {
+    ui['boss-panel'].classList.add('hidden');
     game = {
       running: false,
       paused: false,
@@ -739,8 +740,8 @@ globalThis.GameRules = {
     }
   }
 
-  function addImpact(x, y, key) {
-    if (game.impacts.length < 24) game.impacts.push({ x, y, key, life: .26, maxLife: .26 });
+  function addImpact(x, y, key, target = null) {
+    if (game.impacts.length < 24) game.impacts.push({ x, y, key, target, life: .26, maxLife: .26 });
   }
 
   function addFloater(x, y, text, color = '#fff') {
@@ -962,7 +963,7 @@ globalThis.GameRules = {
     enemy.hp -= damage;
     playSound(color === '#7ff8ff' ? 'laser' : 'hit');
     addFloater(enemy.x, enemy.y - enemy.r, `-${Math.round(damage)}`, color);
-    addImpact(enemy.x, enemy.y, impactKey);
+    addImpact(enemy.x, enemy.y, impactKey, impactKey === ImpactVisuals.laser ? enemy : null);
     if (enemy.hp <= 0) killEnemy(enemy);
   }
 
@@ -1027,7 +1028,7 @@ globalThis.GameRules = {
       const y = game.player.y - 38;
       const dx = target.x - x;
       const dy = target.y - y;
-      game.laserFlash = { x: game.player.x, y, rotation: Math.atan2(dy, dx), length: Math.hypot(dx, dy), life: .18, maxLife: .18 };
+      game.laserFlash = { x: game.player.x, y, target, targetX: target.x, targetY: target.y, rotation: Math.atan2(dy, dx), length: Math.hypot(dx, dy), life: .18, maxLife: .18 };
       damageEnemy(target, GameRules.specialDamage('laser', game.weaponLevels.laser), '#7ff8ff', ImpactVisuals.laser);
     }
     if (Math.random() < .35) addParticle(target.x + random(-8, 8), target.y + random(-8, 8), '#72f5ff', 1, 50);
@@ -1043,10 +1044,27 @@ globalThis.GameRules = {
     for (const floater of game.floaters) { floater.y -= 45 * dt; floater.life -= dt; }
     game.particles = game.particles.filter(p => p.life > 0);
     if (game.laserFlash) {
+      const flash = game.laserFlash;
+      flash.x = game.player.x;
+      flash.y = game.player.y - 38;
+      if (flash.target) {
+        flash.targetX = flash.target.x;
+        flash.targetY = flash.target.y;
+        if (flash.target.dead) flash.target = null;
+      }
+      flash.rotation = Math.atan2(flash.targetY - flash.y, flash.targetX - flash.x);
+      flash.length = Math.hypot(flash.targetX - flash.x, flash.targetY - flash.y);
       game.laserFlash.life -= dt;
       if (game.laserFlash.life <= 0) game.laserFlash = null;
     }
-    for (const impact of game.impacts) impact.life -= dt;
+    for (const impact of game.impacts) {
+      if (impact.target) {
+        impact.x = impact.target.x;
+        impact.y = impact.target.y;
+        if (impact.target.dead) impact.target = null;
+      }
+      impact.life -= dt;
+    }
     game.impacts = game.impacts.filter(impact => impact.life > 0);
     game.floaters = game.floaters.filter(f => f.life > 0);
   }
@@ -1372,7 +1390,7 @@ globalThis.GameRules = {
   }
 
   function drawEagle(enemy) {
-    const angle = enemy.phase === 'dive' ? Math.atan2(enemy.vy, enemy.vx) + Math.PI / 2 : Math.sin(enemy.age * 5) * .15;
+    const angle = enemy.phase === 'dive' ? Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2 : Math.sin(enemy.age * 5) * .15;
     drawShadow('owlWingShadow', enemy.x, enemy.y + 34, 72, 22);
     drawAsset('owl', enemy.x, enemy.y, 112, 90, angle);
   }
@@ -1381,7 +1399,7 @@ globalThis.GameRules = {
   function drawBat(enemy) { drawShadow('batWingShadow', enemy.x, enemy.y + 29, 76, 18); drawAsset('bat', enemy.x, enemy.y, 122, 95, Math.sin(enemy.age * 7) * .08); }
   function drawWizard(enemy) { drawShadow('wizardRobesShadow', enemy.x, enemy.y + 37, 78, 21); drawAsset('wizard', enemy.x, enemy.y, 110, 96, Math.sin(enemy.age * 3) * .04); }
   function drawBoss(boss) {
-    const angle = boss.charging ? Math.atan2(boss.vy, boss.vx) + Math.PI / 2 : 0;
+    const angle = boss.charging ? Math.atan2(boss.vy, boss.vx) - Math.PI / 2 : 0;
     const key = boss.variant === 'brown' ? 'orangeBoss' : 'blueBoss';
     drawShadow(boss.variant === 'brown' ? 'bossOrangeEngineShadow' : 'bossBlueThrusterShadow', boss.x, boss.y + 62, 170, 36);
     drawAsset(key, boss.x, boss.y, boss.variant === 'brown' ? 230 : 210, boss.variant === 'brown' ? 104 : 150, angle);
