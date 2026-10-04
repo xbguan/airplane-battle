@@ -18,8 +18,8 @@
 </head>
 <body>
   <main>
-    <header class="hero"><p class="eyebrow">AIRPLANE BATTLE · RUNTIME ASSET CATALOG</p><h1>全部资产清单</h1><p>展示当前游戏运行素材与已确认的完整场景效果图；17 项海面与景物已按效果图统一蓝色配色，效果图本身不作为运行背景。</p></header>
-    <nav aria-label="资产目录"><a href="#scene-preview-plan">场景卡片预览</a><a href="#characters">角色与 BOSS</a><a href="#weapons">武器与 HUD</a><a href="#sound-effects">音效试听清单</a><a href="#shadows">独立投影</a><a href="#topdown-background">俯视背景层</a><a href="#perspective-background">斜视背景层</a><a href="#backgrounds">完整场景效果图</a></nav>
+    <header class="hero"><p class="eyebrow">AIRPLANE BATTLE · RUNTIME ASSET CATALOG</p><h1>全部资产清单</h1><p>仅展示当前游戏实际使用的角色、武器、界面、场景和音效。</p></header>
+    <nav aria-label="资产目录"><a href="#scene-preview-plan">场景卡片预览</a><a href="#characters">角色与 BOSS</a><a href="#weapons">武器与 HUD</a><a href="#sound-effects">音效试听清单</a><a href="#shadows">独立投影</a><a href="#topdown-background">俯视背景层</a><a href="#perspective-background">斜视背景层</a></nav>
     <section id="scene-preview-plan"><h2>场景卡片预览</h2><p class="section-note">2026-10-04：已确认并从当前游戏背景渲染截取，640 × 360 PNG，16:9。保留真实景物比例，不含战机、敌人、弹幕、HUD 或弹框；仅用于开始页选择卡片，不替换游戏背景。</p><div class="backgrounds"><article class="background-card"><a href="assets/scenery/scene-preview-topdown.png"><img src="assets/scenery/scene-preview-topdown.png" alt="海岛俯瞰：蓝色海面上的岛屿与薄云"></a><div><h3>海岛俯瞰 · 俯视</h3><p>当前俯视循环海面、独立岛屿及薄云的实际合成。截取游戏时间 8 秒的背景层。</p><code>assets/scenery/scene-preview-topdown.png</code></div></article><article class="background-card"><a href="assets/scenery/scene-preview-perspective.png"><img src="assets/scenery/scene-preview-perspective.png" alt="海天远航：蓝天、海平线与灯塔礁岛"></a><div><h3>海天远航 · 斜视</h3><p>当前斜视蓝天、海平线、海面、白云与灯塔礁岛的实际合成。截取游戏时间 2 秒的背景层。</p><code>assets/scenery/scene-preview-perspective.png</code></div></article></div></section>
     <section id="characters"><h2>角色与 BOSS</h2><p class="section-note">透明可动对象。玩家基础型、激光型和导弹型已接入：外观跟随当前已解锁并装备的特殊武器切换，新一局恢复基础型；碰撞与战斗数值不变。</p><div class="grid" id="character-grid"></div>
       <details><summary>玩家飞机 · 游戏尺寸对比</summary>
@@ -33,33 +33,139 @@
     </section>
     <section id="weapons"><h2>武器、命中特效与 HUD</h2><p class="section-note">当前渲染的武器、效果与界面图标。</p><div class="grid" id="weapon-grid"></div></section>
     <section id="sound-effects">
-      <h2>音效试听清单</h2>
-      <p class="section-note">仅展示游戏当前使用的 12 项音效。点击各播放器即可试听；播放另一项时自动暂停上一项，便于比较。</p>
-      <p>来源：当前 index.html 内的声音合成函数。游戏在首次播放时合成并缓存，以下 WAV 仅用于清单试听，不增加游戏加载资源。爆炸声含随机噪声，试听使用固定随机种子，因此每次游戏中的细节可能略有不同。</p>
+      <h2>游戏音效</h2>
+      <p class="section-note">当前使用的 20 项音效，含机枪 3 个轮换声音。</p>
       <div class="grid" id="sound-grid"></div>
     </section>
     <section id="shadows"><h2>独立投影</h2><p class="section-note">跟随对象位置，不参与碰撞。</p><div class="grid" id="shadow-grid"></div></section>
     <section id="topdown-background"><h2>俯视背景层</h2><p class="section-note">循环水面、云雾与 7 项俯视景观。</p><div class="grid" id="topdown-background-grid"></div></section>
     <section id="perspective-background"><h2>斜视背景层</h2><p class="section-note">真正斜视海空战场：晴空、海平线、透视海面、双层循环白云及 7 类斜视景物。</p><div class="grid" id="perspective-background-grid"></div></section>
-    <section id="backgrounds"><h2>完整场景效果图</h2><p class="section-note">2026-10-04：以下两张效果图已确认，作为俯视与斜视统一配色参考。景物放大便于检查岸边融合，不代表游戏显示尺寸；运行素材已分别更新，仍保持背景与景物独立分层。</p><div class="backgrounds"><article class="background-card"><a href="docs/superpowers/specs/previews/blue-calm-topdown-sample.png"><img src="docs/superpowers/specs/previews/blue-calm-topdown-sample.png" alt="已确认的俯视蔚蓝平静海面与弯月岛完整效果图"></a><div><h3>俯视蔚蓝海面与弯月岛</h3><p><span class="status">已确认 · 非运行背景</span>。相对平静的蔚蓝海面、柔和水深变化与自然岛岸。</p><code>docs/superpowers/specs/previews/blue-calm-topdown-sample.png</code></div></article><article class="background-card"><a href="docs/superpowers/specs/previews/blue-calm-perspective-sample.png"><img src="docs/superpowers/specs/previews/blue-calm-perspective-sample.png" alt="已确认的斜视蔚蓝平静海面与灯塔礁岛完整效果图"></a><div><h3>斜视蔚蓝海面与灯塔礁岛</h3><p><span class="status">已确认 · 非运行背景</span>。保留蓝天与海平线，平静蓝海与灯塔岸边自然衔接。</p><code>docs/superpowers/specs/previews/blue-calm-perspective-sample.png</code></div></article></div><p class="section-note">运行方式不变：俯视使用循环水面＋独立景物；斜视使用海空背景＋独立景物。原俯视完整背景 <code>assets/scenery/background-topdown.png</code> 仍保留并预加载，但当前俯视海面由循环水面绘制。</p></section>
-    <footer>本页与当前运行资产同步维护；配色样张不属于运行资产</footer>
+    <footer>本页仅列当前游戏使用的资产。</footer>
   </main>
   <script>
     const sounds = [
-      ['machinegun', '双列机枪', '0.052', '当前使用', '基础机枪的短促射击声，每 0.09 秒一次。'],
-      ['missile-launch', '导弹发射', '0.40', '当前使用', '追踪导弹成功发射时播放一次：低频点火、喷气推进与渐弱呼啸。'],
-      ['laser', '激光命中', '0.11', '当前使用', '激光结算伤害时播放，与短暂光束同时发生。'],
-      ['wizard-shot', '魔法师发射', '0.18', '当前使用', '魔法师发射魔法球时播放。'],
-      ['orange-shot', '橙色 BOSS 发射', '0.20', '当前使用', '橙色 BOSS 发射炮弹时播放。'],
-      ['blue-shot', '蓝色 BOSS 发射', '0.13', '当前使用', '蓝色 BOSS 发射能量弹时播放。'],
-      ['hit', '普通命中', '0.075', '当前使用', '机枪或导弹对敌人造成伤害时播放。'],
-      ['hurt', '玩家受伤', '0.20', '当前使用', '玩家实际受伤扣血时播放，无敌期间不重复触发。'],
-      ['explode', '敌人爆炸', '0.30', '当前使用', '普通敌人或 BOSS 被击败时播放。'],
-      ['boss', 'BOSS 登场', '0.58', '当前使用', 'BOSS 生成并进入战场时播放。'],
-      ['upgrade', '武器升级', '0.34', '当前使用', '基础攻击或特殊武器成功升级时播放。'],
-      ['start', '开始出击', '0.36', '当前使用', '开始新一局或重新出击时播放。']
-    ];
-    document.getElementById('sound-grid').innerHTML = sounds.map(([key, name, duration, state, note]) => `<article class="card"><div class="card-body"><h3>${name}</h3><span class="tag">${state} · ${duration} 秒</span><p>${note}</p><audio controls preload="metadata" aria-label="试听${name}" src="docs/superpowers/specs/previews/runtime-audio/${key}.wav"></audio><code>${key}</code></div></article>`).join('');
+  [
+    "start",
+    "开始出击",
+    "开始或重新开始游戏。",
+    "runtime-audio"
+  ],
+  [
+    "machinegun",
+    "机枪射击",
+    "基础武器连续射击，三个声音轮换。",
+    "foley-audio"
+  ],
+  [
+    "hit",
+    "普通子弹命中",
+    "普通子弹命中敌人。",
+    "foley-audio"
+  ],
+  [
+    "missile-launch",
+    "导弹发射",
+    "追踪导弹发射。",
+    "runtime-audio"
+  ],
+  [
+    "missile-hit",
+    "导弹命中",
+    "追踪导弹命中敌人。",
+    "foley-audio"
+  ],
+  [
+    "laser",
+    "激光命中",
+    "激光命中并造成伤害。",
+    "runtime-audio"
+  ],
+  [
+    "wizard-shot",
+    "魔法师发射",
+    "魔法师发射魔法球。",
+    "runtime-audio"
+  ],
+  [
+    "magic-break",
+    "魔法球打散",
+    "玩家弹丸打散魔法球。",
+    "foley-audio"
+  ],
+  [
+    "orange-shot",
+    "橙色 BOSS 炮击",
+    "橙色 BOSS 发射炮弹。",
+    "foley-audio"
+  ],
+  [
+    "blue-shot",
+    "蓝色 BOSS 发射",
+    "蓝色 BOSS 发射能量弹。",
+    "runtime-audio"
+  ],
+  [
+    "boss",
+    "BOSS 登场",
+    "BOSS 进入战场。",
+    "runtime-audio"
+  ],
+  [
+    "boss-charge",
+    "BOSS 冲锋",
+    "橙色 BOSS 开始冲锋。",
+    "foley-audio"
+  ],
+  [
+    "explode-mechanical",
+    "机械敌人击毁",
+    "无人机被击毁。",
+    "foley-audio"
+  ],
+  [
+    "explode-soft",
+    "生物／魔法敌人击毁",
+    "猫头鹰、蝙蝠或魔法师被击毁。",
+    "foley-audio"
+  ],
+  [
+    "boss-explode",
+    "BOSS 击毁",
+    "BOSS 被击毁。",
+    "foley-audio"
+  ],
+  [
+    "hurt",
+    "玩家受伤",
+    "玩家实际受到伤害。",
+    "foley-audio"
+  ],
+  [
+    "game-over",
+    "游戏结束",
+    "玩家生命归零，本局结束。",
+    "foley-audio"
+  ],
+  [
+    "weapon-switch",
+    "武器切换",
+    "切换至另一件已解锁武器。",
+    "foley-audio"
+  ],
+  [
+    "fragment",
+    "碎片获得",
+    "实际获得武器碎片。",
+    "foley-audio"
+  ],
+  [
+    "upgrade",
+    "武器升级",
+    "基础攻击或特殊武器升级。",
+    "runtime-audio"
+  ]
+];
+    document.getElementById('sound-grid').innerHTML = sounds.map(([key, name, note, folder]) => `<article class="card"><div class="card-body"><h3>${name}</h3><p>${note}</p>${(key === 'machinegun' ? ['machinegun', 'machinegun-2', 'machinegun-3'] : [key]).map((sound, index) => `${key === 'machinegun' ? `<small>声音 ${index + 1}</small>` : ''}<audio controls preload="metadata" aria-label="试听${name}${key === 'machinegun' ? index + 1 : ''}" src="docs/superpowers/specs/previews/${folder}/${sound}.wav"></audio>`).join('')}</div></article>`).join('');
     document.querySelectorAll('audio').forEach(audio => audio.addEventListener('play', () => {
       document.querySelectorAll('audio').forEach(other => { if (other !== audio) other.pause(); });
     }));
@@ -68,7 +174,7 @@
         ['玩家蓝白小战机 · 基础型','玩家 · 已接入','未装备特殊武器时使用的基础型，新一局恢复此形态。','assets/characters/player-fighter.png'], ['激光型玩家飞机','玩家 · 已接入','中轴青蓝激光发射器；装备已解锁激光时显示，保留基础机枪。','assets/characters/player-fighter-laser.png'], ['导弹型玩家飞机','玩家 · 已接入','双侧白色导弹与橙红弹头；装备已解锁追踪导弹时显示，保留基础机枪。','assets/characters/player-fighter-missile.png'], ['橙白星徽重装 BOSS','BOSS','重装 BOSS。','assets/characters/boss-orange-white.png'], ['蓝白星徽高速 BOSS','BOSS','高速 BOSS。','assets/characters/boss-blue-white.png'], ['猫头鹰','普通敌人','俯冲敌人。','assets/characters/owl.png'], ['独眼无人机','普通敌人','远程敌人。','assets/characters/drone.png'], ['独眼蝙蝠','普通敌人','快速摆动敌人。','assets/characters/bat.png'], ['紫袍魔法师','普通敌人','使用魔法弹。','assets/characters/wizard.png']
       ],
       'weapon-grid': [
-        ['追踪导弹','特殊武器','自动追踪目标。','assets/weapons/homing-missile.png'], ['蓄能激光','特殊武器','短暂瞬发。','assets/weapons/laser-segment.png'], ['敌方能量弹','敌方武器','远程弹的默认视觉。','assets/weapons/enemy-bullet.png'], ['机枪弹芯','机枪','金色弹芯。','assets/weapons/player-bullet-core.png'], ['机枪曳光','机枪','短距离曳光。','assets/weapons/player-bullet-trail.png'], ['机枪炮口闪光','机枪','当前双侧炮口闪光。','assets/weapons/player-muzzle-flash-v2.png'], ['导弹尾焰 01','导弹','循环尾焰。','assets/weapons/missile-exhaust-01.png'], ['导弹尾焰 02','导弹','循环尾焰。','assets/weapons/missile-exhaust-02.png'], ['导弹尾焰 03','导弹','循环尾焰。','assets/weapons/missile-exhaust-03.png'], ['导弹烟尾 01','导弹','循环烟尾。','assets/weapons/missile-smoke-01.png'], ['导弹烟尾 02','导弹','循环烟尾。','assets/weapons/missile-smoke-02.png'], ['导弹烟尾 03','导弹','循环烟尾。','assets/weapons/missile-smoke-03.png'], ['魔法师魔法球','敌方武器','魔法师远程弹。','assets/weapons/wizard-magic-orb.png'], ['橙白 BOSS 炮弹','敌方武器','橙白 BOSS 远程弹。','assets/weapons/boss-orange-shell.png'], ['蓝白 BOSS 能量弹（调整版）','敌方武器','暖白核心、靛蓝外圈、紫蓝拖尾与深色像素描边；透明背景，用于海面场景提升可读性。','assets/weapons/boss-blue-bolt.png'], ['机枪命中火星','命中','机枪命中反馈。','assets/weapons/hit-machinegun.png'], ['导弹命中爆炸','命中','导弹命中反馈。','assets/weapons/hit-missile.png'], ['激光命中碎光','命中','激光命中反馈。','assets/weapons/hit-laser.png'], ['魔法球命中旋涡','命中','魔法球命中反馈。','assets/weapons/hit-magic.png'], ['橙白 BOSS 炮弹命中','命中','BOSS 炮弹命中反馈。','assets/weapons/hit-orange-boss.png'], ['蓝白 BOSS 能量弹命中','命中','BOSS 能量弹命中反馈。','assets/weapons/hit-blue-boss.png'], ['攻击升级图标','HUD','攻击升级按钮。','assets/weapons/ui-attack-upgrade.png'], ['双列机枪图标','HUD','基础武器格。','assets/weapons/ui-machinegun.png'], ['追踪导弹图标','HUD','追踪导弹格。','assets/weapons/ui-homing-missile.png'], ['激光炮图标','HUD','激光格。','assets/weapons/ui-laser-cannon.png']
+        ['追踪导弹','特殊武器','自动追踪目标。','assets/weapons/homing-missile.png'], ['蓄能激光','特殊武器','短暂瞬发。','assets/weapons/laser-segment.png'], ['机枪弹芯','机枪','金色弹芯。','assets/weapons/player-bullet-core.png'], ['机枪曳光','机枪','短距离曳光。','assets/weapons/player-bullet-trail.png'], ['机枪炮口闪光','机枪','当前双侧炮口闪光。','assets/weapons/player-muzzle-flash-v2.png'], ['导弹尾焰 01','导弹','循环尾焰。','assets/weapons/missile-exhaust-01.png'], ['导弹尾焰 02','导弹','循环尾焰。','assets/weapons/missile-exhaust-02.png'], ['导弹尾焰 03','导弹','循环尾焰。','assets/weapons/missile-exhaust-03.png'], ['导弹烟尾 01','导弹','循环烟尾。','assets/weapons/missile-smoke-01.png'], ['导弹烟尾 02','导弹','循环烟尾。','assets/weapons/missile-smoke-02.png'], ['导弹烟尾 03','导弹','循环烟尾。','assets/weapons/missile-smoke-03.png'], ['魔法师魔法球','敌方武器','魔法师远程弹。','assets/weapons/wizard-magic-orb.png'], ['橙白 BOSS 炮弹','敌方武器','橙白 BOSS 远程弹。','assets/weapons/boss-orange-shell.png'], ['蓝白 BOSS 能量弹（调整版）','敌方武器','暖白核心、靛蓝外圈、紫蓝拖尾与深色像素描边；透明背景，用于海面场景提升可读性。','assets/weapons/boss-blue-bolt.png'], ['机枪命中火星','命中','机枪命中反馈。','assets/weapons/hit-machinegun.png'], ['导弹命中爆炸','命中','导弹命中反馈。','assets/weapons/hit-missile.png'], ['激光命中碎光','命中','激光命中反馈。','assets/weapons/hit-laser.png'], ['魔法球命中旋涡','命中','魔法球命中反馈。','assets/weapons/hit-magic.png'], ['橙白 BOSS 炮弹命中','命中','BOSS 炮弹命中反馈。','assets/weapons/hit-orange-boss.png'], ['蓝白 BOSS 能量弹命中','命中','BOSS 能量弹命中反馈。','assets/weapons/hit-blue-boss.png'], ['攻击升级图标','HUD','攻击升级按钮。','assets/weapons/ui-attack-upgrade.png'], ['双列机枪图标','HUD','基础武器格。','assets/weapons/ui-machinegun.png'], ['追踪导弹图标','HUD','追踪导弹格。','assets/weapons/ui-homing-missile.png'], ['激光炮图标','HUD','激光格。','assets/weapons/ui-laser-cannon.png']
       ],
       'shadow-grid': [
         ['玩家机翼投影','投影','玩家投影。','assets/shadows/player-wing-shadow.png'], ['猫头鹰翼形投影','投影','猫头鹰投影。','assets/shadows/owl-wing-shadow.png'], ['无人机机身投影','投影','无人机投影。','assets/shadows/drone-body-shadow.png'], ['蝙蝠翼形投影','投影','蝙蝠投影。','assets/shadows/bat-wing-shadow.png'], ['魔法师帽袍投影','投影','魔法师投影。','assets/shadows/wizard-robes-shadow.png'], ['橙白 BOSS 引擎投影','投影','橙白 BOSS 投影。','assets/shadows/boss-orange-engine-shadow.png'], ['蓝白 BOSS 推进器投影','投影','蓝白 BOSS 投影。','assets/shadows/boss-blue-thruster-shadow.png']
@@ -79,8 +185,6 @@
       'perspective-background-grid': [
         ['斜视海空完整背景','斜视完整背景','保留蓝天与海平线；近乎平静的蔚蓝海面，细小水平波纹与柔和反光。','assets/scenery/background-perspective.png'],
         ['斜视景物轻微接水涟漪','斜视景观','稀疏透明浅蓝细水纹，在 7 类景物底部共享并随景深缩放，无厚泡沫浪圈。','assets/scenery/perspective-water-contact.png'],
-        ['斜视透视海面','斜视背景','由远到近放大的浪纹，供无缝纵向循环。','assets/scenery/water-perspective-loop.png'],
-        ['斜视晴空与海平线','斜视天空','蓝天、远白云和清晰海平线。','assets/scenery/perspective-sky-clear.png'],
         ['斜视晴天远层云带','斜视天气','透明轻薄小白云，以每秒 1.5 像素横向循环。','assets/scenery/perspective-clear-cloud-far.png'],
         ['斜视晴天近层云带','斜视天气','透明轻薄近云，以每秒 2.7 像素横向循环。','assets/scenery/perspective-clear-cloud-near.png'],
         ['斜视远海岛链','斜视景观','最远景，小体量、低速；柔和蓝色接水边缘。','assets/scenery/perspective-island-chain.png'],

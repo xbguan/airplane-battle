@@ -1,0 +1,650 @@
+- main [ref=f4e2]:
+  - generic [ref=f4e3]:
+    - paragraph [ref=f4e4]: AIRPLANE BATTLE · RUNTIME ASSET CATALOG
+    - heading "全部资产清单" [level=1] [ref=f4e5]
+    - paragraph [ref=f4e6]: 仅展示当前游戏实际使用的角色、武器、界面、场景和音效。
+  - navigation "资产目录" [ref=f4e7]:
+    - link "场景卡片预览" [ref=f4e8] [cursor=pointer]:
+      - /url: "#scene-preview-plan"
+    - link "角色与 BOSS" [ref=f4e9] [cursor=pointer]:
+      - /url: "#characters"
+    - link "武器与 HUD" [ref=f4e10] [cursor=pointer]:
+      - /url: "#weapons"
+    - link "音效试听清单" [ref=f4e11] [cursor=pointer]:
+      - /url: "#sound-effects"
+    - link "独立投影" [ref=f4e12] [cursor=pointer]:
+      - /url: "#shadows"
+    - link "俯视背景层" [ref=f4e13] [cursor=pointer]:
+      - /url: "#topdown-background"
+    - link "斜视背景层" [ref=f4e14] [cursor=pointer]:
+      - /url: "#perspective-background"
+  - generic [ref=f4e15]:
+    - heading "场景卡片预览" [level=2] [ref=f4e16]
+    - paragraph [ref=f4e17]: 2026-10-04：已确认并从当前游戏背景渲染截取，640 × 360 PNG，16:9。保留真实景物比例，不含战机、敌人、弹幕、HUD 或弹框；仅用于开始页选择卡片，不替换游戏背景。
+    - generic [ref=f4e18]:
+      - article [ref=f4e19]:
+        - link [ref=f4e20] [cursor=pointer]:
+          - /url: assets/scenery/scene-preview-topdown.png
+          - img "海岛俯瞰：蓝色海面上的岛屿与薄云" [ref=f4e21]
+        - generic [ref=f4e22]:
+          - heading "海岛俯瞰 · 俯视" [level=3] [ref=f4e23]
+          - paragraph [ref=f4e24]: 当前俯视循环海面、独立岛屿及薄云的实际合成。截取游戏时间 8 秒的背景层。
+          - code [ref=f4e25]: assets/scenery/scene-preview-topdown.png
+      - article [ref=f4e26]:
+        - link [ref=f4e27] [cursor=pointer]:
+          - /url: assets/scenery/scene-preview-perspective.png
+          - img "海天远航：蓝天、海平线与灯塔礁岛" [ref=f4e28]
+        - generic [ref=f4e29]:
+          - heading "海天远航 · 斜视" [level=3] [ref=f4e30]
+          - paragraph [ref=f4e31]: 当前斜视蓝天、海平线、海面、白云与灯塔礁岛的实际合成。截取游戏时间 2 秒的背景层。
+          - code [ref=f4e32]: assets/scenery/scene-preview-perspective.png
+  - generic [ref=f4e33]:
+    - heading "角色与 BOSS" [level=2] [ref=f4e34]
+    - paragraph [ref=f4e35]: 透明可动对象。玩家基础型、激光型和导弹型已接入：外观跟随当前已解锁并装备的特殊武器切换，新一局恢复基础型；碰撞与战斗数值不变。
+    - generic [ref=f4e36]:
+      - article [ref=f4e37]:
+        - img "玩家蓝白小战机 · 基础型" [ref=f4e39]
+        - generic [ref=f4e40]:
+          - heading "玩家蓝白小战机 · 基础型" [level=3] [ref=f4e41]
+          - generic [ref=f4e42]: 玩家 · 已接入
+          - paragraph [ref=f4e43]: 未装备特殊武器时使用的基础型，新一局恢复此形态。
+          - code [ref=f4e44]: assets/characters/player-fighter.png
+      - article [ref=f4e45]:
+        - img "激光型玩家飞机" [ref=f4e47]
+        - generic [ref=f4e48]:
+          - heading "激光型玩家飞机" [level=3] [ref=f4e49]
+          - generic [ref=f4e50]: 玩家 · 已接入
+          - paragraph [ref=f4e51]: 中轴青蓝激光发射器；装备已解锁激光时显示，保留基础机枪。
+          - code [ref=f4e52]: assets/characters/player-fighter-laser.png
+      - article [ref=f4e53]:
+        - img "导弹型玩家飞机" [ref=f4e55]
+        - generic [ref=f4e56]:
+          - heading "导弹型玩家飞机" [level=3] [ref=f4e57]
+          - generic [ref=f4e58]: 玩家 · 已接入
+          - paragraph [ref=f4e59]: 双侧白色导弹与橙红弹头；装备已解锁追踪导弹时显示，保留基础机枪。
+          - code [ref=f4e60]: assets/characters/player-fighter-missile.png
+      - article [ref=f4e61]:
+        - img "橙白星徽重装 BOSS" [ref=f4e63]
+        - generic [ref=f4e64]:
+          - heading "橙白星徽重装 BOSS" [level=3] [ref=f4e65]
+          - generic [ref=f4e66]: BOSS
+          - paragraph [ref=f4e67]: 重装 BOSS。
+          - code [ref=f4e68]: assets/characters/boss-orange-white.png
+      - article [ref=f4e69]:
+        - img "蓝白星徽高速 BOSS" [ref=f4e71]
+        - generic [ref=f4e72]:
+          - heading "蓝白星徽高速 BOSS" [level=3] [ref=f4e73]
+          - generic [ref=f4e74]: BOSS
+          - paragraph [ref=f4e75]: 高速 BOSS。
+          - code [ref=f4e76]: assets/characters/boss-blue-white.png
+      - article [ref=f4e77]:
+        - img "猫头鹰" [ref=f4e79]
+        - generic [ref=f4e80]:
+          - heading "猫头鹰" [level=3] [ref=f4e81]
+          - generic [ref=f4e82]: 普通敌人
+          - paragraph [ref=f4e83]: 俯冲敌人。
+          - code [ref=f4e84]: assets/characters/owl.png
+      - article [ref=f4e85]:
+        - img "独眼无人机" [ref=f4e87]
+        - generic [ref=f4e88]:
+          - heading "独眼无人机" [level=3] [ref=f4e89]
+          - generic [ref=f4e90]: 普通敌人
+          - paragraph [ref=f4e91]: 远程敌人。
+          - code [ref=f4e92]: assets/characters/drone.png
+      - article [ref=f4e93]:
+        - img "独眼蝙蝠" [ref=f4e95]
+        - generic [ref=f4e96]:
+          - heading "独眼蝙蝠" [level=3] [ref=f4e97]
+          - generic [ref=f4e98]: 普通敌人
+          - paragraph [ref=f4e99]: 快速摆动敌人。
+          - code [ref=f4e100]: assets/characters/bat.png
+      - article [ref=f4e101]:
+        - img "紫袍魔法师" [ref=f4e103]
+        - generic [ref=f4e104]:
+          - heading "紫袍魔法师" [level=3] [ref=f4e105]
+          - generic [ref=f4e106]: 普通敌人
+          - paragraph [ref=f4e107]: 使用魔法弹。
+          - code [ref=f4e108]: assets/characters/wizard.png
+    - group [ref=f4e109]:
+      - generic "玩家飞机 · 游戏尺寸对比" [ref=f4e110]
+  - generic [ref=f4e111]:
+    - heading "武器、命中特效与 HUD" [level=2] [ref=f4e112]
+    - paragraph [ref=f4e113]: 当前渲染的武器、效果与界面图标。
+    - generic [ref=f4e114]:
+      - article [ref=f4e115]:
+        - img "追踪导弹" [ref=f4e117]
+        - generic [ref=f4e118]:
+          - heading "追踪导弹" [level=3] [ref=f4e119]
+          - generic [ref=f4e120]: 特殊武器
+          - paragraph [ref=f4e121]: 自动追踪目标。
+          - code [ref=f4e122]: assets/weapons/homing-missile.png
+      - article [ref=f4e123]:
+        - img "蓄能激光" [ref=f4e125]
+        - generic [ref=f4e126]:
+          - heading "蓄能激光" [level=3] [ref=f4e127]
+          - generic [ref=f4e128]: 特殊武器
+          - paragraph [ref=f4e129]: 短暂瞬发。
+          - code [ref=f4e130]: assets/weapons/laser-segment.png
+      - article [ref=f4e131]:
+        - img "机枪弹芯" [ref=f4e133]
+        - generic [ref=f4e134]:
+          - heading "机枪弹芯" [level=3] [ref=f4e135]
+          - generic [ref=f4e136]: 机枪
+          - paragraph [ref=f4e137]: 金色弹芯。
+          - code [ref=f4e138]: assets/weapons/player-bullet-core.png
+      - article [ref=f4e139]:
+        - img "机枪曳光" [ref=f4e141]
+        - generic [ref=f4e142]:
+          - heading "机枪曳光" [level=3] [ref=f4e143]
+          - generic [ref=f4e144]: 机枪
+          - paragraph [ref=f4e145]: 短距离曳光。
+          - code [ref=f4e146]: assets/weapons/player-bullet-trail.png
+      - article [ref=f4e147]:
+        - img "机枪炮口闪光" [ref=f4e149]
+        - generic [ref=f4e150]:
+          - heading "机枪炮口闪光" [level=3] [ref=f4e151]
+          - generic [ref=f4e152]: 机枪
+          - paragraph [ref=f4e153]: 当前双侧炮口闪光。
+          - code [ref=f4e154]: assets/weapons/player-muzzle-flash-v2.png
+      - article [ref=f4e155]:
+        - img "导弹尾焰 01" [ref=f4e157]
+        - generic [ref=f4e158]:
+          - heading "导弹尾焰 01" [level=3] [ref=f4e159]
+          - generic [ref=f4e160]: 导弹
+          - paragraph [ref=f4e161]: 循环尾焰。
+          - code [ref=f4e162]: assets/weapons/missile-exhaust-01.png
+      - article [ref=f4e163]:
+        - img "导弹尾焰 02" [ref=f4e165]
+        - generic [ref=f4e166]:
+          - heading "导弹尾焰 02" [level=3] [ref=f4e167]
+          - generic [ref=f4e168]: 导弹
+          - paragraph [ref=f4e169]: 循环尾焰。
+          - code [ref=f4e170]: assets/weapons/missile-exhaust-02.png
+      - article [ref=f4e171]:
+        - img "导弹尾焰 03" [ref=f4e173]
+        - generic [ref=f4e174]:
+          - heading "导弹尾焰 03" [level=3] [ref=f4e175]
+          - generic [ref=f4e176]: 导弹
+          - paragraph [ref=f4e177]: 循环尾焰。
+          - code [ref=f4e178]: assets/weapons/missile-exhaust-03.png
+      - article [ref=f4e179]:
+        - img "导弹烟尾 01" [ref=f4e181]
+        - generic [ref=f4e182]:
+          - heading "导弹烟尾 01" [level=3] [ref=f4e183]
+          - generic [ref=f4e184]: 导弹
+          - paragraph [ref=f4e185]: 循环烟尾。
+          - code [ref=f4e186]: assets/weapons/missile-smoke-01.png
+      - article [ref=f4e187]:
+        - img "导弹烟尾 02" [ref=f4e189]
+        - generic [ref=f4e190]:
+          - heading "导弹烟尾 02" [level=3] [ref=f4e191]
+          - generic [ref=f4e192]: 导弹
+          - paragraph [ref=f4e193]: 循环烟尾。
+          - code [ref=f4e194]: assets/weapons/missile-smoke-02.png
+      - article [ref=f4e195]:
+        - img "导弹烟尾 03" [ref=f4e197]
+        - generic [ref=f4e198]:
+          - heading "导弹烟尾 03" [level=3] [ref=f4e199]
+          - generic [ref=f4e200]: 导弹
+          - paragraph [ref=f4e201]: 循环烟尾。
+          - code [ref=f4e202]: assets/weapons/missile-smoke-03.png
+      - article [ref=f4e203]:
+        - img "魔法师魔法球" [ref=f4e205]
+        - generic [ref=f4e206]:
+          - heading "魔法师魔法球" [level=3] [ref=f4e207]
+          - generic [ref=f4e208]: 敌方武器
+          - paragraph [ref=f4e209]: 魔法师远程弹。
+          - code [ref=f4e210]: assets/weapons/wizard-magic-orb.png
+      - article [ref=f4e211]:
+        - img "橙白 BOSS 炮弹" [ref=f4e213]
+        - generic [ref=f4e214]:
+          - heading "橙白 BOSS 炮弹" [level=3] [ref=f4e215]
+          - generic [ref=f4e216]: 敌方武器
+          - paragraph [ref=f4e217]: 橙白 BOSS 远程弹。
+          - code [ref=f4e218]: assets/weapons/boss-orange-shell.png
+      - article [ref=f4e219]:
+        - img "蓝白 BOSS 能量弹（调整版）" [ref=f4e221]
+        - generic [ref=f4e222]:
+          - heading "蓝白 BOSS 能量弹（调整版）" [level=3] [ref=f4e223]
+          - generic [ref=f4e224]: 敌方武器
+          - paragraph [ref=f4e225]: 暖白核心、靛蓝外圈、紫蓝拖尾与深色像素描边；透明背景，用于海面场景提升可读性。
+          - code [ref=f4e226]: assets/weapons/boss-blue-bolt.png
+      - article [ref=f4e227]:
+        - img "机枪命中火星" [ref=f4e229]
+        - generic [ref=f4e230]:
+          - heading "机枪命中火星" [level=3] [ref=f4e231]
+          - generic [ref=f4e232]: 命中
+          - paragraph [ref=f4e233]: 机枪命中反馈。
+          - code [ref=f4e234]: assets/weapons/hit-machinegun.png
+      - article [ref=f4e235]:
+        - img "导弹命中爆炸" [ref=f4e237]
+        - generic [ref=f4e238]:
+          - heading "导弹命中爆炸" [level=3] [ref=f4e239]
+          - generic [ref=f4e240]: 命中
+          - paragraph [ref=f4e241]: 导弹命中反馈。
+          - code [ref=f4e242]: assets/weapons/hit-missile.png
+      - article [ref=f4e243]:
+        - img "激光命中碎光" [ref=f4e245]
+        - generic [ref=f4e246]:
+          - heading "激光命中碎光" [level=3] [ref=f4e247]
+          - generic [ref=f4e248]: 命中
+          - paragraph [ref=f4e249]: 激光命中反馈。
+          - code [ref=f4e250]: assets/weapons/hit-laser.png
+      - article [ref=f4e251]:
+        - img "魔法球命中旋涡" [ref=f4e253]
+        - generic [ref=f4e254]:
+          - heading "魔法球命中旋涡" [level=3] [ref=f4e255]
+          - generic [ref=f4e256]: 命中
+          - paragraph [ref=f4e257]: 魔法球命中反馈。
+          - code [ref=f4e258]: assets/weapons/hit-magic.png
+      - article [ref=f4e259]:
+        - img "橙白 BOSS 炮弹命中" [ref=f4e261]
+        - generic [ref=f4e262]:
+          - heading "橙白 BOSS 炮弹命中" [level=3] [ref=f4e263]
+          - generic [ref=f4e264]: 命中
+          - paragraph [ref=f4e265]: BOSS 炮弹命中反馈。
+          - code [ref=f4e266]: assets/weapons/hit-orange-boss.png
+      - article [ref=f4e267]:
+        - img "蓝白 BOSS 能量弹命中" [ref=f4e269]
+        - generic [ref=f4e270]:
+          - heading "蓝白 BOSS 能量弹命中" [level=3] [ref=f4e271]
+          - generic [ref=f4e272]: 命中
+          - paragraph [ref=f4e273]: BOSS 能量弹命中反馈。
+          - code [ref=f4e274]: assets/weapons/hit-blue-boss.png
+      - article [ref=f4e275]:
+        - img "攻击升级图标" [ref=f4e277]
+        - generic [ref=f4e278]:
+          - heading "攻击升级图标" [level=3] [ref=f4e279]
+          - generic [ref=f4e280]: HUD
+          - paragraph [ref=f4e281]: 攻击升级按钮。
+          - code [ref=f4e282]: assets/weapons/ui-attack-upgrade.png
+      - article [ref=f4e283]:
+        - img "双列机枪图标" [ref=f4e285]
+        - generic [ref=f4e286]:
+          - heading "双列机枪图标" [level=3] [ref=f4e287]
+          - generic [ref=f4e288]: HUD
+          - paragraph [ref=f4e289]: 基础武器格。
+          - code [ref=f4e290]: assets/weapons/ui-machinegun.png
+      - article [ref=f4e291]:
+        - img "追踪导弹图标" [ref=f4e293]
+        - generic [ref=f4e294]:
+          - heading "追踪导弹图标" [level=3] [ref=f4e295]
+          - generic [ref=f4e296]: HUD
+          - paragraph [ref=f4e297]: 追踪导弹格。
+          - code [ref=f4e298]: assets/weapons/ui-homing-missile.png
+      - article [ref=f4e299]:
+        - img "激光炮图标" [ref=f4e301]
+        - generic [ref=f4e302]:
+          - heading "激光炮图标" [level=3] [ref=f4e303]
+          - generic [ref=f4e304]: HUD
+          - paragraph [ref=f4e305]: 激光格。
+          - code [ref=f4e306]: assets/weapons/ui-laser-cannon.png
+  - generic [ref=f4e307]:
+    - heading "音效试听清单" [level=2] [ref=f4e308]
+    - heading "战斗与交互音效" [level=3] [ref=f4e309]
+    - paragraph [ref=f4e310]: 13 个主声音，机枪另含 2 个轮换变体；均为当前游戏使用的声音。
+    - generic [ref=f4e311]:
+      - article [ref=f4e312]:
+        - generic [ref=f4e313]:
+          - heading "导弹命中" [level=3] [ref=f4e314]
+          - generic [ref=f4e315]: 已确认 · 当前使用
+          - paragraph [ref=f4e316]: 低频冲击、短爆裂与碎屑尾音。
+          - strong [ref=f4e317]: 当前声音
+          - generic "当前导弹命中" [ref=f4e318]
+      - article [ref=f4e319]:
+        - generic [ref=f4e320]:
+          - heading "普通击毁 · 机械" [level=3] [ref=f4e321]
+          - generic [ref=f4e322]: 已确认 · 当前使用
+          - paragraph [ref=f4e323]: 短促机体破裂与金属碎屑。
+          - strong [ref=f4e324]: 当前声音
+          - generic "当前普通击毁 · 机械" [ref=f4e325]
+      - article [ref=f4e326]:
+        - generic [ref=f4e327]:
+          - heading "普通击毁 · 柔和消散" [level=3] [ref=f4e328]
+          - generic [ref=f4e329]: 已确认 · 当前使用
+          - paragraph [ref=f4e330]: 生物及魔法敌人的柔和爆散。
+          - strong [ref=f4e331]: 当前声音
+          - generic "当前普通击毁 · 柔和消散" [ref=f4e332]
+      - article [ref=f4e333]:
+        - generic [ref=f4e334]:
+          - heading "BOSS 击毁" [level=3] [ref=f4e335]
+          - generic [ref=f4e336]: 已确认 · 当前使用
+          - paragraph [ref=f4e337]: 更大的冲击体量与分层衰减。
+          - strong [ref=f4e338]: 当前声音
+          - generic "当前BOSS 击毁" [ref=f4e339]
+      - article [ref=f4e340]:
+        - generic [ref=f4e341]:
+          - heading "玩家受伤" [level=3] [ref=f4e342]
+          - generic [ref=f4e343]: 已确认 · 当前使用
+          - paragraph [ref=f4e344]: 短撞击与机体震动。
+          - strong [ref=f4e345]: 当前声音
+          - generic "当前玩家受伤" [ref=f4e346]
+      - article [ref=f4e347]:
+        - generic [ref=f4e348]:
+          - heading "机枪射击" [level=3] [ref=f4e349]
+          - generic [ref=f4e350]: 已确认 · 当前使用
+          - paragraph [ref=f4e351]: 机械敲击与短气流；附两种轻微变化。
+          - strong [ref=f4e352]: 当前声音
+          - generic "当前机枪射击" [ref=f4e353]
+          - text: 变化 2
+          - generic "当前机枪变化2" [ref=f4e354]
+          - text: 变化 3
+          - generic "当前机枪变化3" [ref=f4e355]
+      - article [ref=f4e356]:
+        - generic [ref=f4e357]:
+          - heading "普通子弹命中" [level=3] [ref=f4e358]
+          - generic [ref=f4e359]: 已确认 · 当前使用
+          - paragraph [ref=f4e360]: 轻、短、清晰的撞击。
+          - strong [ref=f4e361]: 当前声音
+          - generic "当前普通子弹命中" [ref=f4e362]
+      - article [ref=f4e363]:
+        - generic [ref=f4e364]:
+          - heading "橙色 BOSS 炮击" [level=3] [ref=f4e365]
+          - generic [ref=f4e366]: 已确认 · 当前使用
+          - paragraph [ref=f4e367]: 重炮冲击与短喷气。
+          - strong [ref=f4e368]: 当前声音
+          - generic "当前橙色 BOSS 炮击" [ref=f4e369]
+      - article [ref=f4e370]:
+        - generic [ref=f4e371]:
+          - heading "玩家坠毁／结束" [level=3] [ref=f4e372]
+          - generic [ref=f4e373]: 已确认 · 当前使用
+          - paragraph [ref=f4e374]: 机体失效与熄火收尾。
+          - strong [ref=f4e375]: 当前声音
+          - generic "当前玩家坠毁／结束" [ref=f4e376]
+      - article [ref=f4e377]:
+        - generic [ref=f4e378]:
+          - heading "BOSS 冲锋" [level=3] [ref=f4e379]
+          - generic [ref=f4e380]: 已确认 · 当前使用
+          - paragraph [ref=f4e381]: 起冲瞬间的短促推进。
+          - strong [ref=f4e382]: 当前声音
+          - generic "当前BOSS 冲锋" [ref=f4e383]
+      - article [ref=f4e384]:
+        - generic [ref=f4e385]:
+          - heading "魔法球被打散" [level=3] [ref=f4e386]
+          - generic [ref=f4e387]: 已确认 · 当前使用
+          - paragraph [ref=f4e388]: 破泡与能量消散。
+          - strong [ref=f4e389]: 当前声音
+          - generic "当前魔法球被打散" [ref=f4e390]
+      - article [ref=f4e391]:
+        - generic [ref=f4e392]:
+          - heading "武器切换" [level=3] [ref=f4e393]
+          - generic [ref=f4e394]: 已确认 · 当前使用
+          - paragraph [ref=f4e395]: 轻量装配卡扣。
+          - strong [ref=f4e396]: 当前声音
+          - generic "当前武器切换" [ref=f4e397]
+      - article [ref=f4e398]:
+        - generic [ref=f4e399]:
+          - heading "碎片获得" [level=3] [ref=f4e400]
+          - generic [ref=f4e401]: 已确认 · 当前使用
+          - paragraph [ref=f4e402]: 清脆的获得反馈。
+          - strong [ref=f4e403]: 当前声音
+          - generic "当前碎片获得" [ref=f4e404]
+    - heading "其他运行音效" [level=3] [ref=f4e405]
+    - paragraph [ref=f4e406]: 下方为其余 7 项运行音效。点击各播放器即可试听；播放另一项时自动暂停上一项，便于比较。
+    - paragraph [ref=f4e407]: 来源：当前 index.html 内的声音合成函数。游戏在首次播放时合成并缓存，以下 WAV 仅用于清单试听，不增加游戏加载资源。拟物声音采用已确认的固定随机种子；浏览器采样率不同时按相同算法合成。
+    - generic [ref=f4e408]:
+      - article [ref=f4e409]:
+        - generic [ref=f4e410]:
+          - heading "导弹发射" [level=3] [ref=f4e411]
+          - generic [ref=f4e412]: 当前使用 · 0.40 秒
+          - paragraph [ref=f4e413]: 追踪导弹成功发射时播放一次：低频点火、喷气推进与渐弱呼啸。
+          - generic "试听导弹发射" [ref=f4e414]
+          - code [ref=f4e415]: missile-launch
+      - article [ref=f4e416]:
+        - generic [ref=f4e417]:
+          - heading "激光命中" [level=3] [ref=f4e418]
+          - generic [ref=f4e419]: 当前使用 · 0.11 秒
+          - paragraph [ref=f4e420]: 激光结算伤害时播放，与短暂光束同时发生。
+          - generic "试听激光命中" [ref=f4e421]
+          - code [ref=f4e422]: laser
+      - article [ref=f4e423]:
+        - generic [ref=f4e424]:
+          - heading "魔法师发射" [level=3] [ref=f4e425]
+          - generic [ref=f4e426]: 当前使用 · 0.18 秒
+          - paragraph [ref=f4e427]: 魔法师发射魔法球时播放。
+          - generic "试听魔法师发射" [ref=f4e428]
+          - code [ref=f4e429]: wizard-shot
+      - article [ref=f4e430]:
+        - generic [ref=f4e431]:
+          - heading "蓝色 BOSS 发射" [level=3] [ref=f4e432]
+          - generic [ref=f4e433]: 当前使用 · 0.13 秒
+          - paragraph [ref=f4e434]: 蓝色 BOSS 发射能量弹时播放。
+          - generic "试听蓝色 BOSS 发射" [ref=f4e435]
+          - code [ref=f4e436]: blue-shot
+      - article [ref=f4e437]:
+        - generic [ref=f4e438]:
+          - heading "BOSS 登场" [level=3] [ref=f4e439]
+          - generic [ref=f4e440]: 当前使用 · 0.58 秒
+          - paragraph [ref=f4e441]: BOSS 生成并进入战场时播放。
+          - generic "试听BOSS 登场" [ref=f4e442]
+          - code [ref=f4e443]: boss
+      - article [ref=f4e444]:
+        - generic [ref=f4e445]:
+          - heading "武器升级" [level=3] [ref=f4e446]
+          - generic [ref=f4e447]: 当前使用 · 0.34 秒
+          - paragraph [ref=f4e448]: 基础攻击或特殊武器成功升级时播放。
+          - generic "试听武器升级" [ref=f4e449]
+          - code [ref=f4e450]: upgrade
+      - article [ref=f4e451]:
+        - generic [ref=f4e452]:
+          - heading "开始出击" [level=3] [ref=f4e453]
+          - generic [ref=f4e454]: 当前使用 · 0.36 秒
+          - paragraph [ref=f4e455]: 开始新一局或重新出击时播放。
+          - generic "试听开始出击" [ref=f4e456]
+          - code [ref=f4e457]: start
+  - generic [ref=f4e458]:
+    - heading "独立投影" [level=2] [ref=f4e459]
+    - paragraph [ref=f4e460]: 跟随对象位置，不参与碰撞。
+    - generic [ref=f4e461]:
+      - article [ref=f4e462]:
+        - img "玩家机翼投影" [ref=f4e464]
+        - generic [ref=f4e465]:
+          - heading "玩家机翼投影" [level=3] [ref=f4e466]
+          - generic [ref=f4e467]: 投影
+          - paragraph [ref=f4e468]: 玩家投影。
+          - code [ref=f4e469]: assets/shadows/player-wing-shadow.png
+      - article [ref=f4e470]:
+        - img "猫头鹰翼形投影" [ref=f4e472]
+        - generic [ref=f4e473]:
+          - heading "猫头鹰翼形投影" [level=3] [ref=f4e474]
+          - generic [ref=f4e475]: 投影
+          - paragraph [ref=f4e476]: 猫头鹰投影。
+          - code [ref=f4e477]: assets/shadows/owl-wing-shadow.png
+      - article [ref=f4e478]:
+        - img "无人机机身投影" [ref=f4e480]
+        - generic [ref=f4e481]:
+          - heading "无人机机身投影" [level=3] [ref=f4e482]
+          - generic [ref=f4e483]: 投影
+          - paragraph [ref=f4e484]: 无人机投影。
+          - code [ref=f4e485]: assets/shadows/drone-body-shadow.png
+      - article [ref=f4e486]:
+        - img "蝙蝠翼形投影" [ref=f4e488]
+        - generic [ref=f4e489]:
+          - heading "蝙蝠翼形投影" [level=3] [ref=f4e490]
+          - generic [ref=f4e491]: 投影
+          - paragraph [ref=f4e492]: 蝙蝠投影。
+          - code [ref=f4e493]: assets/shadows/bat-wing-shadow.png
+      - article [ref=f4e494]:
+        - img "魔法师帽袍投影" [ref=f4e496]
+        - generic [ref=f4e497]:
+          - heading "魔法师帽袍投影" [level=3] [ref=f4e498]
+          - generic [ref=f4e499]: 投影
+          - paragraph [ref=f4e500]: 魔法师投影。
+          - code [ref=f4e501]: assets/shadows/wizard-robes-shadow.png
+      - article [ref=f4e502]:
+        - img "橙白 BOSS 引擎投影" [ref=f4e504]
+        - generic [ref=f4e505]:
+          - heading "橙白 BOSS 引擎投影" [level=3] [ref=f4e506]
+          - generic [ref=f4e507]: 投影
+          - paragraph [ref=f4e508]: 橙白 BOSS 投影。
+          - code [ref=f4e509]: assets/shadows/boss-orange-engine-shadow.png
+      - article [ref=f4e510]:
+        - img "蓝白 BOSS 推进器投影" [ref=f4e512]
+        - generic [ref=f4e513]:
+          - heading "蓝白 BOSS 推进器投影" [level=3] [ref=f4e514]
+          - generic [ref=f4e515]: 投影
+          - paragraph [ref=f4e516]: 蓝白 BOSS 投影。
+          - code [ref=f4e517]: assets/shadows/boss-blue-thruster-shadow.png
+  - generic [ref=f4e518]:
+    - heading "俯视背景层" [level=2] [ref=f4e519]
+    - paragraph [ref=f4e520]: 循环水面、云雾与 7 项俯视景观。
+    - generic [ref=f4e521]:
+      - article [ref=f4e522]:
+        - img "俯视循环水面" [ref=f4e524]
+        - generic [ref=f4e525]:
+          - heading "俯视循环水面" [level=3] [ref=f4e526]
+          - generic [ref=f4e527]: 俯视背景
+          - paragraph [ref=f4e528]: 柔和蔚蓝、相对平静的循环海面；稀疏低对比微波纹。
+          - code [ref=f4e529]: assets/scenery/water-topdown-loop.png
+      - article [ref=f4e530]:
+        - img "俯视云雾 01" [ref=f4e532]
+        - generic [ref=f4e533]:
+          - heading "俯视云雾 01" [level=3] [ref=f4e534]
+          - generic [ref=f4e535]: 俯视背景
+          - paragraph [ref=f4e536]: 低速漂移云雾。
+          - code [ref=f4e537]: assets/scenery/cloud-mist-01.png
+      - article [ref=f4e538]:
+        - img "俯视云雾 02" [ref=f4e540]
+        - generic [ref=f4e541]:
+          - heading "俯视云雾 02" [level=3] [ref=f4e542]
+          - generic [ref=f4e543]: 俯视背景
+          - paragraph [ref=f4e544]: 低速漂移云雾。
+          - code [ref=f4e545]: assets/scenery/cloud-mist-02.png
+      - article [ref=f4e546]:
+        - img "俯视云雾 03" [ref=f4e548]
+        - generic [ref=f4e549]:
+          - heading "俯视云雾 03" [level=3] [ref=f4e550]
+          - generic [ref=f4e551]: 俯视背景
+          - paragraph [ref=f4e552]: 低速漂移云雾。
+          - code [ref=f4e553]: assets/scenery/cloud-mist-03.png
+      - article [ref=f4e554]:
+        - img "俯视透明岛屿 01" [ref=f4e556]
+        - generic [ref=f4e557]:
+          - heading "俯视透明岛屿 01" [level=3] [ref=f4e558]
+          - generic [ref=f4e559]: 俯视景观
+          - paragraph [ref=f4e560]: 瀑布岩岛；溪水与岸边统一蓝色，局部保留瀑布落水水花。
+          - code [ref=f4e561]: assets/scenery/topdown-island-01.png
+      - article [ref=f4e562]:
+        - img "俯视透明岛屿 02" [ref=f4e564]
+        - generic [ref=f4e565]:
+          - heading "俯视透明岛屿 02" [level=3] [ref=f4e566]
+          - generic [ref=f4e567]: 俯视景观
+          - paragraph [ref=f4e568]: 弯月岛；蓝色溪水与细水线，保留植被和岩石本色。
+          - code [ref=f4e569]: assets/scenery/topdown-island-02.png
+      - article [ref=f4e570]:
+        - img "俯视透明岛屿 03" [ref=f4e572]
+        - generic [ref=f4e573]:
+          - heading "俯视透明岛屿 03" [level=3] [ref=f4e574]
+          - generic [ref=f4e575]: 俯视景观
+          - paragraph [ref=f4e576]: 斜向岩脊岛；平静蓝色水面与局部瀑布水花。
+          - code [ref=f4e577]: assets/scenery/topdown-island-03.png
+      - article [ref=f4e578]:
+        - img "俯视弯月形浅海珊瑚礁" [ref=f4e580]
+        - generic [ref=f4e581]:
+          - heading "俯视弯月形浅海珊瑚礁" [level=3] [ref=f4e582]
+          - generic [ref=f4e583]: 俯视景观
+          - paragraph [ref=f4e584]: 蓝色浅水礁盘与珊瑚；透明边缘融入蔚蓝海面。
+          - code [ref=f4e585]: assets/scenery/topdown-reef-01.png
+      - article [ref=f4e586]:
+        - img "俯视分散小礁群与海草" [ref=f4e588]
+        - generic [ref=f4e589]:
+          - heading "俯视分散小礁群与海草" [level=3] [ref=f4e590]
+          - generic [ref=f4e591]: 俯视景观
+          - paragraph [ref=f4e592]: 礁石、珊瑚与海草本色保留；接水边缘为柔和蓝色。
+          - code [ref=f4e593]: assets/scenery/topdown-reef-02.png
+      - article [ref=f4e594]:
+        - img "俯视岩石孤岛与松树" [ref=f4e596]
+        - generic [ref=f4e597]:
+          - heading "俯视岩石孤岛与松树" [level=3] [ref=f4e598]
+          - generic [ref=f4e599]: 俯视景观
+          - paragraph [ref=f4e600]: 小型岩岛与松树；蓝色细水线与轻微涟漪。
+          - code [ref=f4e601]: assets/scenery/topdown-islet-01.png
+      - article [ref=f4e602]:
+        - img "俯视低矮沙洲与小花" [ref=f4e604]
+        - generic [ref=f4e605]:
+          - heading "俯视低矮沙洲与小花" [level=3] [ref=f4e606]
+          - generic [ref=f4e607]: 俯视景观
+          - paragraph [ref=f4e608]: 沙洲、礁石与小花；浅蓝岸边过渡，无青绿水垫。
+          - code [ref=f4e609]: assets/scenery/topdown-islet-02.png
+  - generic [ref=f4e610]:
+    - heading "斜视背景层" [level=2] [ref=f4e611]
+    - paragraph [ref=f4e612]: 真正斜视海空战场：晴空、海平线、透视海面、双层循环白云及 7 类斜视景物。
+    - generic [ref=f4e613]:
+      - article [ref=f4e614]:
+        - img "斜视海空完整背景" [ref=f4e616]
+        - generic [ref=f4e617]:
+          - heading "斜视海空完整背景" [level=3] [ref=f4e618]
+          - generic [ref=f4e619]: 斜视完整背景
+          - paragraph [ref=f4e620]: 保留蓝天与海平线；近乎平静的蔚蓝海面，细小水平波纹与柔和反光。
+          - code [ref=f4e621]: assets/scenery/background-perspective.png
+      - article [ref=f4e622]:
+        - img "斜视景物轻微接水涟漪" [ref=f4e624]
+        - generic [ref=f4e625]:
+          - heading "斜视景物轻微接水涟漪" [level=3] [ref=f4e626]
+          - generic [ref=f4e627]: 斜视景观
+          - paragraph [ref=f4e628]: 稀疏透明浅蓝细水纹，在 7 类景物底部共享并随景深缩放，无厚泡沫浪圈。
+          - code [ref=f4e629]: assets/scenery/perspective-water-contact.png
+      - article [ref=f4e630]:
+        - img "斜视晴天远层云带" [ref=f4e632]
+        - generic [ref=f4e633]:
+          - heading "斜视晴天远层云带" [level=3] [ref=f4e634]
+          - generic [ref=f4e635]: 斜视天气
+          - paragraph [ref=f4e636]: 透明轻薄小白云，以每秒 1.5 像素横向循环。
+          - code [ref=f4e637]: assets/scenery/perspective-clear-cloud-far.png
+      - article [ref=f4e638]:
+        - img "斜视晴天近层云带" [ref=f4e640]
+        - generic [ref=f4e641]:
+          - heading "斜视晴天近层云带" [level=3] [ref=f4e642]
+          - generic [ref=f4e643]: 斜视天气
+          - paragraph [ref=f4e644]: 透明轻薄近云，以每秒 2.7 像素横向循环。
+          - code [ref=f4e645]: assets/scenery/perspective-clear-cloud-near.png
+      - article [ref=f4e646]:
+        - img "斜视远海岛链" [ref=f4e648]
+        - generic [ref=f4e649]:
+          - heading "斜视远海岛链" [level=3] [ref=f4e650]
+          - generic [ref=f4e651]: 斜视景观
+          - paragraph [ref=f4e652]: 最远景，小体量、低速；柔和蓝色接水边缘。
+          - code [ref=f4e653]: assets/scenery/perspective-island-chain.png
+      - article [ref=f4e654]:
+        - img "斜视灯塔礁岛" [ref=f4e656]
+        - generic [ref=f4e657]:
+          - heading "斜视灯塔礁岛" [level=3] [ref=f4e658]
+          - generic [ref=f4e659]: 斜视景观
+          - paragraph [ref=f4e660]: 保留灯塔与岩礁；平静浅蓝贴岩水线和轻微倒影，无拍岸浪花。
+          - code [ref=f4e661]: assets/scenery/perspective-lighthouse-reef.png
+      - article [ref=f4e662]:
+        - img "斜视小帆船" [ref=f4e664]
+        - generic [ref=f4e665]:
+          - heading "斜视小帆船" [level=3] [ref=f4e666]
+          - generic [ref=f4e667]: 斜视景观
+          - paragraph [ref=f4e668]: 保留帆船主体；浅蓝窄水线与短淡尾迹，无船首翻浪。
+          - code [ref=f4e669]: assets/scenery/perspective-sailboat.png
+      - article [ref=f4e670]:
+        - img "斜视红白航标" [ref=f4e672]
+        - generic [ref=f4e673]:
+          - heading "斜视红白航标" [level=3] [ref=f4e674]
+          - generic [ref=f4e675]: 斜视景观
+          - paragraph [ref=f4e676]: 保留红白航标；基座浅蓝细涟漪与淡倒影，无白色飞沫。
+          - code [ref=f4e677]: assets/scenery/perspective-buoy.png
+      - article [ref=f4e678]:
+        - img "斜视浮上海礁" [ref=f4e680]
+        - generic [ref=f4e681]:
+          - heading "斜视浮上海礁" [level=3] [ref=f4e682]
+          - generic [ref=f4e683]: 斜视景观
+          - paragraph [ref=f4e684]: 中近景海礁；平静蓝色水线和短淡倒影，无拍岸浪花。
+          - code [ref=f4e685]: assets/scenery/perspective-reef.png
+      - article [ref=f4e686]:
+        - img "斜视海蚀石柱" [ref=f4e688]
+        - generic [ref=f4e689]:
+          - heading "斜视海蚀石柱" [level=3] [ref=f4e690]
+          - generic [ref=f4e691]: 斜视景观
+          - paragraph [ref=f4e692]: 保留立体岩柱与植被；浅蓝贴岩细水线和柔和倒影，无浪峰泡沫。
+          - code [ref=f4e693]: assets/scenery/perspective-sea-stack.png
+      - article [ref=f4e694]:
+        - img "斜视近景峭壁与瀑布礁岸" [ref=f4e696]
+        - generic [ref=f4e697]:
+          - heading "斜视近景峭壁与瀑布礁岸" [level=3] [ref=f4e698]
+          - generic [ref=f4e699]: 斜视景观
+          - paragraph [ref=f4e700]: 保留立体峭壁与瀑布；仅落水点保留局部水花，其余礁岸为平静蓝色水面。
+          - code [ref=f4e701]: assets/scenery/perspective-cliff-waterfall.png
+  - generic [ref=f4e702]: 本页仅列当前游戏使用的资产；音效 WAV 为运行声音的试听导出。

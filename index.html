@@ -554,6 +554,7 @@ globalThis.GameRules = {
   };
   const soundCooldowns = {};
   const soundBuffers = {};
+  let machinegunSoundIndex = 0;
 
   function preloadAssets() {
     const entries = Object.values(AssetManifest).flatMap(group => Object.entries(group));
@@ -594,11 +595,302 @@ globalThis.GameRules = {
     return audioContext;
   }
 
+  function createFoleySamples(name, sampleRate) {
+    function mulberry32(seed) {
+      return function random() {
+        let value = seed += 0x6d2b79f5;
+        value = Math.imul(value ^ value >>> 15, value | 1);
+        value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+        return ((value ^ value >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    function clampSample(value, minimum = 0, maximum = 1) { return Math.max(minimum, Math.min(maximum, value)); }
+    function smoothstep(value) { const x = clampSample(value); return x * x * (3 - 2 * x); }
+    function edgeEnvelope(time, duration, attack = .006, release = .03) { return smoothstep(time / attack) * smoothstep((duration - time) / release); }
+    function pulseEnvelope(time, start, attack, decay) {
+      const local = time - start;
+      if (local < 0) return 0;
+      return smoothstep(local / attack) * Math.exp(-local / decay);
+    }
+    function oscillatorSample(kind, phase) {
+      if (kind === 'triangle') return Math.asin(Math.sin(phase)) * 2 / Math.PI;
+      if (kind === 'soft-square') return Math.tanh(Math.sin(phase) * 2.25) / Math.tanh(2.25);
+      return Math.sin(phase);
+    }
+    function createSound(duration, render) {
+      const length = Math.ceil(sampleRate * duration);
+      const data = new Float32Array(length);
+      for (let i = 0; i < length; i++) {
+        const time = i / sampleRate;
+        const progress = i / (length - 1);
+        data[i] = render({ i, time, progress, duration });
+      }
+      data[0] = 0;
+      data[length - 1] = 0;
+      return data;
+    }
+    function synthesizeMissileHit() {
+      const duration = .32;
+      const random = mulberry32(0x4d484954);
+      let boomPhase = 0;
+      let noiseLow = 0;
+      let noiseSlower = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .18 * (white - noiseLow);
+        noiseSlower += .045 * (white - noiseSlower);
+        const bandNoise = noiseLow - noiseSlower;
+        boomPhase += Math.PI * 2 * (132 - 76 * progress) / sampleRate;
+        const impact = Math.sin(boomPhase) * Math.exp(-time / .105) * .23;
+        const burst = bandNoise * Math.exp(-time / .082) * .29;
+        const debris = Math.sin(Math.PI * 2 * 680 * time) * pulseEnvelope(time, .045, .003, .036) * .045;
+        return (impact + burst + debris) * edgeEnvelope(time, duration, .003, .04);
+      });
+    }
+    function synthesizeMechanicalExplosion() {
+      const duration = .38;
+      const random = mulberry32(0x4d454348);
+      let thudPhase = 0;
+      let noiseFast = 0;
+      let noiseSlow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseFast += .22 * (white - noiseFast);
+        noiseSlow += .05 * (white - noiseSlow);
+        thudPhase += Math.PI * 2 * (118 - 72 * progress) / sampleRate;
+        const thud = oscillatorSample('soft-square', thudPhase) * Math.exp(-time / .11) * .18;
+        const breakNoise = (noiseFast - noiseSlow) * Math.exp(-time / .12) * .25;
+        const clankA = Math.sin(Math.PI * 2 * 720 * time) * pulseEnvelope(time, .055, .002, .038) * .08;
+        const clankB = Math.sin(Math.PI * 2 * 505 * time) * pulseEnvelope(time, .12, .002, .05) * .065;
+        const clankC = Math.sin(Math.PI * 2 * 940 * time) * pulseEnvelope(time, .185, .002, .032) * .04;
+        return (thud + breakNoise + clankA + clankB + clankC) * edgeEnvelope(time, duration, .003, .035);
+      });
+    }
+    function synthesizeSoftExplosion() {
+      const duration = .42;
+      const random = mulberry32(0x534f4654);
+      let bodyPhase = 0;
+      let shimmerPhase = 0;
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .095 * (white - noiseLow);
+        bodyPhase += Math.PI * 2 * (106 - 48 * progress) / sampleRate;
+        shimmerPhase += Math.PI * 2 * (410 - 180 * progress) / sampleRate;
+        const body = Math.sin(bodyPhase) * Math.exp(-time / .15) * .17;
+        const puff = noiseLow * Math.sin(Math.PI * clampSample(time / .09)) * Math.exp(-time / .17) * .2;
+        const shimmer = Math.sin(shimmerPhase) * Math.sin(Math.PI * progress) * (1 - progress) ** 1.6 * .055;
+        return (body + puff + shimmer) * edgeEnvelope(time, duration, .008, .06);
+      });
+    }
+    function synthesizeBossExplosion() {
+      const duration = .86;
+      const random = mulberry32(0x424f5353);
+      let rumblePhase = 0;
+      let noiseLow = 0;
+      let noiseSlow = 0;
+      const pulses = [0, .13, .29, .47];
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .12 * (white - noiseLow);
+        noiseSlow += .025 * (white - noiseSlow);
+        rumblePhase += Math.PI * 2 * (76 - 37 * progress) / sampleRate;
+        const rumble = Math.sin(rumblePhase) * Math.exp(-time / .36) * .18;
+        let body = 0;
+        let debris = 0;
+        for (let index = 0; index < pulses.length; index++) {
+          const pulse = pulseEnvelope(time, pulses[index], .004, .075 + index * .012);
+          body += Math.sin(Math.PI * 2 * (92 - index * 9) * (time - pulses[index])) * pulse * (.13 - index * .014);
+          debris += (noiseLow - noiseSlow) * pulse * (.22 - index * .025);
+        }
+        const settling = noiseSlow * Math.sin(Math.PI * progress) * (1 - progress) * .11;
+        return (rumble + body + debris + settling) * edgeEnvelope(time, duration, .004, .1);
+      });
+    }
+    function synthesizeHurt() {
+      const duration = .22;
+      const random = mulberry32(0x48555254);
+      let phase = 0;
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .16 * (white - noiseLow);
+        phase += Math.PI * 2 * (235 - 105 * progress) / sampleRate;
+        const body = oscillatorSample('triangle', phase) * Math.sin(Math.PI * progress) * (1 - progress) ** .65 * .2;
+        const knock = noiseLow * Math.exp(-time / .045) * .12;
+        return (body + knock) * edgeEnvelope(time, duration, .004, .035);
+      });
+    }
+    function synthesizeMachinegun(seed, frequencyOffset = 0, noiseAmount = .09) {
+      const duration = .052;
+      const random = mulberry32(seed);
+      let phase = 0;
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .24 * (white - noiseLow);
+        const frequency = 230 + frequencyOffset - 118 * progress;
+        phase += Math.PI * 2 * frequency / sampleRate;
+        const body = oscillatorSample('soft-square', phase) * (1 - progress) ** 1.75 * .15;
+        const click = (white - noiseLow) * Math.exp(-time / .012) * noiseAmount;
+        return (body + click) * edgeEnvelope(time, duration, .0015, .009);
+      });
+    }
+    function synthesizeHit() {
+      const duration = .11;
+      const random = mulberry32(0x48495421);
+      let phase = 0;
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .18 * (white - noiseLow);
+        phase += Math.PI * 2 * (245 - 125 * progress) / sampleRate;
+        const body = Math.sin(phase) * Math.exp(-time / .042) * .19;
+        const tap = noiseLow * Math.exp(-time / .024) * .14;
+        return (body + tap) * edgeEnvelope(time, duration, .002, .018);
+      });
+    }
+    function synthesizeOrangeShot() {
+      const duration = .36;
+      const random = mulberry32(0x4f524e47);
+      let phase = 0;
+      let noiseLow = 0;
+      let noiseSlow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .14 * (white - noiseLow);
+        noiseSlow += .035 * (white - noiseSlow);
+        phase += Math.PI * 2 * (138 - 61 * progress) / sampleRate;
+        const cannon = oscillatorSample('soft-square', phase) * Math.exp(-time / .13) * .2;
+        const airBlast = (noiseLow - noiseSlow) * Math.sin(Math.PI * clampSample(time / .045)) * Math.exp(-time / .12) * .27;
+        const tail = noiseSlow * (1 - progress) ** 1.4 * .1;
+        return (cannon + airBlast + tail) * edgeEnvelope(time, duration, .003, .055);
+      });
+    }
+    function synthesizeGameOver() {
+      const duration = .78;
+      const notes = [294, 220, 165];
+      const starts = [0, .22, .44];
+      const random = mulberry32(0x47414d45);
+      let shutdownPhase = 0;
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .06 * (white - noiseLow);
+        let value = 0;
+        for (let index = 0; index < notes.length; index++) {
+          const local = time - starts[index];
+          if (local < 0) continue;
+          const envelope = smoothstep(local / .018) * Math.exp(-local / .2);
+          value += oscillatorSample('triangle', Math.PI * 2 * notes[index] * local) * envelope * (.12 - index * .012);
+          value += Math.sin(Math.PI * 2 * notes[index] * .5 * local) * envelope * .035;
+        }
+        shutdownPhase += Math.PI * 2 * (138 - 102 * progress ** .7) / sampleRate;
+        const shutdownEnvelope = smoothstep(time / .025) * (1 - progress) ** .65;
+        const shutdown = oscillatorSample('soft-square', shutdownPhase) * shutdownEnvelope * .075;
+        const airFade = noiseLow * shutdownEnvelope * .065;
+        return (value + shutdown + airFade) * edgeEnvelope(time, duration, .008, .1);
+      });
+    }
+    function synthesizeBossCharge() {
+      const duration = .36;
+      const random = mulberry32(0x43485247);
+      let bodyPhase = 0;
+      let energyPhase = 0;
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .09 * (white - noiseLow);
+        bodyPhase += Math.PI * 2 * (84 + 126 * progress ** 1.25) / sampleRate;
+        energyPhase += Math.PI * 2 * (210 + 280 * progress ** 1.7) / sampleRate;
+        const drive = smoothstep(progress / .72) * (1 - progress) ** .28;
+        const body = Math.sin(bodyPhase) * drive * .16;
+        const energy = Math.sin(energyPhase) * drive * progress * .06;
+        const rushingAir = noiseLow * drive * .12;
+        const launch = Math.sin(Math.PI * 2 * 106 * (time - .27)) * pulseEnvelope(time, .27, .003, .05) * .14;
+        return (body + energy + rushingAir + launch) * edgeEnvelope(time, duration, .008, .045);
+      });
+    }
+    function synthesizeMagicBreak() {
+      const duration = .44;
+      const random = mulberry32(0x4d414749);
+      let noiseLow = 0;
+      const partials = [940, 1320, 1760];
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .13 * (white - noiseLow);
+        let chime = 0;
+        for (let index = 0; index < partials.length; index++) {
+          const local = time - index * .027;
+          if (local < 0) continue;
+          chime += Math.sin(Math.PI * 2 * partials[index] * local) * Math.exp(-local / (.095 + index * .025)) * (.065 - index * .008);
+        }
+        const dust = noiseLow * Math.sin(Math.PI * progress) * (1 - progress) ** 1.35 * .13;
+        const body = Math.sin(Math.PI * 2 * (250 - 95 * progress) * time) * Math.sin(Math.PI * progress) * .045;
+        return (chime + dust + body) * edgeEnvelope(time, duration, .004, .055);
+      });
+    }
+    function synthesizeWeaponSwitch() {
+      const duration = .28;
+      const random = mulberry32(0x53574954);
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .18 * (white - noiseLow);
+        const clickA = (white - noiseLow) * pulseEnvelope(time, .012, .0015, .018) * .15;
+        const clickB = (white - noiseLow) * pulseEnvelope(time, .12, .0015, .024) * .14;
+        const metalA = Math.sin(Math.PI * 2 * 710 * (time - .012)) * pulseEnvelope(time, .012, .002, .045) * .075;
+        const metalB = Math.sin(Math.PI * 2 * 530 * (time - .12)) * pulseEnvelope(time, .12, .002, .06) * .085;
+        const lock = Math.sin(Math.PI * 2 * (260 + 120 * progress) * time) * pulseEnvelope(time, .17, .008, .055) * .055;
+        return (clickA + clickB + metalA + metalB + lock) * edgeEnvelope(time, duration, .003, .04);
+      });
+    }
+    function synthesizeFragment() {
+      const duration = .18;
+      const random = mulberry32(0x46524147);
+      let noiseLow = 0;
+      return createSound(duration, ({ time, progress }) => {
+        const white = random() * 2 - 1;
+        noiseLow += .2 * (white - noiseLow);
+        const chimeA = Math.sin(Math.PI * 2 * 1320 * time) * Math.exp(-time / .055) * .09;
+        const chimeB = Math.sin(Math.PI * 2 * 1920 * time) * Math.exp(-time / .038) * .055;
+        const tick = (white - noiseLow) * Math.exp(-time / .009) * .07;
+        const settle = Math.sin(Math.PI * 2 * 760 * time) * Math.sin(Math.PI * progress) * .025;
+        return (chimeA + chimeB + tick + settle) * edgeEnvelope(time, duration, .0015, .025);
+      });
+    }
+    const synthesizers = {
+      'missile-hit': synthesizeMissileHit,
+      'explode-mechanical': synthesizeMechanicalExplosion,
+      'explode-soft': synthesizeSoftExplosion,
+      'boss-explode': synthesizeBossExplosion,
+      hurt: synthesizeHurt,
+      machinegun: () => synthesizeMachinegun(0x4d473031),
+      hit: synthesizeHit,
+      'orange-shot': synthesizeOrangeShot,
+      'game-over': synthesizeGameOver,
+      'boss-charge': synthesizeBossCharge,
+      'magic-break': synthesizeMagicBreak,
+      'weapon-switch': synthesizeWeaponSwitch,
+      fragment: synthesizeFragment,
+      'machinegun-2': () => synthesizeMachinegun(0x4d473032, 8, .085),
+      'machinegun-3': () => synthesizeMachinegun(0x4d473033, -7, .095)
+    };
+    return synthesizers[name]?.() || null;
+  }
+
   function createSoundBuffer(name) {
     const audio = ensureAudio();
     if (!audio) return null;
+    const sampleRate = audio.sampleRate || 22050;
+    const foleySamples = createFoleySamples(name, sampleRate);
+    if (foleySamples) {
+      const buffer = audio.createBuffer(1, foleySamples.length, sampleRate);
+      buffer.getChannelData(0).set(foleySamples);
+      soundBuffers[name] = buffer;
+      return buffer;
+    }
     if (name === 'missile-launch') {
-      const sampleRate = audio.sampleRate || 22050;
       const duration = .4;
       const length = Math.ceil(sampleRate * duration);
       const buffer = audio.createBuffer(1, length, sampleRate);
@@ -641,20 +933,14 @@ globalThis.GameRules = {
     }
     const definitions = {
       fire: [650, 390, .065, .16, 'square'],
-      machinegun: [205, 108, .052, .14, 'square'],
       'wizard-shot': [420, 760, .18, .16, 'triangle'],
-      'orange-shot': [170, 92, .2, .22, 'square'],
       'blue-shot': [820, 1280, .13, .16, 'saw'],
-      hit: [260, 160, .075, .19, 'triangle'],
       laser: [760, 1050, .11, .13, 'saw'],
-      hurt: [155, 72, .2, .26, 'square'],
-      explode: [110, 35, .3, .34, 'noise'],
       boss: [95, 40, .58, .3, 'saw'],
       upgrade: [520, 1120, .34, .24, 'triangle'],
       start: [330, 720, .36, .2, 'triangle']
     };
     const [startFrequency, endFrequency, duration, volume, wave] = definitions[name];
-    const sampleRate = audio.sampleRate || 22050;
     const length = Math.ceil(sampleRate * duration);
     const buffer = audio.createBuffer(1, length, sampleRate);
     const data = buffer.getChannelData(0);
@@ -677,13 +963,14 @@ globalThis.GameRules = {
 
   function playSound(name) {
     const now = performance.now();
-    const limits = { fire: 120, machinegun: 70, 'missile-launch': 120, hit: 110, laser: 150, 'wizard-shot': 280, 'orange-shot': 180, 'blue-shot': 140 };
+    const limits = { fire: 120, machinegun: 70, 'missile-launch': 120, 'missile-hit': 100, hit: 110, laser: 150, 'magic-break': 100, 'wizard-shot': 280, 'orange-shot': 180, 'blue-shot': 140 };
     if (limits[name] && now - (soundCooldowns[name] || 0) < limits[name]) return;
     soundCooldowns[name] = now;
     const audio = ensureAudio();
     if (!audio) return;
+    const bufferName = name === 'machinegun' ? ['machinegun', 'machinegun-2', 'machinegun-3'][machinegunSoundIndex++ % 3] : name;
     const source = audio.createBufferSource();
-    source.buffer = soundBuffers[name] || createSoundBuffer(name);
+    source.buffer = soundBuffers[bufferName] || createSoundBuffer(bufferName);
     source.connect(audio.destination);
     source.onended = () => source.disconnect();
     source.start();
@@ -937,6 +1224,7 @@ globalThis.GameRules = {
           boss.vx = Math.cos(angle) * 270;
           boss.vy = Math.sin(angle) * 270;
           boss.charging = true;
+          playSound('boss-charge');
         }
       }
     } else {
@@ -1003,7 +1291,7 @@ globalThis.GameRules = {
   function damageEnemy(enemy, damage, color = '#fff', impactKey = 'hitMachinegun') {
     if (enemy.dead) return;
     enemy.hp -= damage;
-    playSound(color === '#7ff8ff' ? 'laser' : 'hit');
+    playSound(impactKey === ImpactVisuals.homing ? 'missile-hit' : impactKey === ImpactVisuals.laser ? 'laser' : 'hit');
     addFloater(enemy.x, enemy.y - enemy.r, `-${Math.round(damage)}`, color);
     addImpact(enemy.x, enemy.y, impactKey, impactKey === ImpactVisuals.laser ? enemy : null);
     if (enemy.hp <= 0) killEnemy(enemy);
@@ -1013,7 +1301,7 @@ globalThis.GameRules = {
     enemy.dead = true;
     addParticle(enemy.x, enemy.y, enemy.type === 'boss' ? '#ffd44a' : '#fff3a1', enemy.type === 'boss' ? 70 : 22, enemy.type === 'boss' ? 360 : 220);
     game.shake = enemy.type === 'boss' ? 18 : 5;
-    playSound('explode');
+    playSound(enemy.type === 'boss' ? 'boss-explode' : enemy.type === 'drone' ? 'explode-mechanical' : 'explode-soft');
     if (enemy.type === 'boss') {
       const fragmentType = GameRules.chooseFragmentDrop(game.fragments, game.weaponLevels, Math.random());
       const result = GameRules.awardBossKill(game, enemy.initialHp, fragmentType);
@@ -1022,6 +1310,7 @@ globalThis.GameRules = {
       game.fragments = result.fragments;
       game.boss = null;
       ui['boss-panel'].classList.add('hidden');
+      if (fragmentType) playSound('fragment');
       showToast(fragmentType ? `获得 2 枚${fragmentType === 'homing' ? '追踪弹' : '激光'}碎片！` : '装备已满级！');
       if (fragmentType && GameRules.canUpgrade(game.fragments[fragmentType], game.weaponLevels[fragmentType], fragmentType)) setTimeout(() => openUpgrade(fragmentType), 450);
     } else {
@@ -1040,6 +1329,7 @@ globalThis.GameRules = {
         if (!shot.dead && shot.destructible && GameRules.circlesOverlap(bullet, shot)) {
           bullet.dead = true;
           shot.dead = true;
+          playSound('magic-break');
           addParticle(shot.x, shot.y, '#b69cff', 14, 180);
           break;
         }
@@ -1540,10 +1830,11 @@ globalThis.GameRules = {
   }
 
   function closeUpgrade(){modalWeapon=null;game.paused=false;ui['upgrade-modal'].classList.add('hidden');updateHud();lastTime=performance.now();}
-  function setSpecialWeapon(type){if(game.weaponLevels[type]<=0)return;game.activeWeapon=type;game.specialTimer=0;game.laserTimer=0;game.laserTargetId=null;showToast(type==='homing'?'已切换追踪弹':'已切换激光枪');updateHud();}
+  function setSpecialWeapon(type){if(game.weaponLevels[type]<=0)return;const changed=game.activeWeapon!==type;game.activeWeapon=type;game.specialTimer=0;game.laserTimer=0;game.laserTargetId=null;if(changed)playSound('weapon-switch');showToast(type==='homing'?'已切换追踪弹':'已切换激光枪');updateHud();}
 
   function endGame(){
     if(!game.running)return;game.running=false;game.paused=false;
+    playSound('game-over');
     ui['result-monsters'].textContent=game.normalKills;ui['result-bosses'].textContent=game.bosses;ui['result-damage'].textContent=GameRules.bulletDamage(game.attackLevel);
     ui['game-over'].classList.remove('hidden');
   }

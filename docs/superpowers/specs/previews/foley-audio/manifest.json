@@ -1,0 +1,154 @@
+{
+  "status": "试听候选，尚未接入游戏；接入需用户试听确认",
+  "format": {
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitDepth": 16,
+    "encoding": "PCM"
+  },
+  "main": [
+    {
+      "key": "missile-hit",
+      "name": "导弹命中爆裂",
+      "description": "独立于击杀的短促爆裂，含低频撞击、滤波碎屑与轻微金属尾音。",
+      "duration": 0.32,
+      "originalKey": "hit",
+      "file": "missile-hit.wav"
+    },
+    {
+      "key": "explode-mechanical",
+      "name": "机械敌机碎裂",
+      "description": "普通机械敌机的实体碎裂，低频闷响后跟随三段轻金属散落。",
+      "duration": 0.38,
+      "originalKey": "explode",
+      "file": "explode-mechanical.wav"
+    },
+    {
+      "key": "explode-soft",
+      "name": "生物魔法柔和消散",
+      "description": "柔软低频气团、滤波噪声与安静微光尾音，避免尖锐爆炸感。",
+      "duration": 0.42,
+      "originalKey": "explode",
+      "file": "explode-soft.wav"
+    },
+    {
+      "key": "boss-explode",
+      "name": "BOSS 大体量爆炸",
+      "description": "多段错开的重击和碎屑脉冲，表现大体量瓦解但保持儿童友好响度。",
+      "duration": 0.86,
+      "originalKey": "explode",
+      "file": "boss-explode.wav"
+    },
+    {
+      "key": "hurt",
+      "name": "玩家受伤",
+      "description": "清楚但不刺耳的下坠实体音与软质敲击。",
+      "duration": 0.22,
+      "originalKey": "hurt",
+      "file": "hurt.wav"
+    },
+    {
+      "key": "machinegun",
+      "name": "机枪连射",
+      "description": "约 0.052 秒的短促机械脉冲，按 0.09 秒节拍叠加时仍保留间隙。",
+      "duration": 0.052,
+      "originalKey": "machinegun",
+      "file": "machinegun.wav"
+    },
+    {
+      "key": "hit",
+      "name": "普通命中",
+      "description": "短小低频触感与柔和滤波敲击，适合高频触发。",
+      "duration": 0.11,
+      "originalKey": "hit",
+      "file": "hit.wav"
+    },
+    {
+      "key": "orange-shot",
+      "name": "橙色重炮",
+      "description": "低频炮体与滤波气流爆发，强调重炮重量而不产生刺耳高频。",
+      "duration": 0.36,
+      "originalKey": "orange-shot",
+      "file": "orange-shot.wav"
+    },
+    {
+      "key": "game-over",
+      "name": "游戏结束",
+      "description": "三段缓降的柔和机械音阶叠加减速熄火层，短尾收束失败反馈。",
+      "duration": 0.78,
+      "originalKey": null,
+      "file": "game-over.wav"
+    },
+    {
+      "key": "boss-charge",
+      "name": "BOSS 冲锋",
+      "description": "0.36 秒由低到高的实体推进、滤波气流与起冲脉冲，无持续引擎感。",
+      "duration": 0.36,
+      "originalKey": null,
+      "file": "boss-charge.wav"
+    },
+    {
+      "key": "magic-break",
+      "name": "魔法破碎",
+      "description": "柔和高频碎光、滤波粉尘与低层消散，不使用尖锐玻璃感。",
+      "duration": 0.44,
+      "originalKey": null,
+      "file": "magic-break.wav"
+    },
+    {
+      "key": "weapon-switch",
+      "name": "武器切换装配",
+      "description": "两段机械卡扣、金属回响和轻微锁定音。",
+      "duration": 0.28,
+      "originalKey": null,
+      "file": "weapon-switch.wav"
+    },
+    {
+      "key": "fragment",
+      "name": "武器碎片获得",
+      "description": "清脆短亮的双层碎片音，快速衰减以避免刺耳。",
+      "duration": 0.18,
+      "originalKey": null,
+      "file": "fragment.wav"
+    }
+  ],
+  "variants": [
+    {
+      "key": "machinegun-2",
+      "name": "机枪缓存变体 2",
+      "file": "machinegun-2.wav",
+      "baseKey": "machinegun",
+      "duration": 0.052
+    },
+    {
+      "key": "machinegun-3",
+      "name": "机枪缓存变体 3",
+      "file": "machinegun-3.wav",
+      "baseKey": "machinegun",
+      "duration": 0.052
+    }
+  ],
+  "mixes": [
+    {
+      "key": "battle-original",
+      "name": "战斗原声基线",
+      "file": "battle-original.wav",
+      "description": "按同一事件时间表混合当前 runtime WAV；全事件固定增益 0.72，不归一化。",
+      "duration": 10
+    },
+    {
+      "key": "battle-candidate",
+      "name": "战斗候选对照",
+      "file": "battle-candidate.wav",
+      "description": "同一事件时间表替换拟物候选；missile-launch 与 laser 继续使用当前 runtime WAV；全事件固定增益 0.72，不归一化。",
+      "duration": 10
+    },
+    {
+      "key": "events-showcase",
+      "name": "候选逐项串听",
+      "file": "events-showcase.wav",
+      "description": "13 个主候选按 manifest 顺序串联，相邻项目间隔 0.24 秒。",
+      "duration": 7.6420408163265305
+    }
+  ]
+}

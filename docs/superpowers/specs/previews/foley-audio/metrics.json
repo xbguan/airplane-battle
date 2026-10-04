@@ -1,0 +1,987 @@
+{
+  "format": {
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitDepth": 16,
+    "encoding": "PCM"
+  },
+  "synthesis": {
+    "deterministic": true,
+    "externalDependencies": [],
+    "design": "短促低频实体冲击、滤波噪声、机械与能量材质；首尾平滑归零；无持续引擎层",
+    "normalizationApplied": false
+  },
+  "validation": {
+    "passed": true,
+    "checks": [
+      "finite PCM",
+      "first sample zero",
+      "last sample zero",
+      "peak below 1.0",
+      "absolute DC offset below 0.01"
+    ],
+    "note": "峰值、RMS 与 DC 为数字统计，只用于排查削波和异常，不代表实际听感。"
+  },
+  "files": {
+    "missile-hit.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 14112,
+      "durationSeconds": 0.32,
+      "peak": 0.299285888671875,
+      "peakDbfs": -10.47827519319373,
+      "rms": 0.06607600035132892,
+      "rmsDbfs": -23.59912506372876,
+      "dcOffset": 0.0002244573061158057,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "explode-mechanical.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 16758,
+      "durationSeconds": 0.38,
+      "peak": 0.246337890625,
+      "peakDbfs": -12.169375634617277,
+      "rms": 0.061851769063986824,
+      "rmsDbfs": -24.172957486181367,
+      "dcOffset": 0.00028190244025241677,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "explode-soft.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 18522,
+      "durationSeconds": 0.42,
+      "peak": 0.180816650390625,
+      "peakDbfs": -14.855231605551529,
+      "rms": 0.05039273500318625,
+      "rmsDbfs": -25.95264140420509,
+      "dcOffset": -0.0006396004582388511,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "boss-explode.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 37926,
+      "durationSeconds": 0.86,
+      "peak": 0.302398681640625,
+      "peakDbfs": -10.388402130972825,
+      "rms": 0.06839810262113724,
+      "rmsDbfs": -23.299118910802157,
+      "dcOffset": 0.0005945633064120755,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "hurt.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 9702,
+      "durationSeconds": 0.22,
+      "peak": 0.138519287109375,
+      "peakDbfs": -17.169795044337377,
+      "rms": 0.0530890880349823,
+      "rmsDbfs": -25.49989469821609,
+      "dcOffset": 0.00023542760795132448,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "machinegun.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 2294,
+      "durationSeconds": 0.05201814058956916,
+      "peak": 0.196624755859375,
+      "peakDbfs": -14.127236072267433,
+      "rms": 0.0590514614593062,
+      "rmsDbfs": -24.575386992048102,
+      "dcOffset": 0.000886912125551711,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "hit.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 4851,
+      "durationSeconds": 0.11,
+      "peak": 0.240692138671875,
+      "peakDbfs": -12.370761882673856,
+      "rms": 0.05841277091518798,
+      "rmsDbfs": -24.66984383458535,
+      "dcOffset": 0.0002374595967648423,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "orange-shot.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 15876,
+      "durationSeconds": 0.36,
+      "peak": 0.242645263671875,
+      "peakDbfs": -12.300563630039607,
+      "rms": 0.0714542068537428,
+      "rmsDbfs": -22.91944394219554,
+      "dcOffset": 0.0005427019576276691,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "game-over.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 34398,
+      "durationSeconds": 0.78,
+      "peak": 0.19976806640625,
+      "peakDbfs": -13.989478679754647,
+      "rms": 0.056768114744695126,
+      "rmsDbfs": -24.91791056698763,
+      "dcOffset": -0.000033330859136523196,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "boss-charge.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 15876,
+      "durationSeconds": 0.36,
+      "peak": 0.24688720703125,
+      "peakDbfs": -12.150028266948913,
+      "rms": 0.06199150596558879,
+      "rmsDbfs": -24.153356263257013,
+      "dcOffset": -0.00008629731370268014,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "magic-break.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 19404,
+      "durationSeconds": 0.44,
+      "peak": 0.139984130859375,
+      "peakDbfs": -17.07842389655471,
+      "rms": 0.03432323230238555,
+      "rmsDbfs": -29.28823640656598,
+      "dcOffset": 0.0002506392146110338,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "weapon-switch.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 12349,
+      "durationSeconds": 0.28002267573696143,
+      "peak": 0.196044921875,
+      "peakDbfs": -14.152888053781867,
+      "rms": 0.03227236303848736,
+      "rmsDbfs": -29.823384672707398,
+      "dcOffset": -0.000027055344182727347,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "fragment.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 7938,
+      "durationSeconds": 0.18,
+      "peak": 0.168731689453125,
+      "peakDbfs": -15.456066900419634,
+      "rms": 0.030472558128658886,
+      "rmsDbfs": -30.321821716644926,
+      "dcOffset": -0.000004521122685185185,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "machinegun-2.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 2294,
+      "durationSeconds": 0.05201814058956916,
+      "peak": 0.20428466796875,
+      "peakDbfs": -13.79528453875919,
+      "rms": 0.05886333487988399,
+      "rmsDbfs": -24.603102735008946,
+      "dcOffset": 0.0008300940888595249,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "machinegun-3.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 2294,
+      "durationSeconds": 0.05201814058956916,
+      "peak": 0.20501708984375,
+      "peakDbfs": -13.76419870908145,
+      "rms": 0.05960384796881772,
+      "rmsDbfs": -24.49451403416208,
+      "dcOffset": 0.0009971691820033239,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "battle-original.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 441000,
+      "durationSeconds": 10,
+      "peak": 0.307159423828125,
+      "peakDbfs": -10.252723114700892,
+      "rms": 0.0407176010080363,
+      "rmsDbfs": -27.80435635196411,
+      "dcOffset": 0.0011998096561215631,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "battle-candidate.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 441000,
+      "durationSeconds": 10,
+      "peak": 0.309783935546875,
+      "peakDbfs": -10.17882214368856,
+      "rms": 0.041744017361212034,
+      "rmsDbfs": -27.588115152440803,
+      "dcOffset": 0.0003724053830516582,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    },
+    "events-showcase.wav": {
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "samples": 337014,
+      "durationSeconds": 7.6420408163265305,
+      "peak": 0.302398681640625,
+      "peakDbfs": -10.388402130972825,
+      "rms": 0.045512821851932235,
+      "rmsDbfs": -26.83732473714509,
+      "dcOffset": 0.00010283779272940071,
+      "firstSample": 0,
+      "lastSample": 0,
+      "normalized": false
+    }
+  },
+  "battleMix": {
+    "durationSeconds": 10,
+    "fixedEventGain": 0.72,
+    "normalizationApplied": false,
+    "preservedRuntimeKeys": [
+      "missile-launch",
+      "laser"
+    ],
+    "runtimeSourceDirectory": "../runtime-audio",
+    "events": [
+      {
+        "time": 0.15,
+        "candidateKey": "missile-launch",
+        "originalKey": "missile-launch",
+        "label": "导弹发射原声保留"
+      },
+      {
+        "time": 0.4,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 1 发"
+      },
+      {
+        "time": 0.49,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 2 发"
+      },
+      {
+        "time": 0.58,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 3 发"
+      },
+      {
+        "time": 0.67,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 4 发"
+      },
+      {
+        "time": 0.76,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 5 发"
+      },
+      {
+        "time": 0.85,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 6 发"
+      },
+      {
+        "time": 0.94,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 7 发"
+      },
+      {
+        "time": 1.03,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 8 发"
+      },
+      {
+        "time": 1.12,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 9 发"
+      },
+      {
+        "time": 1.21,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 10 发"
+      },
+      {
+        "time": 1.3,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 11 发"
+      },
+      {
+        "time": 1.39,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 12 发"
+      },
+      {
+        "time": 1.48,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 13 发"
+      },
+      {
+        "time": 1.52,
+        "candidateKey": "hit",
+        "originalKey": "hit",
+        "label": "普通命中"
+      },
+      {
+        "time": 1.57,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 14 发"
+      },
+      {
+        "time": 1.66,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 15 发"
+      },
+      {
+        "time": 1.75,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 16 发"
+      },
+      {
+        "time": 1.84,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 17 发"
+      },
+      {
+        "time": 1.9,
+        "candidateKey": "explode-mechanical",
+        "originalKey": "explode",
+        "label": "机械敌机碎裂"
+      },
+      {
+        "time": 1.93,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 18 发"
+      },
+      {
+        "time": 2.02,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 19 发"
+      },
+      {
+        "time": 2.11,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 20 发"
+      },
+      {
+        "time": 2.2,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 21 发"
+      },
+      {
+        "time": 2.29,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 22 发"
+      },
+      {
+        "time": 2.38,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 23 发"
+      },
+      {
+        "time": 2.47,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 24 发"
+      },
+      {
+        "time": 2.48,
+        "candidateKey": "laser",
+        "originalKey": "laser",
+        "label": "激光原声保留"
+      },
+      {
+        "time": 2.56,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 25 发"
+      },
+      {
+        "time": 2.65,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 26 发"
+      },
+      {
+        "time": 2.74,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 27 发"
+      },
+      {
+        "time": 2.83,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 28 发"
+      },
+      {
+        "time": 2.92,
+        "candidateKey": "orange-shot",
+        "originalKey": "orange-shot",
+        "label": "橙色重炮"
+      },
+      {
+        "time": 2.92,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 29 发"
+      },
+      {
+        "time": 3.01,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 30 发"
+      },
+      {
+        "time": 3.1,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 31 发"
+      },
+      {
+        "time": 3.19,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 32 发"
+      },
+      {
+        "time": 3.28,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 33 发"
+      },
+      {
+        "time": 3.37,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 34 发"
+      },
+      {
+        "time": 3.46,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 35 发"
+      },
+      {
+        "time": 3.55,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 36 发"
+      },
+      {
+        "time": 3.58,
+        "candidateKey": "hurt",
+        "originalKey": "hurt",
+        "label": "玩家受伤"
+      },
+      {
+        "time": 3.64,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 37 发"
+      },
+      {
+        "time": 3.73,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 38 发"
+      },
+      {
+        "time": 3.82,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 39 发"
+      },
+      {
+        "time": 3.91,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 40 发"
+      },
+      {
+        "time": 4,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 41 发"
+      },
+      {
+        "time": 4.08,
+        "candidateKey": "missile-launch",
+        "originalKey": "missile-launch",
+        "label": "导弹发射原声保留"
+      },
+      {
+        "time": 4.09,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 42 发"
+      },
+      {
+        "time": 4.18,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 43 发"
+      },
+      {
+        "time": 4.27,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 44 发"
+      },
+      {
+        "time": 4.36,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 45 发"
+      },
+      {
+        "time": 4.45,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 46 发"
+      },
+      {
+        "time": 4.54,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 47 发"
+      },
+      {
+        "time": 4.62,
+        "candidateKey": "missile-hit",
+        "originalKey": "hit",
+        "label": "导弹命中爆裂"
+      },
+      {
+        "time": 4.63,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 48 发"
+      },
+      {
+        "time": 4.72,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 49 发"
+      },
+      {
+        "time": 4.81,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 50 发"
+      },
+      {
+        "time": 4.9,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 51 发"
+      },
+      {
+        "time": 4.99,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 52 发"
+      },
+      {
+        "time": 5.08,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 53 发"
+      },
+      {
+        "time": 5.17,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 54 发"
+      },
+      {
+        "time": 5.18,
+        "candidateKey": "explode-soft",
+        "originalKey": "explode",
+        "label": "生物魔法消散"
+      },
+      {
+        "time": 5.26,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 55 发"
+      },
+      {
+        "time": 5.35,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 56 发"
+      },
+      {
+        "time": 5.44,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 57 发"
+      },
+      {
+        "time": 5.53,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 58 发"
+      },
+      {
+        "time": 5.62,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 59 发"
+      },
+      {
+        "time": 5.71,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 60 发"
+      },
+      {
+        "time": 5.78,
+        "candidateKey": "magic-break",
+        "originalKey": null,
+        "label": "魔法破碎（原版静音）"
+      },
+      {
+        "time": 5.8,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 61 发"
+      },
+      {
+        "time": 5.89,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 62 发"
+      },
+      {
+        "time": 5.98,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 63 发"
+      },
+      {
+        "time": 6.07,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 64 发"
+      },
+      {
+        "time": 6.16,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 65 发"
+      },
+      {
+        "time": 6.25,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 66 发"
+      },
+      {
+        "time": 6.34,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 67 发"
+      },
+      {
+        "time": 6.4,
+        "candidateKey": "weapon-switch",
+        "originalKey": null,
+        "label": "武器切换（原版静音）"
+      },
+      {
+        "time": 6.43,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 68 发"
+      },
+      {
+        "time": 6.52,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 69 发"
+      },
+      {
+        "time": 6.61,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 70 发"
+      },
+      {
+        "time": 6.7,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 71 发"
+      },
+      {
+        "time": 6.79,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 72 发"
+      },
+      {
+        "time": 6.88,
+        "candidateKey": "fragment",
+        "originalKey": null,
+        "label": "碎片获得（原版静音）"
+      },
+      {
+        "time": 6.88,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 73 发"
+      },
+      {
+        "time": 6.97,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 74 发"
+      },
+      {
+        "time": 7.06,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 75 发"
+      },
+      {
+        "time": 7.15,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 76 发"
+      },
+      {
+        "time": 7.24,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 77 发"
+      },
+      {
+        "time": 7.32,
+        "candidateKey": "boss-charge",
+        "originalKey": null,
+        "label": "BOSS 冲锋（原版静音）"
+      },
+      {
+        "time": 7.33,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 78 发"
+      },
+      {
+        "time": 7.42,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 79 发"
+      },
+      {
+        "time": 7.51,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 80 发"
+      },
+      {
+        "time": 7.6,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 81 发"
+      },
+      {
+        "time": 7.69,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 82 发"
+      },
+      {
+        "time": 7.78,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 83 发"
+      },
+      {
+        "time": 7.87,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 84 发"
+      },
+      {
+        "time": 7.96,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 85 发"
+      },
+      {
+        "time": 8.05,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 86 发"
+      },
+      {
+        "time": 8.14,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 87 发"
+      },
+      {
+        "time": 8.16,
+        "candidateKey": "boss-explode",
+        "originalKey": "explode",
+        "label": "BOSS 爆炸"
+      },
+      {
+        "time": 8.23,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 88 发"
+      },
+      {
+        "time": 8.32,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 89 发"
+      },
+      {
+        "time": 8.41,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 90 发"
+      },
+      {
+        "time": 8.5,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 91 发"
+      },
+      {
+        "time": 8.59,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 92 发"
+      },
+      {
+        "time": 8.68,
+        "candidateKey": "machinegun-3",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 93 发"
+      },
+      {
+        "time": 8.77,
+        "candidateKey": "machinegun",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 94 发"
+      },
+      {
+        "time": 8.86,
+        "candidateKey": "machinegun-2",
+        "originalKey": "machinegun",
+        "label": "连续机枪第 95 发"
+      },
+      {
+        "time": 9.12,
+        "candidateKey": "game-over",
+        "originalKey": null,
+        "label": "游戏结束（原版静音）"
+      }
+    ]
+  },
+  "showcase": {
+    "order": [
+      "missile-hit",
+      "explode-mechanical",
+      "explode-soft",
+      "boss-explode",
+      "hurt",
+      "machinegun",
+      "hit",
+      "orange-shot",
+      "game-over",
+      "boss-charge",
+      "magic-break",
+      "weapon-switch",
+      "fragment"
+    ],
+    "gapSeconds": 0.24
+  }
+}

@@ -7,6 +7,7 @@ const html = fs.existsSync(new URL('../index.html', import.meta.url))
   ? fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8')
   : '<script id="game-rules">globalThis.GameRules = {};</script>';
 const assetCatalog = fs.readFileSync(new URL('../全部资产清单.html', import.meta.url), 'utf8');
+const foleyManifest = JSON.parse(fs.readFileSync(new URL('../docs/superpowers/specs/previews/foley-audio/manifest.json', import.meta.url), 'utf8'));
 const removedAssetPaths = [
   'assets/source/master-pixel-assets.png',
   ...Array.from({ length: 6 }, (_, index) => `assets/scenery/topdown-segment-0${index + 1}.png`),
@@ -56,10 +57,11 @@ function createAudioRuntime(sampleRate = 44100) {
     audioContext: audio,
     soundBuffers: {},
     soundCooldowns: {},
+    machinegunSoundIndex: 0,
     window: {},
     performance: { now: () => now }
   });
-  for (const name of ['ensureAudio', 'createSoundBuffer', 'playSound']) {
+  for (const name of ['ensureAudio', 'createFoleySamples', 'createSoundBuffer', 'playSound']) {
     const start = html.indexOf(`  function ${name}(`);
     assert.ok(start >= 0, `Missing production function: ${name}`);
     vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
@@ -88,7 +90,9 @@ function legacySoundSamples([startFrequency, endFrequency, duration, volume, wav
     const envelope = (1 - progress) ** 2;
     const sample = wave === 'square'
       ? (Math.sin(phase) >= 0 ? 1 : -1)
-      : ((phase / Math.PI) % 2) - 1;
+      : wave === 'saw'
+        ? ((phase / Math.PI) % 2) - 1
+        : Math.asin(Math.sin(phase)) * 2 / Math.PI;
     samples[i] = sample * envelope * volume;
   }
   return samples;
@@ -120,16 +124,197 @@ test('playing missile launch reuses its cached buffer and disconnects ended sour
   assert.equal(sources.every(source => source.disconnected), true);
 });
 
-test('missile synthesis leaves machinegun and laser buffers unchanged', () => {
+test('foley synthesis leaves the retained start, upgrade, laser, wizard, blue and boss buffers unchanged', () => {
   const { runtime } = createAudioRuntime();
   for (const [name, definition] of [
-    ['machinegun', [205, 108, .052, .14, 'square']],
-    ['laser', [760, 1050, .11, .13, 'saw']]
+    ['start', [330, 720, .36, .2, 'triangle']],
+    ['upgrade', [520, 1120, .34, .24, 'triangle']],
+    ['laser', [760, 1050, .11, .13, 'saw']],
+    ['wizard-shot', [420, 760, .18, .16, 'triangle']],
+    ['blue-shot', [820, 1280, .13, .16, 'saw']],
+    ['boss', [95, 40, .58, .3, 'saw']]
   ]) {
     const actual = vm.runInContext(`createSoundBuffer('${name}').getChannelData(0)`, runtime);
     const expected = legacySoundSamples(definition, 44100);
     assert.deepEqual(Array.from(actual), Array.from(expected));
   }
+});
+
+test('all confirmed foley buffers match their approved PCM previews', () => {
+  const { runtime } = createAudioRuntime();
+  for (const item of [...foleyManifest.main, ...foleyManifest.variants]) {
+    const approved = decodeMonoPcm16Wav(new URL(`../docs/superpowers/specs/previews/foley-audio/${item.file}`, import.meta.url));
+    const actual = vm.runInContext(`createSoundBuffer('${item.key}').getChannelData(0)`, runtime);
+    assert.equal(approved.sampleRate, 44100);
+    assert.equal(actual.length, approved.samples.length, `${item.key} length`);
+    for (let i = 0; i < actual.length; i++) {
+      assert.ok(Math.abs(actual[i] - approved.samples[i]) <= 1 / 32768 + 1e-7, `${item.key} PCM differs at sample ${i}`);
+    }
+  }
+});
+
+test('foley synthesis stays finite and closes cleanly at 44.1 and 48 kHz', () => {
+  for (const sampleRate of [44100, 48000]) {
+    const { runtime } = createAudioRuntime(sampleRate);
+    for (const item of [...foleyManifest.main, ...foleyManifest.variants]) {
+      const samples = vm.runInContext(`createFoleySamples('${item.key}', ${sampleRate})`, runtime);
+      assert.equal(samples.length, Math.ceil(item.duration * sampleRate), `${item.key} length at ${sampleRate}`);
+      assert.equal(samples[0], 0, `${item.key} first sample at ${sampleRate}`);
+      assert.equal(samples.at(-1), 0, `${item.key} last sample at ${sampleRate}`);
+      assert.equal(Array.from(samples).every(Number.isFinite), true, `${item.key} finite at ${sampleRate}`);
+    }
+  }
+});
+
+test('machinegun rotates three cached variants while preserving cooldown and source cleanup', () => {
+  const { runtime, buffers, sources, setNow } = createAudioRuntime();
+  for (const now of [200, 300, 400]) {
+    setNow(now);
+    vm.runInContext(`playSound('machinegun')`, runtime);
+  }
+  setNow(450);
+  vm.runInContext(`playSound('machinegun')`, runtime);
+  setNow(500);
+  vm.runInContext(`playSound('machinegun')`, runtime);
+  assert.equal(buffers.length, 3);
+  assert.equal(sources.length, 4);
+  assert.notEqual(sources[0].buffer, sources[1].buffer);
+  assert.notEqual(sources[1].buffer, sources[2].buffer);
+  assert.equal(sources[0].buffer, sources[3].buffer);
+  assert.equal(sources.every(source => source.connected && source.started), true);
+  sources.forEach(source => source.onended());
+  assert.equal(sources.every(source => source.disconnected), true);
+});
+
+test('magic break sound is rate limited for clustered projectile hits', () => {
+  const { runtime, sources, setNow } = createAudioRuntime();
+  setNow(200);
+  vm.runInContext(`playSound('magic-break')`, runtime);
+  setNow(250);
+  vm.runInContext(`playSound('magic-break')`, runtime);
+  setNow(310);
+  vm.runInContext(`playSound('magic-break')`, runtime);
+  assert.equal(sources.length, 2);
+});
+
+function runProductionFunctions(runtime, names) {
+  for (const name of names) {
+    const start = html.indexOf(`  function ${name}(`);
+    assert.ok(start >= 0, `Missing production function: ${name}`);
+    vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
+  }
+}
+
+test('enemy hit sounds follow impact type instead of display color', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    ImpactVisuals: { bullet: 'hitMachinegun', homing: 'hitMissile', laser: 'hitLaser' },
+    playSound: name => sounds.push(name), addFloater() {}, addImpact() {}, killEnemy() {}
+  });
+  runProductionFunctions(runtime, ['damageEnemy']);
+  for (const [impactKey, color] of [['hitMissile', '#fff'], ['hitLaser', '#fff'], ['hitMachinegun', '#7ff8ff']]) {
+    runtime.enemy = { hp: 100, dead: false, x: 0, y: 0, r: 1 };
+    runtime.impactKey = impactKey;
+    runtime.color = color;
+    vm.runInContext('damageEnemy(enemy, 1, color, impactKey)', runtime);
+  }
+  assert.deepEqual(sounds, ['missile-hit', 'laser', 'hit']);
+});
+
+test('enemy deaths use body-specific sounds and fragments sound only when awarded', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { xp: 0, bosses: 0, normalKills: 0, fragments: { homing: 0, laser: 0 }, weaponLevels: { homing: 0, laser: 0 }, shake: 0, boss: null },
+    GameRules: {
+      chooseFragmentDrop: () => 'homing',
+      awardBossKill: (state, hp, type) => ({ xp: state.xp + hp, bosses: state.bosses + 1, fragments: { ...state.fragments, [type]: state.fragments[type] + 2 } }),
+      awardNormalKill: state => ({ xp: state.xp + 5, normalKills: state.normalKills + 1, bossPending: false }),
+      canUpgrade: () => false
+    },
+    ui: { 'boss-panel': { classList: { add() {} } } },
+    playSound: name => sounds.push(name), addParticle() {}, showToast() {}, updateHud() {}, spawnBoss() {}, openUpgrade() {}, setTimeout() {}
+  });
+  runProductionFunctions(runtime, ['killEnemy']);
+  for (const type of ['drone', 'eagle', 'bat', 'wizard']) {
+    runtime.enemy = { type, x: 0, y: 0, initialHp: 20 };
+    vm.runInContext('killEnemy(enemy)', runtime);
+  }
+  runtime.enemy = { type: 'boss', x: 0, y: 0, initialHp: 100 };
+  vm.runInContext('killEnemy(enemy)', runtime);
+  runtime.GameRules.chooseFragmentDrop = () => null;
+  runtime.GameRules.awardBossKill = (state, hp) => ({ xp: state.xp + hp, bosses: state.bosses + 1, fragments: state.fragments });
+  runtime.enemy = { type: 'boss', x: 0, y: 0, initialHp: 100 };
+  vm.runInContext('killEnemy(enemy)', runtime);
+  assert.deepEqual(sounds, ['explode-mechanical', 'explode-soft', 'explode-soft', 'explode-soft', 'boss-explode', 'fragment', 'boss-explode']);
+});
+
+test('game over sound plays only on the first effective end transition', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { running: true, paused: true, normalKills: 2, bosses: 1, attackLevel: 3 },
+    GameRules: { bulletDamage: () => 8 }, playSound: name => sounds.push(name),
+    ui: {
+      'result-monsters': {}, 'result-bosses': {}, 'result-damage': {},
+      'game-over': { classList: { remove() {} } }
+    }
+  });
+  runProductionFunctions(runtime, ['endGame']);
+  vm.runInContext('endGame(); endGame();', runtime);
+  assert.deepEqual(sounds, ['game-over']);
+});
+
+test('brown boss charge sound fires once when charging starts', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { player: { x: 640, y: 600 } }, H: 720, W: 1280,
+    GameRules: { advanceBossEntrance: boss => ({ y: boss.y, entered: true }), circlesOverlap: () => false },
+    playSound: name => sounds.push(name), damagePlayer() {}, shootEnemyBullet() {},
+    EnemyProjectileVisuals: { brown: 'orangeBossShell' }, random: (min, max) => (min + max) / 2
+  });
+  runProductionFunctions(runtime, ['aimAngle', 'updateBoss']);
+  runtime.boss = { type: 'boss', variant: 'brown', age: 0, speedScale: 1, x: 640, y: 120, entered: true, shootTimer: 5, actionTimer: 0, charging: false, vx: 0, vy: 0, cooldownScale: 1 };
+  vm.runInContext('updateBoss(boss, .016); updateBoss(boss, .016);', runtime);
+  assert.equal(runtime.boss.charging, true);
+  assert.deepEqual(sounds, ['boss-charge']);
+});
+
+test('breaking a destructible magic projectile plays once while other shots stay silent', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { bullets: [], enemyBullets: [], enemies: [] },
+    GameRules: { circlesOverlap: () => true },
+    playSound: name => sounds.push(name), addParticle() {}, damageEnemy() {}, ImpactVisuals: {}
+  });
+  runProductionFunctions(runtime, ['checkCollisions']);
+  runtime.game.bullets = [{ dead: false }];
+  runtime.game.enemyBullets = [{ dead: false, destructible: true, x: 1, y: 2 }];
+  vm.runInContext('checkCollisions()', runtime);
+  runtime.game.bullets = [{ dead: false }];
+  runtime.game.enemyBullets = [{ dead: false, destructible: false, x: 1, y: 2 }];
+  vm.runInContext('checkCollisions()', runtime);
+  assert.deepEqual(sounds, ['magic-break']);
+});
+
+test('weapon switch sound requires an unlocked change while same-weapon clicks still reset timers', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { activeWeapon: 'homing', weaponLevels: { homing: 1, laser: 1 }, specialTimer: 8, laserTimer: 9, laserTargetId: 2 },
+    playSound: name => sounds.push(name), showToast() {}, updateHud() {}
+  });
+  runProductionFunctions(runtime, ['setSpecialWeapon']);
+  vm.runInContext(`setSpecialWeapon('homing')`, runtime);
+  assert.equal(runtime.game.specialTimer, 0);
+  assert.equal(runtime.game.laserTimer, 0);
+  assert.equal(runtime.game.laserTargetId, null);
+  assert.deepEqual(sounds, []);
+  runtime.game.specialTimer = 8;
+  vm.runInContext(`setSpecialWeapon('laser')`, runtime);
+  assert.equal(runtime.game.activeWeapon, 'laser');
+  assert.deepEqual(sounds, ['weapon-switch']);
+  runtime.game.weaponLevels.homing = 0;
+  vm.runInContext(`setSpecialWeapon('homing')`, runtime);
+  assert.equal(runtime.game.activeWeapon, 'laser');
+  assert.deepEqual(sounds, ['weapon-switch']);
 });
 
 for (const [name, actor] of [
@@ -597,8 +782,7 @@ test('clear perspective background uses its own sky without a second cloud overl
   assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyStorm'/);
 });
 
-test('machinegun uses a short cached dada cadence and the v2 muzzle asset', () => {
-  assert.match(html, /machinegun: \[205, 108, \.052, \.14, 'square'\]/);
+test('machinegun keeps its 0.09 second firing cadence and the v2 muzzle asset', () => {
   assert.match(html, /playerMuzzleFlashV2/);
   assert.match(html, /Math\.floor\(game\.time \/ \.09\)/);
 });
@@ -729,7 +913,7 @@ test('top-down scenery uses one seven-item sequence and returns outside the view
   assert.match(html, /GameRules\.sequenceLoopY\(y, landscapeOffset, TopdownScenerySequence\.length, 260\)/);
 });
 
-test('runtime asset catalog excludes removed files and retains both full backgrounds', () => {
+test('runtime asset catalog excludes removed and inactive entries while preserving background files', () => {
   for (const path of removedAssetPaths) {
     const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.equal(fs.existsSync(new URL(`../${path}`, import.meta.url)), false, `${path} must be deleted`);
@@ -740,6 +924,13 @@ test('runtime asset catalog excludes removed files and retains both full backgro
     const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.equal(fs.existsSync(new URL(`../${path}`, import.meta.url)), true, `${path} must remain`);
     assert.match(html, new RegExp(escaped));
-    assert.match(assetCatalog, new RegExp(escaped));
   }
+  assert.match(assetCatalog, /assets\/scenery\/background-perspective\.png/);
+  for (const path of [
+    'assets/scenery/background-topdown.png', 'assets/scenery/water-perspective-loop.png',
+    'assets/scenery/perspective-sky-clear.png', 'assets/weapons/enemy-bullet.png',
+    'blue-calm-topdown-sample.png', 'blue-calm-perspective-sample.png',
+    'battle-original', 'battle-candidate', 'events-showcase'
+  ]) assert.equal(assetCatalog.includes(path), false, `${path} must not appear in the runtime catalog`);
+  assert.doesNotMatch(assetCatalog, /历史对照|sound-optimization-plan/);
 });

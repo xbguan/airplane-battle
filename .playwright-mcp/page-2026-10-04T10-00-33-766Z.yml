@@ -1,0 +1,16 @@
+- main "飞机大战游戏区域" [ref=e2]:
+  - status
+  - generic [ref=e5]:
+    - paragraph [ref=e6]: 空中玩具战场 · 飞行机库
+    - img "蓝白小战机" [ref=e7]
+    - heading "飞机大战" [level=1] [ref=e8]
+    - paragraph [ref=e9]: 飞机大战 · V2.2
+    - paragraph [ref=e10]: 移动鼠标驾驶战斗机，自动发射双列火球。击败怪物、挑战 BOSS，收集碎片解锁追踪弹和激光枪！
+    - generic "选择游戏背景" [ref=e11]:
+      - button "海岛俯瞰 俯视" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: 海岛俯瞰
+        - generic [ref=e14]: 俯视
+      - button "海天远航 斜视" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: 海天远航
+        - generic [ref=e17]: 斜视
+    - button "开始出击" [ref=e18] [cursor=pointer]
