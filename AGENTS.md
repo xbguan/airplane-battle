@@ -6,6 +6,7 @@
 - `versions/airplane-battle-v1.html` 是 V1 完整快照；明确要求同步 V1 时，必须与 `index.html` 内容完全一致。
 - 游戏为原生 HTML/CSS/JavaScript，零第三方依赖；允许使用项目内 `assets/` 的原创本地 PNG 素材，不引入框架、构建工具、CDN 或在线资源。
 - `tests/game-logic.test.mjs` 覆盖战斗规则，`tests/browser-smoke.py` 覆盖浏览器交互、性能和画面结构。
+- `docs/游戏规则基线.adoc` 是 V2 当前游戏规则的维护文档；修改玩法、数值、角色、阶段或难度时，必须同步更新对应测试和该文档。若文档与当前实现冲突，以 `index.html` 和现有测试为准。
 - 设计目标、计划和变更记录分别在 `docs/superpowers/specs/`、`docs/superpowers/plans/` 和 `docs/CHANGELOG.md`。
 - 项目知识库目录为 `/Users/xbguan/project/codex-knowledge-base/飞机大战游戏`；先读取 `sources/INDEX.md` 定位相关纪要与成果，再按需打开对应文件，禁止一次性扫描整个知识库。知识库只记录当前日期之前的历史信息，不包含当日对话与改动；当日事实以当前对话和仓库现状为准。
 

@@ -1135,12 +1135,12 @@ globalThis.GameRules = {
     near: ['perspectiveClearCloudNear', 2.7, H * .16, W * .55, W * .55 / 3, .32]
   };
   const PerspectiveScenerySequence = {
-    length: 2360,
+    length: 1260,
     entries: [
-      ['perspectiveIslandChain', .52, -120, 220, 88], ['perspectiveLighthouseReef', .21, 180, 176, 132],
-      ['perspectiveSailboat', .76, 420, 92, 68], ['perspectiveBuoy', .39, 660, 42, 78],
-      ['perspectiveReef', .63, 900, 164, 96], ['perspectiveSeaStack', .15, 1180, 214, 178],
-      ['perspectiveCliffWaterfall', .82, 1500, 360, 270]
+      ['perspectiveIslandChain', .52, -120, 220, 88, 1.7], ['perspectiveLighthouseReef', .21, 60, 176, 132, 1.8],
+      ['perspectiveSailboat', .76, 240, 92, 68, 1.3], ['perspectiveBuoy', .39, 420, 42, 78, 1.25],
+      ['perspectiveReef', .63, 600, 164, 96, 1.6], ['perspectiveSeaStack', .15, 780, 214, 178, 1.7],
+      ['perspectiveCliffWaterfall', .82, 960, 360, 270, 1.5]
     ]
   };
   const TopdownScenerySequence = {
@@ -1161,11 +1161,14 @@ globalThis.GameRules = {
       }
       const landscapeOffset = (game.time * 12) % PerspectiveScenerySequence.length;
       const horizonY = H * .42;
-      PerspectiveScenerySequence.entries.forEach(([key, x, y, width, height]) => {
+      const orderedScenery = [...PerspectiveScenerySequence.entries].sort((a, b) =>
+        GameRules.sequenceLoopY(a[2], landscapeOffset, PerspectiveScenerySequence.length, 260) -
+        GameRules.sequenceLoopY(b[2], landscapeOffset, PerspectiveScenerySequence.length, 260));
+      orderedScenery.forEach(([key, x, y, width, height, foregroundScale]) => {
         const loopY = GameRules.sequenceLoopY(y, landscapeOffset, PerspectiveScenerySequence.length, 260);
         if (loopY < 0) return;
         const depth = clamp(loopY / (H - horizonY), 0, 1);
-        const scale = .38 + depth * .72;
+        const scale = .38 + depth * .72 + 1.1 * (foregroundScale - 1) * depth * depth;
         const sceneryY = horizonY + loopY;
         const contactHeight = clamp(height * scale * .22, 12, 54);
         const contactY = sceneryY + height * scale * .34;
@@ -1192,7 +1195,10 @@ globalThis.GameRules = {
     const image = assets[key];
     if (!image) return;
     if (window.__testMode) window.__renderStats.sceneryDraws.push(key);
-    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = alpha;
+    ctx.save();
+    // Filter detailed perspective scenery during continuous minification and movement.
+    ctx.imageSmoothingEnabled = key.startsWith('perspective') && !key.startsWith('perspectiveClearCloud');
+    ctx.imageSmoothingQuality = 'high'; ctx.globalAlpha = alpha;
     ctx.drawImage(image, x - width / 2, y - height / 2, width, height);
     ctx.restore();
   }

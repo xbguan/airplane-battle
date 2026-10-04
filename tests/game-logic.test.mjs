@@ -318,6 +318,50 @@ test('perspective scenery draws one depth-scaled water contact before each asset
   }
 });
 
+test('perspective foreground grows by asset while retaining distant size and source detail', () => {
+  const declarations = html.match(/  const PerspectiveClearCloudLayers = \{[\s\S]*?(?=  const TopdownScenerySequence)/)[0];
+  const draw = html.match(/  function drawBackground\(\) \{[\s\S]*?\n  \}(?=\n\n  function drawSceneryAsset)/)[0];
+  const calls = [];
+  const renderer = { W: 1280, H: 720, activeSceneBackground: 'backgroundPerspective',
+    GameRules: { sequenceLoopY: () => renderer.depth * 720 * .58 },
+    game: { time: 0 }, clamp: (v, lo, hi) => Math.max(lo, Math.min(hi, v)),
+    drawSceneryAsset: (...args) => calls.push(args) };
+  vm.createContext(renderer);
+  vm.runInContext(`${declarations}\n${draw}`, renderer);
+  const entries = vm.runInContext('PerspectiveScenerySequence.entries', renderer);
+  for (const depth of [0, .5, 1, 1.2]) {
+    renderer.depth = depth;
+    calls.length = 0;
+    renderer.drawBackground();
+    for (const [key, , , width, height] of entries) {
+      const call = calls.find(item => item[0] === key);
+      const scale = call[3] / width;
+      if (depth === 0) assert.ok(Math.abs(scale - .38) < 1e-9, `${key}: retain horizon size`);
+      if (depth >= 1) {
+        const small = ['perspectiveSailboat', 'perspectiveBuoy'].includes(key);
+        assert.ok(scale + 1e-9 >= 1.1 * (small ? 1.2 : 1.5), `${key}: foreground needs more volume`);
+        assert.ok(scale <= 1.1 * (small ? 1.4 : 1.8), `${key}: keep foreground bounded`);
+      }
+      assert.ok(Math.abs(call[4] / height - scale) < 1e-9, `${key}: preserve proportions`);
+      const assetPath = html.match(new RegExp(`${key}: '([^']+)'`))[1];
+      const png = fs.readFileSync(new URL(`../${assetPath}`, import.meta.url));
+      assert.ok(call[3] <= png.readUInt32BE(16) && call[4] <= png.readUInt32BE(20), `${key}: do not upscale source pixels`);
+    }
+  }
+});
+
+test('perspective sequence keeps two or three scenery centers on screen throughout a loop', () => {
+  const declaration = html.match(/  const PerspectiveScenerySequence = \{[\s\S]*?\n  \};/)[0];
+  const sequence = vm.runInNewContext(`${declaration}\nPerspectiveScenerySequence`);
+  for (let offset = 0; offset < sequence.length; offset++) {
+    const visible = sequence.entries.filter(([, , y]) => {
+      const position = rules.sequenceLoopY(y, offset, sequence.length, 260);
+      return position >= 0 && position < 720 * .58;
+    });
+    assert.ok(visible.length >= 2 && visible.length <= 3, `offset ${offset}: ${visible.length} scenery centers`);
+  }
+});
+
 test('clear perspective background uses its own sky without a second cloud overlay', () => {
   assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyClear'/);
   assert.doesNotMatch(html, /drawSceneryAsset\('perspectiveSkyStorm'/);

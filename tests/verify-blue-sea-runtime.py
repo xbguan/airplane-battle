@@ -62,12 +62,12 @@ TOPDOWN = [
 ]
 PERSPECTIVE = [
     ("perspectiveIslandChain", -120),
-    ("perspectiveLighthouseReef", 180),
-    ("perspectiveSailboat", 420),
-    ("perspectiveBuoy", 660),
-    ("perspectiveReef", 900),
-    ("perspectiveSeaStack", 1180),
-    ("perspectiveCliffWaterfall", 1500),
+    ("perspectiveLighthouseReef", 60),
+    ("perspectiveSailboat", 240),
+    ("perspectiveBuoy", 420),
+    ("perspectiveReef", 600),
+    ("perspectiveSeaStack", 780),
+    ("perspectiveCliffWaterfall", 960),
 ]
 
 
@@ -221,7 +221,7 @@ def verify_browser(url: str, output_dir: Path) -> None:
 
         for theme, entries, visible_y, length in [
             ("backgroundTopdown", TOPDOWN, 300, 1815),
-            ("backgroundPerspective", PERSPECTIVE, 210, 2360),
+            ("backgroundPerspective", PERSPECTIVE, 350, 1260),
         ]:
             for key, anchor_y in entries:
                 draws = page.evaluate(
