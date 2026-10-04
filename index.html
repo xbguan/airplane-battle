@@ -879,11 +879,116 @@ globalThis.GameRules = {
     return synthesizers[name]?.() || null;
   }
 
+  function synthesizeFirearmSound(name, sampleRate) {
+    const upgrading = name === 'upgrade'
+    const duration = upgrading ? .72 : .32
+    const contacts = upgrading
+      ? [[.018, .075, 730, .022], [.12, .11, 490, .027], [.32, .07, 1120, .017], [.545, .20, 245, .043], [.586, .085, 890, .026]]
+      : [[.012, .06, 970, .017], [.16, .145, 355, .036], [.198, .09, 1190, .020]]
+    const slides = upgrading ? [[.17, .15, .075], [.37, .15, .10]] : [[.022, .10, .09]]
+    const samples = new Float32Array(Math.ceil(duration * sampleRate))
+    let seed = upgrading ? 0x55504733 : 0x53575433
+    let low = 0
+    let slow = 0
+    const smooth = value => { const x = Math.max(0, Math.min(1, value)); return x * x * (3 - 2 * x) }
+    const fastAlpha = 1 - Math.exp(-2 * Math.PI * 4200 / sampleRate)
+    const slowAlpha = 1 - Math.exp(-2 * Math.PI * 480 / sampleRate)
+    for (let i = 0; i < samples.length; i++) {
+      const time = i / sampleRate
+      let word = seed += 0x6d2b79f5
+      word = Math.imul(word ^ word >>> 15, word | 1)
+      word ^= word + Math.imul(word ^ word >>> 7, word | 61)
+      const white = ((word ^ word >>> 14) >>> 0) / 4294967296 * 2 - 1
+      low += fastAlpha * (white - low)
+      slow += slowAlpha * (white - slow)
+      const metalNoise = low - slow
+      let sound = 0
+      for (const [onset, gain, frequency, decay] of contacts) {
+        const t = time - onset
+        if (t < 0) continue
+        const attack = smooth(t / .0009)
+        const strike = metalNoise * Math.exp(-t / .007) * 1.55
+        const body = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t / decay) * .64
+        const metal = (Math.sin(2 * Math.PI * frequency * 2.37 * t) * .25 + Math.sin(2 * Math.PI * frequency * 3.91 * t) * .12) * Math.exp(-t / (decay * .45))
+        sound += (strike + body + metal) * gain * attack
+      }
+      for (const [onset, length, gain] of slides) {
+        const t = time - onset
+        if (t < 0 || t >= length) continue
+        const progress = t / length
+        const motion = Math.sin(Math.PI * progress) ** .65
+        const teeth = .62 + .38 * Math.sin(2 * Math.PI * (46 * t + 220 * t * t)) ** 2
+        sound += metalNoise * motion * teeth * gain
+      }
+      const release = time - (upgrading ? .49 : .12)
+      if (release >= 0) {
+        const spring = Math.sin(2 * Math.PI * 1630 * release) * .025 + Math.sin(2 * Math.PI * 2287 * release) * .009
+        sound += spring * smooth(release / .001) * Math.exp(-release / .016)
+      }
+      samples[i] = sound * smooth(time / .001) * smooth((duration - time) / .025)
+    }
+    samples[0] = 0
+    samples[samples.length - 1] = 0
+    return samples
+  }
+
+  function synthesizeMechanicalSound(name, sampleRate) {
+    const durations = { start: 1.05, hurt: .24 }
+    const duration = durations[name]
+    const data = new Float32Array(Math.ceil(sampleRate * duration))
+    let seed = { start: 0x53545232, hurt: 0x48525432 }[name]
+    let low = 0
+    let slow = 0
+    let rotorPhase = 0
+    let bladePhase = 0
+    const smooth = value => { const x = Math.max(0, Math.min(1, value)); return x * x * (3 - 2 * x) }
+    const pulse = (time, onset, attack, decay) => {
+      const t = time - onset
+      return t < 0 ? 0 : smooth(t / attack) * Math.exp(-t / decay)
+    }
+    for (let i = 0; i < data.length; i++) {
+      const time = i / sampleRate
+      const progress = i / (data.length - 1)
+      let value = seed += 0x6d2b79f5
+      value = Math.imul(value ^ value >>> 15, value | 1)
+      value ^= value + Math.imul(value ^ value >>> 7, value | 61)
+      const white = ((value ^ value >>> 14) >>> 0) / 4294967296 * 2 - 1
+      // Sample-rate-aware noise bands: body and a short, softened metal transient.
+      low += (1 - Math.exp(-2 * Math.PI * 2300 / sampleRate)) * (white - low)
+      slow += (1 - Math.exp(-2 * Math.PI * 240 / sampleRate)) * (white - slow)
+      const band = low - slow
+      let sample = 0
+      if (name === 'start') {
+        rotorPhase += 2 * Math.PI * (68 + 155 * smooth(progress / .76)) / sampleRate
+        bladePhase += 2 * Math.PI * (350 + 690 * smooth(progress / .86)) / sampleRate
+        const spool = smooth(time / .18) * (1 - smooth((time - .67) / .38))
+        const thrust = pulse(time, .30, .15, .30)
+        const body = (Math.sin(rotorPhase) + .24 * Math.sin(rotorPhase * 2)) * spool * .095
+        const turbine = (Math.sin(bladePhase) + .12 * Math.sin(bladePhase * 2.11)) * spool * .024
+        const jet = band * thrust * .20 + slow * spool * .10
+        const ignition = Math.sin(2 * Math.PI * 106 * time) * pulse(time, 0, .004, .055) * .12
+        sample = body + turbine + jet + ignition
+      } else if (name === 'hurt') {
+        const impact = pulse(time, 0, .0015, .023)
+        const shell = Math.sin(2 * Math.PI * 193 * time) * pulse(time, 0, .002, .062) * .17
+        const dent = (Math.sin(2 * Math.PI * 487 * time) * .065 + Math.sin(2 * Math.PI * 791 * time) * .037) * pulse(time, 0, .002, .045)
+        const rattle = band * (pulse(time, .037, .0015, .014) + pulse(time, .079, .0015, .019) * .6) * .16
+        sample = band * impact * .27 + shell + dent + rattle
+      }
+      data[i] = sample * smooth(time / .0015) * smooth((duration - time) / .02)
+    }
+    data[0] = 0
+    data[data.length - 1] = 0
+    return data
+  }
+
   function createSoundBuffer(name) {
     const audio = ensureAudio();
     if (!audio) return null;
     const sampleRate = audio.sampleRate || 22050;
-    const foleySamples = createFoleySamples(name, sampleRate);
+    const foleySamples = name === 'upgrade' || name === 'weapon-switch'
+      ? synthesizeFirearmSound(name, sampleRate)
+      : name === 'start' || name === 'hurt' ? synthesizeMechanicalSound(name, sampleRate) : createFoleySamples(name, sampleRate);
     if (foleySamples) {
       const buffer = audio.createBuffer(1, foleySamples.length, sampleRate);
       buffer.getChannelData(0).set(foleySamples);

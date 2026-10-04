@@ -1,0 +1,28 @@
+{
+  "status": "待试听确认，未接入游戏",
+  "sampleRate": 44100,
+  "channels": 1,
+  "bits": 16,
+  "sounds": [
+    {
+      "key": "start",
+      "name": "开始出击",
+      "duration": 1.05
+    },
+    {
+      "key": "hurt",
+      "name": "玩家受伤",
+      "duration": 0.24
+    },
+    {
+      "key": "upgrade",
+      "name": "武器升级",
+      "duration": 0.66
+    },
+    {
+      "key": "weapon-switch",
+      "name": "武器切换",
+      "duration": 0.3
+    }
+  ]
+}

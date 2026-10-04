@@ -1,0 +1,33 @@
+{
+  "normalization": false,
+  "metrics": {
+    "start": {
+      "duration": 1.05,
+      "peak": 0.1827864646911621,
+      "rms": 0.06081836528696061,
+      "firstSample": 0,
+      "lastSample": 0
+    },
+    "hurt": {
+      "duration": 0.24,
+      "peak": 0.2662796974182129,
+      "rms": 0.046276619734969375,
+      "firstSample": 0,
+      "lastSample": 0
+    },
+    "upgrade": {
+      "duration": 0.66,
+      "peak": 0.23392720520496368,
+      "rms": 0.03643466601385537,
+      "firstSample": 0,
+      "lastSample": 0
+    },
+    "weapon-switch": {
+      "duration": 0.3,
+      "peak": 0.21383149921894073,
+      "rms": 0.026376857383190542,
+      "firstSample": 0,
+      "lastSample": 0
+    }
+  }
+}

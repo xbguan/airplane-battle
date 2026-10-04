@@ -47,8 +47,8 @@
   [
     "start",
     "开始出击",
-    "开始或重新开始游戏。",
-    "runtime-audio"
+    "开始或重新开始游戏，涡轮启动与短促喷气。",
+    "mechanical-audio"
   ],
   [
     "machinegun",
@@ -137,8 +137,8 @@
   [
     "hurt",
     "玩家受伤",
-    "玩家实际受到伤害。",
-    "foley-audio"
+    "玩家实际受到伤害，金属撞击与机壳震颤。",
+    "mechanical-audio"
   ],
   [
     "game-over",
@@ -149,8 +149,8 @@
   [
     "weapon-switch",
     "武器切换",
-    "切换至另一件已解锁武器。",
-    "foley-audio"
+    "切换至另一件已解锁武器，短促拉栓与金属卡扣。",
+    "firearm-audio"
   ],
   [
     "fragment",
@@ -161,8 +161,8 @@
   [
     "upgrade",
     "武器升级",
-    "基础攻击或特殊武器升级。",
-    "runtime-audio"
+    "基础攻击或特殊武器升级，装配上紧与上膛锁定。",
+    "firearm-audio"
   ]
 ];
     document.getElementById('sound-grid').innerHTML = sounds.map(([key, name, note, folder]) => `<article class="card"><div class="card-body"><h3>${name}</h3><p>${note}</p>${(key === 'machinegun' ? ['machinegun', 'machinegun-2', 'machinegun-3'] : [key]).map((sound, index) => `${key === 'machinegun' ? `<small>声音 ${index + 1}</small>` : ''}<audio controls preload="metadata" aria-label="试听${name}${key === 'machinegun' ? index + 1 : ''}" src="docs/superpowers/specs/previews/${folder}/${sound}.wav"></audio>`).join('')}</div></article>`).join('');

@@ -61,7 +61,7 @@ function createAudioRuntime(sampleRate = 44100) {
     window: {},
     performance: { now: () => now }
   });
-  for (const name of ['ensureAudio', 'createFoleySamples', 'createSoundBuffer', 'playSound']) {
+  for (const name of ['ensureAudio', 'createFoleySamples', 'synthesizeFirearmSound', 'synthesizeMechanicalSound', 'createSoundBuffer', 'playSound']) {
     const start = html.indexOf(`  function ${name}(`);
     assert.ok(start >= 0, `Missing production function: ${name}`);
     vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
@@ -124,11 +124,9 @@ test('playing missile launch reuses its cached buffer and disconnects ended sour
   assert.equal(sources.every(source => source.disconnected), true);
 });
 
-test('foley synthesis leaves the retained start, upgrade, laser, wizard, blue and boss buffers unchanged', () => {
+test('foley synthesis leaves the retained laser, wizard, blue and boss buffers unchanged', () => {
   const { runtime } = createAudioRuntime();
   for (const [name, definition] of [
-    ['start', [330, 720, .36, .2, 'triangle']],
-    ['upgrade', [520, 1120, .34, .24, 'triangle']],
     ['laser', [760, 1050, .11, .13, 'saw']],
     ['wizard-shot', [420, 760, .18, .16, 'triangle']],
     ['blue-shot', [820, 1280, .13, .16, 'saw']],
@@ -142,7 +140,7 @@ test('foley synthesis leaves the retained start, upgrade, laser, wizard, blue an
 
 test('all confirmed foley buffers match their approved PCM previews', () => {
   const { runtime } = createAudioRuntime();
-  for (const item of [...foleyManifest.main, ...foleyManifest.variants]) {
+  for (const item of [...foleyManifest.main, ...foleyManifest.variants].filter(item => !['weapon-switch', 'hurt'].includes(item.key))) {
     const approved = decodeMonoPcm16Wav(new URL(`../docs/superpowers/specs/previews/foley-audio/${item.file}`, import.meta.url));
     const actual = vm.runInContext(`createSoundBuffer('${item.key}').getChannelData(0)`, runtime);
     assert.equal(approved.sampleRate, 44100);
@@ -933,4 +931,57 @@ test('runtime asset catalog excludes removed and inactive entries while preservi
     'battle-original', 'battle-candidate', 'events-showcase'
   ]) assert.equal(assetCatalog.includes(path), false, `${path} must not appear in the runtime catalog`);
   assert.doesNotMatch(assetCatalog, /历史对照|sound-optimization-plan/);
+});
+
+
+test('firearm upgrade and switch match approved previews and cache at both sample rates', () => {
+  for (const rate of [44100, 48000]) {
+    const { runtime, buffers, sources, setNow } = createAudioRuntime(rate);
+    for (const [key, duration] of [['upgrade', .72], ['weapon-switch', .32]]) {
+      vm.runInContext(`playSound('${key}')`, runtime);
+      const first = sources.at(-1);
+      const samples = first.buffer.getChannelData(0);
+      assert.equal(samples.length, Math.ceil(rate * duration), `${key} duration`);
+      assert.equal(samples[0], 0);
+      assert.equal(samples.at(-1), 0);
+      assert.ok(samples.every(value => Number.isFinite(value) && Math.abs(value) < 1));
+      if (rate === 44100) {
+        const approved = decodeMonoPcm16Wav(new URL(`../docs/superpowers/specs/previews/firearm-audio/${key}.wav`, import.meta.url));
+        for (let i = 0; i < samples.length; i++) assert.ok(Math.abs(samples[i] - approved.samples[i]) <= 1 / 32768 + 1e-7, `${key} sample ${i}`);
+      }
+      setNow(1000);
+      vm.runInContext(`playSound('${key}')`, runtime);
+      assert.equal(first.buffer, sources.at(-1).buffer);
+    }
+    assert.equal(buffers.length, 2);
+    assert.equal(sources.length, 4);
+    for (const source of sources) source.onended();
+    assert.ok(sources.every(source => source.disconnected));
+  }
+});
+
+test('mechanical start and hurt match approved previews and cache at both sample rates', () => {
+  for (const rate of [44100, 48000]) {
+    const { runtime, buffers, sources, setNow } = createAudioRuntime(rate);
+    for (const [key, duration] of [['start', 1.05], ['hurt', .24]]) {
+      vm.runInContext(`playSound('${key}')`, runtime);
+      const first = sources.at(-1);
+      const samples = first.buffer.getChannelData(0);
+      assert.equal(samples.length, Math.ceil(rate * duration), `${key} duration`);
+      assert.equal(samples[0], 0);
+      assert.equal(samples.at(-1), 0);
+      assert.ok(samples.every(value => Number.isFinite(value) && Math.abs(value) < 1));
+      if (rate === 44100) {
+        const approved = decodeMonoPcm16Wav(new URL(`../docs/superpowers/specs/previews/mechanical-audio/${key}.wav`, import.meta.url));
+        for (let i = 0; i < samples.length; i++) assert.ok(Math.abs(samples[i] - approved.samples[i]) <= 1 / 32768 + 1e-7, `${key} sample ${i}`);
+      }
+      setNow(1000);
+      vm.runInContext(`playSound('${key}')`, runtime);
+      assert.equal(first.buffer, sources.at(-1).buffer);
+    }
+    assert.equal(buffers.length, 2);
+    assert.equal(sources.length, 4);
+    for (const source of sources) source.onended();
+    assert.ok(sources.every(source => source.disconnected));
+  }
 });

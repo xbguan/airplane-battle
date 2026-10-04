@@ -1,0 +1,23 @@
+{
+  "sampleRate": 44100,
+  "channels": 1,
+  "bits": 16,
+  "normalization": false,
+  "status": "待试听确认，未接入游戏",
+  "metrics": {
+    "upgrade": {
+      "duration": 0.72,
+      "peak": 0.2987353205680847,
+      "rms": 0.022530086836239013,
+      "firstSample": 0,
+      "lastSample": 0
+    },
+    "weapon-switch": {
+      "duration": 0.32,
+      "peak": 0.22243691980838776,
+      "rms": 0.021426006234973625,
+      "firstSample": 0,
+      "lastSample": 0
+    }
+  }
+}
