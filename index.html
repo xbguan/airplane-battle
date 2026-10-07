@@ -617,6 +617,31 @@ globalThis.GameRules = {
   const soundBuffers = {};
   let machinegunSoundIndex = 0;
 
+  function createRenderAsset(key, path, image) {
+    const fixedSizes = {
+      waterTopdownLoop: [1280, 720],
+      backgroundPerspective: [1280, 720],
+      perspectiveClearCloudFar: [576, 192],
+      perspectiveClearCloudNear: [704, 235]
+    };
+    let size = fixedSizes[key];
+    const isBattleAsset = ['assets/characters/', 'assets/weapons/', 'assets/shadows/'].some(prefix => path.startsWith(prefix));
+    const sourceWidth = image.naturalWidth || image.width;
+    const sourceHeight = image.naturalHeight || image.height;
+    if (!size && isBattleAsset && key !== 'laser' && !key.startsWith('ui') && Math.max(sourceWidth, sourceHeight) > 256) {
+      const scale = 256 / Math.max(sourceWidth, sourceHeight);
+      size = [Math.round(sourceWidth * scale), Math.round(sourceHeight * scale)];
+    }
+    if (!size) return image;
+    const renderAsset = document.createElement('canvas');
+    [renderAsset.width, renderAsset.height] = size;
+    renderAsset.dataset.assetSrc = image.src;
+    const renderContext = renderAsset.getContext('2d', { alpha: true });
+    renderContext.imageSmoothingEnabled = false;
+    renderContext.drawImage(image, 0, 0, renderAsset.width, renderAsset.height);
+    return renderAsset;
+  }
+
   function preloadAssets() {
     const entries = Object.values(AssetManifest).flatMap(group => Object.entries(group));
     ui['start-button'].disabled = true;
@@ -625,7 +650,7 @@ globalThis.GameRules = {
     return Promise.all(entries.map(([key, path]) => new Promise(resolve => {
       const image = new Image();
       image.onload = () => {
-        assets[key] = image;
+        assets[key] = createRenderAsset(key, path, image);
         if (window.__testMode) window.__assetStats.loaded.push(path);
         resolve(true);
       };

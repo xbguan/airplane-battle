@@ -29,7 +29,24 @@ def main():
               gradients: 0, pixelSprites: [], assetDraws: [], sceneryDraws: [],
               projectileDraws: [], impactDraws: [], shadowDraws: [], backgroundDraws: []
             };
+            window.__renderCacheStats = { sources: {} };
             window.__assetStats = { expected: [], loaded: [], failed: [], external: [] };
+            const renderAssetIds = new WeakMap();
+            let nextRenderAssetId = 1;
+            const originalDrawImage = CanvasRenderingContext2D.prototype.drawImage;
+            CanvasRenderingContext2D.prototype.drawImage = function(image, ...args) {
+              const source = image?.dataset?.assetSrc;
+              if (source) {
+                const marker = '/assets/';
+                const path = source.includes(marker) ? `assets/${source.split(marker)[1]}` : source;
+                if (!renderAssetIds.has(image)) renderAssetIds.set(image, nextRenderAssetId++);
+                const id = renderAssetIds.get(image);
+                const entry = window.__renderCacheStats.sources[path] ||= { ids: [], width: image.width, height: image.height, draws: 0 };
+                if (!entry.ids.includes(id)) entry.ids.push(id);
+                entry.draws += 1;
+              }
+              return originalDrawImage.call(this, image, ...args);
+            };
             const originalLinearGradient = CanvasRenderingContext2D.prototype.createLinearGradient;
             const originalRadialGradient = CanvasRenderingContext2D.prototype.createRadialGradient;
             CanvasRenderingContext2D.prototype.createLinearGradient = function(...args) {
@@ -296,6 +313,26 @@ def main():
                 assert page.locator("#growth-modal").is_hidden()
                 assert page.locator("#boss-panel").is_hidden()
 
+                cache_before_restart = page.evaluate("JSON.parse(JSON.stringify(window.__renderCacheStats.sources))")
+                page.evaluate("window.__gameTest.restart(); window.__gameTest.setState({player: {invulnerable: 999}})")
+                page.wait_for_timeout(50)
+                cache_after_restart = page.evaluate("window.__renderCacheStats.sources")
+                for path, entry in cache_before_restart.items():
+                    assert cache_after_restart[path]["ids"] == entry["ids"], (path, entry, cache_after_restart[path])
+
+                expected_cached_sizes = {
+                    "assets/characters/player-fighter.png": (256, 187),
+                    **({"assets/scenery/water-topdown-loop.png": (1280, 720)} if theme == "backgroundTopdown" else {
+                        "assets/scenery/background-perspective.png": (1280, 720),
+                        "assets/scenery/perspective-clear-cloud-far.png": (576, 192),
+                        "assets/scenery/perspective-clear-cloud-near.png": (704, 235),
+                    }),
+                }
+                for path, size in expected_cached_sizes.items():
+                    entry = cache_after_restart.get(path)
+                    assert entry and tuple((entry["width"], entry["height"])) == size, (path, entry)
+                    assert len(entry["ids"]) == 1, (path, entry)
+
                 # Special MAX alone must not stop machinegun XP; its last upgrade turns XP into MAX.
                 page.evaluate("window.__gameTest.setState({attackLevel: 4, weaponLevels: {homing: 3, laser: 3}, xp: 200, weaponParts: 7})")
                 spawn_and_defeat(5)
@@ -326,7 +363,8 @@ def main():
                         const original = context.drawImage;
                         const keys = [];
                         context.drawImage = function(image, ...args) {
-                            if (image.src && image.src.includes('/assets/shadows/')) keys.push(image.src.split('/').pop());
+                            const source = image.src || image.dataset?.assetSrc;
+                            if (source && source.includes('/assets/shadows/')) keys.push(source.split('/').pop());
                             return original.call(this, image, ...args);
                         };
                         const types = ['eagle', 'drone', 'bat', 'wizard', 'boss', 'boss'];

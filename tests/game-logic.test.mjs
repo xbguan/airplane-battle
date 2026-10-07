@@ -203,6 +203,122 @@ function runProductionFunctions(runtime, names) {
   }
 }
 
+function createRenderAssetRuntime() {
+  const createdCanvases = [];
+  const document = {
+    createElement(tag) {
+      assert.equal(tag, 'canvas');
+      const drawCalls = [];
+      const context = {
+        imageSmoothingEnabled: true,
+        drawImage(...args) { drawCalls.push(args); }
+      };
+      const canvas = {
+        width: 0, height: 0, dataset: {}, drawCalls,
+        getContext(kind, options) { assert.equal(kind, '2d'); this.contextOptions = options; return context; },
+        context
+      };
+      createdCanvases.push(canvas);
+      return canvas;
+    }
+  };
+  const runtime = vm.createContext({ document });
+  runProductionFunctions(runtime, ['createRenderAsset']);
+  return { runtime, createdCanvases };
+}
+
+test('render assets downscale oversized battle art once while retaining source identity and pixel edges', () => {
+  const { runtime, createdCanvases } = createRenderAssetRuntime();
+  runtime.image = { width: 1467, height: 1072, src: 'http://localhost/assets/characters/player-fighter-laser.png' };
+  runtime.path = 'assets/characters/player-fighter-laser.png';
+  const rendered = vm.runInContext("createRenderAsset('playerLaser', path, image)", runtime);
+  assert.equal(rendered.width, 256);
+  assert.equal(rendered.height, 187);
+  assert.equal(rendered.dataset.assetSrc, runtime.image.src);
+  assert.deepEqual(plain(rendered.contextOptions), { alpha: true });
+  assert.equal(rendered.context.imageSmoothingEnabled, false);
+  assert.deepEqual(rendered.drawCalls[0], [runtime.image, 0, 0, 256, 187]);
+  assert.equal(createdCanvases.length, 1);
+});
+
+test('render assets retain laser beams, UI icons, small battle art and ordinary scenery as original images', () => {
+  const { runtime, createdCanvases } = createRenderAssetRuntime();
+  for (const [key, path, width, height] of [
+    ['laser', 'assets/weapons/laser-segment.png', 285, 100],
+    ['uiLaserUpgrade', 'assets/weapons/ui-laser-upgrade.png', 1254, 1254],
+    ['missile', 'assets/weapons/homing-missile.png', 210, 125],
+    ['topdownIsland01', 'assets/scenery/topdown-island-01.png', 1254, 1254]
+  ]) {
+    runtime.image = { width, height, src: `http://localhost/${path}` };
+    runtime.key = key;
+    runtime.path = path;
+    assert.equal(vm.runInContext('createRenderAsset(key, path, image)', runtime), runtime.image, key);
+  }
+  assert.equal(createdCanvases.length, 0);
+});
+
+test('fixed background render assets use their actual draw sizes', () => {
+  const { runtime, createdCanvases } = createRenderAssetRuntime();
+  for (const [key, width, height] of [
+    ['waterTopdownLoop', 1280, 720],
+    ['backgroundPerspective', 1280, 720],
+    ['perspectiveClearCloudFar', 576, 192],
+    ['perspectiveClearCloudNear', 704, 235]
+  ]) {
+    runtime.image = { width: 2172, height: 941, src: `http://localhost/assets/scenery/${key}.png` };
+    runtime.key = key;
+    const rendered = vm.runInContext("createRenderAsset(key, 'assets/scenery/example.png', image)", runtime);
+    assert.equal(rendered.width, width, `${key} width`);
+    assert.equal(rendered.height, height, `${key} height`);
+  }
+  assert.equal(createdCanvases.length, 4);
+});
+
+test('preloading loads and caches each manifest asset once', async () => {
+  let imageCount = 0;
+  const createdCanvases = [];
+  class TestImage {
+    constructor() { imageCount += 1; this.width = 600; this.height = 300; }
+    set src(value) { this._src = value; this.onload(); }
+    get src() { return this._src; }
+  }
+  const context = { imageSmoothingEnabled: true, drawImage() {} };
+  const runtime = vm.createContext({
+    AssetManifest: { characters: { player: 'assets/characters/player.png' }, weapons: { laser: 'assets/weapons/laser.png' } },
+    assets: {}, assetsReady: false, Image: TestImage,
+    document: { createElement() { const canvas = { width: 0, height: 0, dataset: {}, getContext: () => context }; createdCanvases.push(canvas); return canvas; } },
+    ui: { 'start-button': {} }, window: { __testMode: true, __assetStats: { expected: [], loaded: [], failed: [] } }
+  });
+  runProductionFunctions(runtime, ['createRenderAsset', 'preloadAssets']);
+  await vm.runInContext('preloadAssets()', runtime);
+  assert.equal(imageCount, 2);
+  assert.equal(createdCanvases.length, 1);
+  assert.deepEqual(runtime.window.__assetStats.loaded, ['assets/characters/player.png', 'assets/weapons/laser.png']);
+});
+
+test('drawing and resetting reuse render assets without creating or replacing canvases', () => {
+  const { runtime, createdCanvases } = createRenderAssetRuntime();
+  runtime.source = { width: 600, height: 300, src: 'http://localhost/assets/characters/player.png' };
+  runtime.assets = { player: vm.runInContext("createRenderAsset('player', 'assets/characters/player.png', source)", runtime) };
+  const cached = runtime.assets.player;
+  runtime.ctx = {
+    save() {}, restore() {}, translate() {}, rotate() {}, drawImage() {},
+    imageSmoothingEnabled: true, globalAlpha: 1
+  };
+  runtime.window = {};
+  runProductionFunctions(runtime, ['drawAsset']);
+  vm.runInContext("drawAsset('player', 10, 20, 30, 40); drawAsset('player', 20, 30, 30, 40)", runtime);
+  assert.equal(createdCanvases.length, 1);
+
+  runtime.ui = new Proxy({}, { get() { return { classList: { add() {} } }; } });
+  runtime.W = 1280; runtime.H = 720; runtime.game = null;
+  runtime.createScenery = () => ({}); runtime.updateHud = () => {}; runtime.drawScene = () => {};
+  runProductionFunctions(runtime, ['resetGame']);
+  vm.runInContext('resetGame()', runtime);
+  assert.equal(runtime.assets.player, cached);
+  assert.equal(createdCanvases.length, 1);
+});
+
 test('enemy hit sounds follow impact type instead of display color', () => {
   const sounds = [];
   const runtime = vm.createContext({
@@ -956,21 +1072,23 @@ test('player machinegun bullets and flashes share the aircraft gun anchors', () 
 test('player aircraft variants are preloaded through the production asset loader', async () => {
   const manifestStart = html.indexOf('  const AssetManifest = {');
   const manifestEnd = html.indexOf('\n  const soundCooldowns', manifestStart);
+  const renderAssetStart = html.indexOf('  function createRenderAsset(');
   const preloadStart = html.indexOf('  function preloadAssets()');
   const preloadEnd = html.indexOf('\n  function setSceneTheme', preloadStart);
-  assert.ok(manifestStart >= 0 && manifestEnd > manifestStart && preloadStart >= 0 && preloadEnd > preloadStart);
+  assert.ok(manifestStart >= 0 && manifestEnd > manifestStart && renderAssetStart >= 0 && preloadStart >= 0 && preloadEnd > preloadStart);
 
   class LoadedImage {
     set src(path) { this.path = path; this.onload(); }
   }
   const runtime = vm.createContext({
     Image: LoadedImage,
+    document: { createElement() { return { width: 0, height: 0, dataset: {}, getContext: () => ({ imageSmoothingEnabled: true, drawImage() {} }) }; } },
     assets: {},
     assetsReady: false,
     ui: { 'start-button': { disabled: false, textContent: '' } },
     window: { __testMode: true, __assetStats: { expected: [], loaded: [], failed: [] } }
   });
-  vm.runInContext(`${html.slice(manifestStart, manifestEnd)}\n${html.slice(preloadStart, preloadEnd)}\nglobalThis.runPreload = preloadAssets;`, runtime);
+  vm.runInContext(`${html.slice(manifestStart, manifestEnd)}\n${html.slice(renderAssetStart, preloadEnd)}\nglobalThis.runPreload = preloadAssets;`, runtime);
   await runtime.runPreload();
 
   assert.equal(runtime.assets.playerLaser.path, 'assets/characters/player-fighter-laser.png');

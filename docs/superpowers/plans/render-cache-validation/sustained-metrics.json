@@ -1,0 +1,722 @@
+[
+  {
+    "gameTime": 29.59660000000007,
+    "frames": 566,
+    "frameP95": 18.400000002235174,
+    "drawP95": 12.199999999254942,
+    "updateP95": 0.8000000007450581,
+    "inputP95": 28.800000000745058,
+    "longFrames": 11,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 2,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      710,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundTopdown",
+    "elapsed": 10.1,
+    "heapMB": 1.73
+  },
+  {
+    "gameTime": 39.549999999999926,
+    "frames": 559,
+    "frameP95": 26.100000001490116,
+    "drawP95": 18.400000002235174,
+    "updateP95": 0.8000000007450581,
+    "inputP95": 34.100000001490116,
+    "longFrames": 5,
+    "counts": {
+      "enemies": 8,
+      "bullets": 5,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 2,
+      "floaters": 4,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      560,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundTopdown",
+    "elapsed": 20.1,
+    "heapMB": 1.69
+  },
+  {
+    "gameTime": 49.48669999999986,
+    "frames": 559,
+    "frameP95": 24.899999998509884,
+    "drawP95": 17.900000002235174,
+    "updateP95": 0.8999999985098839,
+    "inputP95": 35.100000001490116,
+    "longFrames": 6,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 4,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      395,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundTopdown",
+    "elapsed": 30.1,
+    "heapMB": 1.7
+  },
+  {
+    "gameTime": 59.519700000000405,
+    "frames": 602,
+    "frameP95": 18,
+    "drawP95": 12,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 26.400000002235174,
+    "longFrames": 0,
+    "counts": {
+      "enemies": 8,
+      "bullets": 7,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      860,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundTopdown",
+    "elapsed": 40.1,
+    "heapMB": 1.73
+  },
+  {
+    "gameTime": 69.50260000000067,
+    "frames": 599,
+    "frameP95": 17.799999997019768,
+    "drawP95": 11.099999997764826,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 25.800000000745058,
+    "longFrames": 0,
+    "counts": {
+      "enemies": 8,
+      "bullets": 7,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 3,
+      "floaters": 7,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      695,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundTopdown",
+    "elapsed": 50.1,
+    "heapMB": 1.73
+  },
+  {
+    "gameTime": 79.48560000000057,
+    "frames": 599,
+    "frameP95": 18.300000000745058,
+    "drawP95": 11.300000000745058,
+    "updateP95": 0.7000000029802322,
+    "inputP95": 28.300000000745058,
+    "longFrames": 0,
+    "counts": {
+      "enemies": 8,
+      "bullets": 10,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 2,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      545,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundTopdown",
+    "elapsed": 60.1,
+    "heapMB": 1.74
+  },
+  {
+    "gameTime": 29.293000000000117,
+    "frames": 489,
+    "frameP95": 24.700000002980232,
+    "drawP95": 19,
+    "updateP95": 1,
+    "inputP95": 37.600000001490116,
+    "longFrames": 10,
+    "counts": {
+      "enemies": 8,
+      "bullets": 10,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 3,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      800,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundPerspective",
+    "elapsed": 10.2,
+    "heapMB": 1.74
+  },
+  {
+    "gameTime": 38.74160000000022,
+    "frames": 416,
+    "frameP95": 40.899999998509884,
+    "drawP95": 30.199999999254942,
+    "updateP95": 1,
+    "inputP95": 55.900000002235174,
+    "longFrames": 36,
+    "counts": {
+      "enemies": 8,
+      "bullets": 10,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 3,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      560,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundPerspective",
+    "elapsed": 20.1,
+    "heapMB": 1.73
+  },
+  {
+    "gameTime": 48.572500000000325,
+    "frames": 440,
+    "frameP95": 30,
+    "drawP95": 23.899999998509884,
+    "updateP95": 1,
+    "inputP95": 46.399999998509884,
+    "longFrames": 17,
+    "counts": {
+      "enemies": 8,
+      "bullets": 7,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 0,
+      "floaters": 3,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      395,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundPerspective",
+    "elapsed": 30.3,
+    "heapMB": 1.72
+  },
+  {
+    "gameTime": 57.11520000000073,
+    "frames": 346,
+    "frameP95": 55.900000002235174,
+    "drawP95": 37,
+    "updateP95": 1.2000000029802322,
+    "inputP95": 121.39999999850988,
+    "longFrames": 50,
+    "counts": {
+      "enemies": 8,
+      "bullets": 6,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 4,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      590,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundPerspective",
+    "elapsed": 40.1,
+    "heapMB": 1.74
+  },
+  {
+    "gameTime": 67.0335000000011,
+    "frames": 454,
+    "frameP95": 25.199999999254942,
+    "drawP95": 20.199999999254942,
+    "updateP95": 0.8999999985098839,
+    "inputP95": 38.5,
+    "longFrames": 2,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 4,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      425,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundPerspective",
+    "elapsed": 50.1,
+    "heapMB": 1.75
+  },
+  {
+    "gameTime": 76.83020000000124,
+    "frames": 482,
+    "frameP95": 23.900000002235174,
+    "drawP95": 19.699999999254942,
+    "updateP95": 0.8999999985098839,
+    "inputP95": 36.80000000074506,
+    "longFrames": 9,
+    "counts": {
+      "enemies": 8,
+      "bullets": 7,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 3,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      455,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 0,
+    "renderCachePixels": 0,
+    "version": "baseline",
+    "theme": "backgroundPerspective",
+    "elapsed": 60.1,
+    "heapMB": 1.75
+  },
+  {
+    "gameTime": 30.065700000000064,
+    "frames": 601,
+    "frameP95": 17.800000000745058,
+    "drawP95": 1.2999999970197678,
+    "updateP95": 0.8000000007450581,
+    "inputP95": 16.5,
+    "longFrames": 1,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 3,
+      "floaters": 6,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      800,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundTopdown",
+    "elapsed": 10.1,
+    "heapMB": 1.71
+  },
+  {
+    "gameTime": 40.01519999999995,
+    "frames": 597,
+    "frameP95": 18.100000001490116,
+    "drawP95": 1.199999999254942,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 16.400000002235174,
+    "longFrames": 1,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 0,
+      "floaters": 2,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      620,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundTopdown",
+    "elapsed": 20.1,
+    "heapMB": 1.67
+  },
+  {
+    "gameTime": 50.0648999999999,
+    "frames": 603,
+    "frameP95": 18.400000002235174,
+    "drawP95": 1.199999999254942,
+    "updateP95": 0.7000000029802322,
+    "inputP95": 16.599999997764826,
+    "longFrames": 0,
+    "counts": {
+      "enemies": 8,
+      "bullets": 9,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 0,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      485,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundTopdown",
+    "elapsed": 30.1,
+    "heapMB": 1.68
+  },
+  {
+    "gameTime": 60.04780000000062,
+    "frames": 599,
+    "frameP95": 18.099999997764826,
+    "drawP95": 1.2999999970197678,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 16.599999997764826,
+    "longFrames": 0,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 0,
+      "floaters": 2,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      875,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundTopdown",
+    "elapsed": 40.1,
+    "heapMB": 1.71
+  },
+  {
+    "gameTime": 70.02650000000072,
+    "frames": 586,
+    "frameP95": 19.699999999254942,
+    "drawP95": 1.3999999985098839,
+    "updateP95": 0.8000000007450581,
+    "inputP95": 16.600000001490116,
+    "longFrames": 4,
+    "counts": {
+      "enemies": 8,
+      "bullets": 7,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 2,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      665,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundTopdown",
+    "elapsed": 50.1,
+    "heapMB": 1.71
+  },
+  {
+    "gameTime": 79.97370000000076,
+    "frames": 590,
+    "frameP95": 19.100000001490116,
+    "drawP95": 1.5,
+    "updateP95": 0.8000000007450581,
+    "inputP95": 17,
+    "longFrames": 1,
+    "counts": {
+      "enemies": 8,
+      "bullets": 6,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 3,
+      "floaters": 4,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      485,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundTopdown",
+    "elapsed": 60.1,
+    "heapMB": 1.73
+  },
+  {
+    "gameTime": 29.86110000000008,
+    "frames": 575,
+    "frameP95": 18.899999998509884,
+    "drawP95": 1.5,
+    "updateP95": 0.7999999970197678,
+    "inputP95": 17.600000001490116,
+    "longFrames": 7,
+    "counts": {
+      "enemies": 8,
+      "bullets": 10,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 0,
+      "floaters": 3,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      770,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundPerspective",
+    "elapsed": 10.1,
+    "heapMB": 1.76
+  },
+  {
+    "gameTime": 39.877,
+    "frames": 600,
+    "frameP95": 18,
+    "drawP95": 1.300000000745058,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 16.399999998509884,
+    "longFrames": 1,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      605,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundPerspective",
+    "elapsed": 20.1,
+    "heapMB": 1.75
+  },
+  {
+    "gameTime": 49.792100000000005,
+    "frames": 592,
+    "frameP95": 18.5,
+    "drawP95": 7.699999999254942,
+    "updateP95": 0.8000000007450581,
+    "inputP95": 21.5,
+    "longFrames": 2,
+    "counts": {
+      "enemies": 8,
+      "bullets": 6,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 2,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      425,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundPerspective",
+    "elapsed": 30.1,
+    "heapMB": 1.73
+  },
+  {
+    "gameTime": 59.73750000000063,
+    "frames": 584,
+    "frameP95": 18.300000000745058,
+    "drawP95": 1.300000000745058,
+    "updateP95": 0.7000000029802322,
+    "inputP95": 16.699999999254942,
+    "longFrames": 5,
+    "counts": {
+      "enemies": 8,
+      "bullets": 7,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 2,
+      "floaters": 4,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      845,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundPerspective",
+    "elapsed": 40.1,
+    "heapMB": 1.76
+  },
+  {
+    "gameTime": 69.73710000000077,
+    "frames": 600,
+    "frameP95": 18,
+    "drawP95": 1.199999999254942,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 16.5,
+    "longFrames": 1,
+    "counts": {
+      "enemies": 8,
+      "bullets": 6,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 2,
+      "floaters": 5,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      680,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundPerspective",
+    "elapsed": 50.1,
+    "heapMB": 1.76
+  },
+  {
+    "gameTime": 79.71990000000079,
+    "frames": 599,
+    "frameP95": 17.899999998509884,
+    "drawP95": 8,
+    "updateP95": 0.6999999992549419,
+    "inputP95": 22.800000000745058,
+    "longFrames": 1,
+    "counts": {
+      "enemies": 8,
+      "bullets": 8,
+      "enemyBullets": 0,
+      "particles": 0,
+      "impacts": 1,
+      "floaters": 3,
+      "delayedAttacks": 0
+    },
+    "soundBuffers": 7,
+    "playerPosition": [
+      515,
+      580
+    ],
+    "assetsReused": true,
+    "renderCacheCount": 36,
+    "renderCachePixels": 3648832,
+    "version": "current",
+    "theme": "backgroundPerspective",
+    "elapsed": 60.1,
+    "heapMB": 1.76
+  }
+]
