@@ -206,6 +206,7 @@ function runProductionFunctions(runtime, names) {
 test('enemy hit sounds follow impact type instead of display color', () => {
   const sounds = [];
   const runtime = vm.createContext({
+    game: { running: true, stage: 'combat' },
     ImpactVisuals: { bullet: 'hitMachinegun', homing: 'hitMissile', laser: 'hitLaser' },
     playSound: name => sounds.push(name), addFloater() {}, addImpact() {}, killEnemy() {}
   });
@@ -219,29 +220,28 @@ test('enemy hit sounds follow impact type instead of display color', () => {
   assert.deepEqual(sounds, ['missile-hit', 'laser', 'hit']);
 });
 
-test('enemy deaths use body-specific sounds and fragments sound only when awarded', () => {
+test('enemy deaths use body-specific sounds and parts sound only when awarded', () => {
   const sounds = [];
   const runtime = vm.createContext({
-    game: { xp: 0, bosses: 0, normalKills: 0, fragments: { homing: 0, laser: 0 }, weaponLevels: { homing: 0, laser: 0 }, shake: 0, boss: null },
+    game: { running: true, stage: 'combat', xp: 0, bosses: 0, normalKills: 0, weaponParts: 0, weaponLevels: { homing: 0, laser: 0 }, shake: 0, boss: null, enemyBullets: [], delayedAttacks: [] },
     GameRules: {
-      chooseFragmentDrop: () => 'homing',
-      awardBossKill: (state, hp, type) => ({ xp: state.xp + hp, bosses: state.bosses + 1, fragments: { ...state.fragments, [type]: state.fragments[type] + 2 } }),
+      awardBossKill: state => ({ xp: state.xp + 70, bosses: state.bosses + 1, weaponParts: state.weaponParts + 3 }),
       awardNormalKill: state => ({ xp: state.xp + 5, normalKills: state.normalKills + 1, bossPending: false }),
       canUpgrade: () => false
     },
     ui: { 'boss-panel': { classList: { add() {} } } },
-    playSound: name => sounds.push(name), addParticle() {}, showToast() {}, updateHud() {}, spawnBoss() {}, openUpgrade() {}, setTimeout() {}
+    playSound: name => sounds.push(name), addParticle() {}, showToast() {}, updateHud() {}, spawnBoss() {}, openGrowth() {}
   });
   runProductionFunctions(runtime, ['killEnemy']);
   for (const type of ['drone', 'eagle', 'bat', 'wizard']) {
-    runtime.enemy = { type, x: 0, y: 0, initialHp: 20 };
+    runtime.enemy = { type, x: 0, y: 0, initialHp: 20, dead: false };
     vm.runInContext('killEnemy(enemy)', runtime);
   }
-  runtime.enemy = { type: 'boss', x: 0, y: 0, initialHp: 100 };
+  runtime.enemy = { type: 'boss', x: 0, y: 0, initialHp: 100, dead: false };
   vm.runInContext('killEnemy(enemy)', runtime);
-  runtime.GameRules.chooseFragmentDrop = () => null;
-  runtime.GameRules.awardBossKill = (state, hp) => ({ xp: state.xp + hp, bosses: state.bosses + 1, fragments: state.fragments });
-  runtime.enemy = { type: 'boss', x: 0, y: 0, initialHp: 100 };
+  runtime.game.stage = 'combat';
+  runtime.GameRules.awardBossKill = state => ({ xp: state.xp + 90, bosses: state.bosses + 1, weaponParts: state.weaponParts });
+  runtime.enemy = { type: 'boss', x: 0, y: 0, initialHp: 100, dead: false };
   vm.runInContext('killEnemy(enemy)', runtime);
   assert.deepEqual(sounds, ['explode-mechanical', 'explode-soft', 'explode-soft', 'explode-soft', 'boss-explode', 'fragment', 'boss-explode']);
 });
@@ -249,16 +249,31 @@ test('enemy deaths use body-specific sounds and fragments sound only when awarde
 test('game over sound plays only on the first effective end transition', () => {
   const sounds = [];
   const runtime = vm.createContext({
-    game: { running: true, paused: true, normalKills: 2, bosses: 1, attackLevel: 3 },
+    game: { running: true, paused: true, normalKills: 2, bosses: 1, highestBoss: 1, attackLevel: 3, weaponLevels: { homing: 1, laser: 0 }, weaponParts: 2, endless: false, delayedAttacks: [], enemyBullets: [] },
     GameRules: { bulletDamage: () => 8 }, playSound: name => sounds.push(name),
     ui: {
-      'result-monsters': {}, 'result-bosses': {}, 'result-damage': {},
+      'result-title': {}, 'result-monsters': {}, 'result-bosses': {}, 'result-highest-boss': {}, 'result-damage': {}, 'result-homing': {}, 'result-laser': {}, 'result-parts': {},
       'game-over': { classList: { remove() {} } }
     }
   });
-  runProductionFunctions(runtime, ['endGame']);
+  runProductionFunctions(runtime, ['updateResults', 'endGame']);
   vm.runInContext('endGame(); endGame();', runtime);
   assert.deepEqual(sounds, ['game-over']);
+});
+
+test('ending a completed campaign does not play the defeat sound', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { running: true, paused: true, normalKills: 50, bosses: 5, highestBoss: 5, attackLevel: 3, weaponLevels: { homing: 1, laser: 1 }, weaponParts: 4, endless: false, delayedAttacks: [], enemyBullets: [] },
+    GameRules: { bulletDamage: () => 8 }, playSound: name => sounds.push(name),
+    ui: {
+      'result-title': {}, 'result-monsters': {}, 'result-bosses': {}, 'result-highest-boss': {}, 'result-damage': {}, 'result-homing': {}, 'result-laser': {}, 'result-parts': {},
+      'game-over': { classList: { remove() {} } }
+    }
+  });
+  runProductionFunctions(runtime, ['updateResults', 'endGame']);
+  vm.runInContext(`endGame('victory')`, runtime);
+  assert.deepEqual(sounds, []);
 });
 
 test('brown boss charge sound fires once when charging starts', () => {
@@ -274,6 +289,116 @@ test('brown boss charge sound fires once when charging starts', () => {
   vm.runInContext('updateBoss(boss, .016); updateBoss(boss, .016);', runtime);
   assert.equal(runtime.boss.charging, true);
   assert.deepEqual(sounds, ['boss-charge']);
+});
+
+test('blue boss in the lower activity band retreats only to that band top when the player enters the upper half', () => {
+  const runtime = vm.createContext({
+    game: { time: 10, player: { x: 640, y: 300 }, enemyBullets: [], delayedAttacks: [] }, H: 720, W: 1280,
+    GameRules: { advanceBossEntrance: boss => ({ y: boss.y, entered: true }), circlesOverlap: () => false },
+    playSound() {}, damagePlayer() {}, shootEnemyBullet() {}, EnemyProjectileVisuals: { blue: 'blueBossBolt' }
+  });
+  runProductionFunctions(runtime, ['aimAngle', 'fireBlueVolley', 'updateBoss']);
+  runtime.boss = { id: 1, type: 'boss', variant: 'blue', number: 7, mechanismLevel: 3, age: 0, speedScale: 1, x: 640, y: 250, r: 60, hp: 100, maxHp: 100, entered: true, shootTimer: 99, actionTimer: 99, cooldownScale: 1, baseAttackCount: 0, blueBand: 'lower', bandTimer: 5 };
+  vm.runInContext('updateBoss(boss, 1);', runtime);
+  assert.ok(runtime.boss.y >= 720 * .26, `lower-band boss escaped to y=${runtime.boss.y}`);
+  assert.ok(runtime.boss.y < 250);
+});
+
+test('boss age advances exactly once per updateEnemy call', () => {
+  const runtime = vm.createContext({
+    game: { time: 0, player: { x: 640, y: 600 }, enemyBullets: [], delayedAttacks: [] }, H: 720, W: 1280,
+    GameRules: { advanceBossEntrance: boss => ({ y: boss.y, entered: false }), circlesOverlap: () => false },
+    playSound() {}, damagePlayer() {}, shootEnemyBullet() {}, EnemyProjectileVisuals: {}
+  });
+  runProductionFunctions(runtime, ['aimAngle', 'fireBrownVolley', 'fireBlueVolley', 'updateBoss', 'updateEnemy']);
+  runtime.boss = { type: 'boss', variant: 'brown', age: 0, speedScale: 1.18, x: 640, y: -100, entered: false };
+  vm.runInContext('updateEnemy(boss, .5);', runtime);
+  assert.equal(runtime.boss.age, .59);
+});
+
+test('dead bosses never run another update or fire a ghost attack', () => {
+  const shots = [];
+  const runtime = vm.createContext({
+    game: { time: 0, player: { x: 640, y: 600 }, enemyBullets: [], delayedAttacks: [] }, H: 720, W: 1280,
+    GameRules: { advanceBossEntrance: boss => ({ y: boss.y, entered: true }), circlesOverlap: () => false },
+    playSound() {}, damagePlayer() {}, shootEnemyBullet(...args) { shots.push(args); }, EnemyProjectileVisuals: { brown: 'orangeBossShell' }
+  });
+  runProductionFunctions(runtime, ['aimAngle', 'fireBrownVolley', 'fireBlueVolley', 'updateBoss', 'updateEnemy']);
+  runtime.boss = { dead: true, type: 'boss', variant: 'brown', age: 2, speedScale: 1, x: 640, y: 119, entered: true, charging: false, shootTimer: 0, actionTimer: 99, cooldownScale: 1, baseAttackCount: 0, mechanismLevel: 0 };
+  vm.runInContext('updateEnemy(boss, .5);', runtime);
+  assert.equal(runtime.boss.age, 2);
+  assert.equal(shots.length, 0);
+});
+
+test('brown boss reenters from the top after charging out through any battlefield edge', () => {
+  for (const [label, position, velocity] of [
+    ['top', { x: 640, y: -101 }, { vx: 0, vy: -270 }],
+    ['left', { x: -101, y: 360 }, { vx: -270, vy: 0 }],
+    ['bottom', { x: 640, y: 821 }, { vx: 0, vy: 270 }]
+  ]) {
+    const runtime = vm.createContext({
+      game: { time: 0, player: { x: 640, y: 600 }, enemyBullets: [], delayedAttacks: [] }, H: 720, W: 1280,
+      GameRules: { advanceBossEntrance: boss => ({ y: boss.y, entered: true }), circlesOverlap: () => false },
+      playSound() {}, damagePlayer() {}, shootEnemyBullet() {}, EnemyProjectileVisuals: { brown: 'orangeBossShell' }, random: (min, max) => (min + max) / 2
+    });
+    runProductionFunctions(runtime, ['aimAngle', 'fireBrownVolley', 'updateBoss']);
+    runtime.boss = { id: 1, type: 'boss', variant: 'brown', number: 1, mechanismLevel: 0, age: 0, speedScale: 1, ...position, r: 60, hp: 200, maxHp: 200, entered: true, charging: true, ...velocity, shootTimer: 99, actionTimer: 99, cooldownScale: 1, baseAttackCount: 0 };
+    vm.runInContext('updateBoss(boss, .01);', runtime);
+    assert.equal(runtime.boss.charging, false, label);
+    assert.equal(runtime.boss.entered, false, label);
+    assert.equal(runtime.boss.y, -80, label);
+  }
+});
+
+test('brown boss mechanisms add a five-shot reentry volley and make each third base volley seven shots', () => {
+  const shots = [];
+  const runtime = vm.createContext({
+    game: { time: 0, player: { x: 640, y: 600 }, enemyBullets: [], delayedAttacks: [] }, H: 720, W: 1280,
+    GameRules: { advanceBossEntrance: boss => ({ y: 119, entered: true }), circlesOverlap: () => false },
+    playSound() {}, damagePlayer() {}, shootEnemyBullet(...args) { shots.push(args); }, EnemyProjectileVisuals: { brown: 'orangeBossShell' }, random: (min, max) => (min + max) / 2
+  });
+  runProductionFunctions(runtime, ['aimAngle', 'fireBrownVolley', 'updateBoss']);
+  runtime.boss = { id: 1, type: 'boss', variant: 'brown', number: 7, mechanismLevel: 3, age: 0, speedScale: 1, x: 640, y: -80, r: 60, hp: 400, maxHp: 800, entered: false, reentered: true, charging: false, shootTimer: 99, actionTimer: 99, cooldownScale: 1, baseAttackCount: 2 };
+  vm.runInContext('updateBoss(boss, .01);', runtime);
+  assert.equal(shots.length, 5);
+  assert.equal(runtime.boss.baseAttackCount, 2);
+  shots.length = 0; runtime.boss.shootTimer = 0;
+  vm.runInContext('updateBoss(boss, .01);', runtime);
+  assert.equal(shots.length, 7);
+  assert.equal(runtime.boss.baseAttackCount, 3);
+});
+
+test('blue boss mechanisms add a center shot and schedule a nonrecursive delayed pair only below half health', () => {
+  const shots = [];
+  const runtime = vm.createContext({
+    game: { time: 12, player: { x: 640, y: 600 }, enemyBullets: [], delayedAttacks: [] }, H: 720, W: 1280,
+    GameRules: { advanceBossEntrance: boss => ({ y: boss.y, entered: true }), circlesOverlap: () => false },
+    playSound() {}, damagePlayer() {}, shootEnemyBullet(...args) { shots.push(args); }, EnemyProjectileVisuals: { blue: 'blueBossBolt' }
+  });
+  runProductionFunctions(runtime, ['aimAngle', 'fireBlueVolley', 'updateBoss']);
+  runtime.boss = { id: 1, type: 'boss', variant: 'blue', number: 7, mechanismLevel: 3, age: 0, speedScale: 1, x: 640, y: 120, r: 60, hp: 500, maxHp: 1000, entered: true, shootTimer: 0, actionTimer: 99, cooldownScale: 1, baseAttackCount: 2, blueBand: 'upper', bandTimer: 5 };
+  vm.runInContext('updateBoss(boss, .01);', runtime);
+  assert.equal(shots.length, 3);
+  assert.equal(runtime.game.delayedAttacks.length, 0);
+  shots.length = 0; runtime.boss.hp = 499; runtime.boss.baseAttackCount = 3; runtime.boss.shootTimer = 0;
+  vm.runInContext('updateBoss(boss, .01);', runtime);
+  assert.equal(shots.length, 2);
+  assert.deepEqual(plain(runtime.game.delayedAttacks), [{ kind: 'blue-double', due: 12.35, bossId: 1 }]);
+  assert.equal(runtime.boss.baseAttackCount, 4);
+});
+
+test('experience conversion plays a parts reward sound when an upgrade creates parts', () => {
+  const sounds = [];
+  const runtime = vm.createContext({
+    game: { stage: 'growth', xp: 425, attackLevel: 4, weaponParts: 1, weaponLevels: { homing: 2, laser: 3 } },
+    GameRules: rules, playSound: name => sounds.push(name), showToast() {}, updateGrowth() {}, updateHud() {}
+  });
+  runProductionFunctions(runtime, ['upgradeAttack']);
+  vm.runInContext('upgradeAttack()', runtime);
+  assert.equal(runtime.game.attackLevel, 5);
+  assert.equal(runtime.game.xp, 25);
+  assert.equal(runtime.game.weaponParts, 3);
+  assert.deepEqual(sounds, ['upgrade', 'fragment']);
 });
 
 test('breaking a destructible magic projectile plays once while other shots stay silent', () => {
@@ -366,7 +491,7 @@ for (const variant of ['blue', 'brown']) {
       addParticle() {}, addFloater() {}, random: (min, max) => (min + max) / 2
     });
     vm.runInContext(match[1], runtime);
-    for (const name of ['resetGame', 'startGame', 'spawnBoss', 'damagePlayer', 'updateHud', 'endGame']) {
+    for (const name of ['resetGame', 'startGame', 'spawnBoss', 'damagePlayer', 'updateHud', 'updateResults', 'endGame']) {
       const start = html.indexOf(`  function ${name}(`);
       assert.ok(start >= 0, `Missing production function: ${name}`);
       vm.runInContext(html.slice(start, html.indexOf('\n  function ', start + 1)), runtime);
@@ -387,16 +512,16 @@ for (const variant of ['blue', 'brown']) {
   });
 }
 
-test('enemy statistics match the approved combat rules', () => {
+test('enemy statistics use collision damage names for all four normal enemies', () => {
   assert.deepEqual(plain(rules.enemyStats), {
     eagle: { hp: 20, damage: 10 },
     drone: { hp: 30, damage: 30 },
-    bat: { hp: 10, dps: 10 },
+    bat: { hp: 10, damage: 10 },
     wizard: { hp: 50, damage: 30 }
   });
 });
 
-test('weapon damage and upgrade levels are capped for V2', () => {
+test('weapon damage and upgrade levels keep their approved caps in V3', () => {
   assert.equal(rules.maxAttackLevel(), 5);
   assert.equal(rules.maxWeaponLevel('laser'), 3);
   assert.equal(rules.bulletDamage(0), 2);
@@ -408,12 +533,17 @@ test('weapon damage and upgrade levels are capped for V2', () => {
   assert.equal(rules.canUpgrade(5, 3, 'laser'), false);
 });
 
-test('V2 boss and enemy difficulty scales by defeated bosses', () => {
-  assert.deepEqual(plain(rules.bossHealthRange(1)), [160, 220]);
-  assert.deepEqual(plain(rules.bossHealthRange(3)), [336, 463]);
+test('V3 boss health is linear while speed and cooldown have explicit caps', () => {
+  assert.deepEqual(plain(rules.bossHealthRange(1)), [180, 220]);
+  assert.deepEqual(plain(rules.bossHealthRange(3)), [380, 460]);
+  assert.deepEqual(plain(rules.bossHealthRange(8)), [880, 1060]);
   assert.deepEqual(plain(rules.difficulty(0)), { hp: 1, speed: 1, spawnInterval: 1.55 });
   assert.deepEqual(plain(rules.difficulty(3)), { hp: 1.36, speed: 1.12, spawnInterval: 1.39 });
-  assert.deepEqual(plain(rules.bossScale(20)), { speed: 1.28, cooldown: .6 });
+  assert.deepEqual(plain(rules.bossScale(20)), { speed: 1.18, cooldown: .8 });
+});
+
+test('V3 boss mechanism levels change every two bosses and cap at three', () => {
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 20].map(rules.bossMechanismLevel), [0, 0, 1, 1, 2, 2, 3, 3]);
 });
 
 test('boss entrance finishes once and does not restart below the old threshold', () => {
@@ -423,20 +553,25 @@ test('boss entrance finishes once and does not restart below the old threshold',
   assert.deepEqual(plain(cruising), { y: 98, entered: true });
 });
 
-test('fragment upgrades spend five only after acceptance', () => {
+test('universal weapon parts spend five only after an accepted special upgrade', () => {
   assert.equal(rules.canUpgrade(4), false);
   assert.equal(rules.canUpgrade(5), true);
-  assert.deepEqual(plain(rules.applyFragmentUpgrade(7, 2, false)), { fragments: 7, level: 2 });
-  assert.deepEqual(plain(rules.applyFragmentUpgrade(7, 2, true)), { fragments: 2, level: 3 });
+  assert.deepEqual(plain(rules.applyPartsUpgrade(7, 2, false)), { parts: 7, level: 2, upgraded: false });
+  assert.deepEqual(plain(rules.applyPartsUpgrade(7, 2, true)), { parts: 2, level: 3, upgraded: true });
 });
 
-test('boss drops two fragments for the lower-level incomplete weapon', () => {
-  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 3, laser: 1 }, .2), 'laser');
-  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 3 }, .8), 'homing');
-  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 1 }, .2), 'homing');
-  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 1, laser: 1 }, .8), 'laser');
-  assert.equal(rules.chooseFragmentDrop({ homing: 0, laser: 0 }, { homing: 3, laser: 3 }, .5), null);
-  assert.deepEqual(plain(rules.applyAttackUpgrade(50, 5)), { xp: 50, level: 5, upgraded: false });
+test('machinegun upgrades use the V3 increasing cost sequence', () => {
+  assert.deepEqual([0, 1, 2, 3, 4, 5].map(rules.attackUpgradeCost), [50, 75, 100, 150, 200, null]);
+  assert.deepEqual(plain(rules.applyAttackUpgrade(99, 2)), { xp: 99, level: 2, upgraded: false });
+  assert.deepEqual(plain(rules.applyAttackUpgrade(100, 2)), { xp: 0, level: 3, upgraded: true });
+  assert.deepEqual(plain(rules.applyAttackUpgrade(200, 5)), { xp: 200, level: 5, upgraded: false });
+  assert.equal([0, 1, 2, 3, 4].reduce((sum, level) => sum + rules.attackUpgradeCost(level), 0), 575);
+});
+
+test('maxed machinegun converts each hundred experience to one universal part', () => {
+  assert.deepEqual(plain(rules.convertMaxedExperience(225, { homing: 2, laser: 3 }, 4, 4)), { xp: 225, parts: 4 });
+  assert.deepEqual(plain(rules.convertMaxedExperience(225, { homing: 2, laser: 3 }, 5, 4)), { xp: 25, parts: 6 });
+  assert.deepEqual(plain(rules.convertMaxedExperience(225, { homing: 3, laser: 3 }, 5, 4)), { xp: 225, parts: 4 });
 });
 
 test('special weapon cadence prevents continuous laser damage', () => {
@@ -444,14 +579,12 @@ test('special weapon cadence prevents continuous laser damage', () => {
   assert.equal(rules.specialWeaponInterval('laser'), 1.5);
 });
 
-test('attack upgrade spends exactly fifty experience', () => {
-  assert.deepEqual(plain(rules.applyAttackUpgrade(49, 2)), { xp: 49, level: 2, upgraded: false });
-  assert.deepEqual(plain(rules.applyAttackUpgrade(75, 2)), { xp: 25, level: 3, upgraded: true });
-});
-
-test('kill rewards and boss trigger use normal-kill progress', () => {
+test('kill rewards decouple boss experience from health and cap at two hundred', () => {
   assert.equal(rules.killExperience('enemy', 999), 5);
-  assert.equal(rules.killExperience('boss', 87), 87);
+  assert.equal(rules.killExperience('boss', 1), 70);
+  assert.equal(rules.killExperience('boss', 5), 150);
+  assert.equal(rules.killExperience('boss', 8), 200);
+  assert.equal(rules.killExperience('boss', 20), 200);
   assert.equal(rules.shouldSpawnBoss(9), false);
   assert.equal(rules.shouldSpawnBoss(10), true);
   assert.equal(rules.shouldSpawnBoss(20), true);
@@ -479,19 +612,27 @@ test('nearest forward target ignores enemies behind the player', () => {
 
 test('normal kills grant five experience and queue each tenth boss', () => {
   assert.deepEqual(
-    plain(rules.awardNormalKill({ xp: 45, normalKills: 9 })),
-    { xp: 50, normalKills: 10, bossPending: true }
+    plain(rules.awardNormalKill({ xp: 45, normalKills: 9, attackLevel: 0, weaponLevels: { homing: 0, laser: 0 }, weaponParts: 0 })),
+    { xp: 50, normalKills: 10, bossPending: true, weaponParts: 0 }
   );
   assert.deepEqual(
-    plain(rules.awardNormalKill({ xp: 10, normalKills: 10 })),
-    { xp: 15, normalKills: 11, bossPending: false }
+    plain(rules.awardNormalKill({ xp: 10, normalKills: 10, attackLevel: 0, weaponLevels: { homing: 0, laser: 0 }, weaponParts: 0 })),
+    { xp: 15, normalKills: 11, bossPending: false, weaponParts: 0 }
   );
 });
 
-test('boss kills grant initial health as experience and two chosen fragments', () => {
+test('boss kills grant independent experience and three universal parts while useful', () => {
   assert.deepEqual(
-    plain(rules.awardBossKill({ xp: 20, bosses: 2, fragments: { homing: 1, laser: 4 } }, 87, 'laser')),
-    { xp: 107, bosses: 3, fragments: { homing: 1, laser: 6 } }
+    plain(rules.awardBossKill({ xp: 20, bosses: 2, attackLevel: 0, weaponLevels: { homing: 1, laser: 3 }, weaponParts: 4 })),
+    { xp: 130, bosses: 3, weaponParts: 7 }
+  );
+  assert.deepEqual(
+    plain(rules.awardBossKill({ xp: 20, bosses: 7, attackLevel: 0, weaponLevels: { homing: 3, laser: 3 }, weaponParts: 4 })),
+    { xp: 220, bosses: 8, weaponParts: 4 }
+  );
+  assert.deepEqual(
+    plain(rules.awardBossKill({ xp: 25, bosses: 7, attackLevel: 5, weaponLevels: { homing: 2, laser: 3 }, weaponParts: 4 })),
+    { xp: 25, bosses: 8, weaponParts: 9 }
   );
 });
 
@@ -512,15 +653,17 @@ test('V2.3 maps each existing weapon and remote projectile to its own hit visual
   assert.match(html, /function addImpact\(x, y, key, target = null\)/);
 });
 
-test('all normal enemy body collisions use one kill-and-progress resolver', () => {
+test('normal enemy body collisions use a collision resolver that does not award a kill', () => {
   assert.match(html, /function resolveEnemyCollision\(enemy, player\)/);
   assert.match(html, /enemy\.type === 'eagle' \|\| enemy\.type === 'drone' \|\| enemy\.type === 'bat' \|\| enemy\.type === 'wizard'/);
-  assert.match(html, /killEnemy\(enemy\)/);
+  assert.match(html, /destroyEnemy\(enemy\)/);
+  assert.doesNotMatch(html.match(/function resolveEnemyCollision[\s\S]*?\n  }/)?.[0] || '', /killEnemy\(enemy\)/);
 });
 
 test('laser flash and impact follow the hit target without repeating damage or retargeting', () => {
   const target = { id: 1, x: 640, y: 180, hp: 200, r: 25, dead: false };
   const game = {
+    running: true, stage: 'combat',
     player: { x: 640, y: 600 }, activeWeapon: 'laser', weaponLevels: { laser: 1 },
     laserTargetId: 1, laserTimer: 1.49, enemies: [target], particles: [], impacts: [], floaters: []
   };
@@ -789,10 +932,14 @@ test('combat HUD uses a clear progress icon and compact readable controls', () =
   assert.match(html, /\.mission-icon::before/);
   assert.match(html, /\.mission-icon::after/);
   assert.doesNotMatch(html, /\.mission-icon \{ transform: rotate\(45deg\)/);
-  assert.match(html, /id="homing-fragment"[^>]*><img src="assets\/weapons\/ui-homing-missile\.png"/);
-  assert.match(html, /id="laser-fragment"[^>]*><img src="assets\/weapons\/ui-laser-cannon\.png"/);
+  assert.match(html, /id="weapon-parts"[^>]*><img src="assets\/weapons\/ui-homing-missile\.png"/);
+  assert.equal((html.match(/class="fragment-count"/g) || []).length, 1);
   assert.match(html, /\.fragment-button \{[^}]*text-shadow: none/s);
   assert.match(html, /#upgrade-attack \.weapon-asset \{[^}]*width: clamp\(34px, 2\.5vw, 46px\)/s);
+});
+
+test('growth choices make unavailable upgrades visibly disabled', () => {
+  assert.match(html, /#growth-modal button:disabled \{[^}]*opacity: \.78;[^}]*cursor: default;/s);
 });
 
 test('player machinegun bullets and flashes share the aircraft gun anchors', () => {
@@ -858,12 +1005,12 @@ test('drawPlayer selects only unlocked aircraft variants while preserving shared
     ['homing', { homing: 0, laser: 0 }]
   ]) {
     const draws = draw(activeWeapon, weaponLevels);
-    assert.deepEqual(draws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, 1]);
+    assert.deepEqual(draws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, 1, 600]);
     assert.deepEqual(draws[1], ['asset', 'player', 653, 600, 116, 85, 0, 1]);
   }
 
   const laserDraws = draw('laser', { homing: 0, laser: 1 }, .5);
-  assert.deepEqual(laserDraws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, .35]);
+  assert.deepEqual(laserDraws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, .35, 600]);
   assert.deepEqual(laserDraws[1], ['asset', 'playerLaser', 640, 588, 93, 68, 0, .35]);
   assert.deepEqual(laserDraws.slice(2), [
     ['asset', 'playerMuzzleFlashV2', 624, 581, 8, 8, 0, .35],
@@ -871,7 +1018,7 @@ test('drawPlayer selects only unlocked aircraft variants while preserving shared
   ]);
 
   const missileDraws = draw('homing', { homing: 1, laser: 0 });
-  assert.deepEqual(missileDraws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, 1]);
+  assert.deepEqual(missileDraws[0], ['shadow', 'playerWingShadow', 640, 636, 74, 22, 1, 600]);
   assert.deepEqual(missileDraws[1], ['asset', 'playerMissile', 640, 592, 108, 79, 0, 1]);
   assert.deepEqual(missileDraws.slice(2).map(call => call.slice(0, 4)), [
     ['asset', 'playerMuzzleFlashV2', 624, 581],
@@ -984,4 +1131,68 @@ test('mechanical start and hurt match approved previews and cache at both sample
     for (const source of sources) source.onended();
     assert.ok(sources.every(source => source.disconnected));
   }
+});
+
+
+test('growth refresh preserves weapon pictures while updating the text and availability', () => {
+  const labels = {};
+  const ui = { 'growth-copy': {} };
+  for (const type of ['attack', 'homing', 'laser']) {
+    labels[type] = { textContent: '' };
+    ui[`growth-${type}`] = {
+      querySelector(selector) { assert.equal(selector, '.growth-label'); return labels[type]; },
+      set textContent(value) { assert.fail('Replacing button text removes its weapon image'); }
+    };
+  }
+  const game = { xp: 120, attackLevel: 0, weaponParts: 3, weaponLevels: { homing: 0, laser: 0 } };
+  const runtime = vm.createContext({ game, ui, GameRules: rules });
+  runProductionFunctions(runtime, ['updateGrowth']);
+  vm.runInContext('updateGrowth()', runtime);
+  assert.match(labels.attack.textContent, /50 经验/);
+  assert.equal(ui['growth-attack'].disabled, false);
+  assert.equal(ui['growth-homing'].disabled, true);
+  game.attackLevel = 5; game.weaponParts = 5;
+  vm.runInContext('updateGrowth()', runtime);
+  assert.match(labels.attack.textContent, /MAX/);
+  assert.equal(ui['growth-attack'].disabled, true);
+  assert.equal(ui['growth-homing'].disabled, false);
+  for (const [type, file] of [['attack', 'ui-attack-upgrade.png'], ['homing', 'ui-homing-missile-upgrade.png'], ['laser', 'ui-laser-upgrade.png']]) {
+    const button = html.match(new RegExp(`<button id="growth-${type}"[^>]*>([\\s\\S]*?)</button>`));
+    assert.ok(button?.[1].includes(file), `Missing ${type} picture`);
+  }
+});
+
+test('perspective actors cast shadows only when their centers reach the sea; topdown keeps shadows', () => {
+  const shadows = [];
+  const keys = ['playerWingShadow', 'owlWingShadow', 'droneBodyShadow', 'batWingShadow', 'wizardRobesShadow', 'bossOrangeEngineShadow', 'bossBlueThrusterShadow'];
+  const runtime = vm.createContext({
+    H: 720, activeSceneBackground: 'backgroundPerspective',
+    assets: Object.fromEntries(keys.map(key => [key, key])),
+    ctx: { save() {}, restore() {}, drawImage(...args) { shadows.push(args); } },
+    game: { running: false, activeWeapon: null, weaponLevels: { homing: 0, laser: 0 } },
+    drawAsset() {}
+  });
+  runProductionFunctions(runtime, ['drawShadow', 'drawPlayer', 'drawEagle', 'drawDrone', 'drawBat', 'drawWizard', 'drawBoss']);
+  for (const scene of ['backgroundPerspective', 'backgroundTopdown']) {
+    runtime.activeSceneBackground = scene;
+    for (const y of [120, 720 * .34 - 1, 720 * .34, 600]) {
+      for (const [name, extra] of [['drawPlayer', {}], ['drawEagle', {}], ['drawDrone', {}], ['drawBat', {}], ['drawWizard', {}], ['drawBoss', { variant: 'brown' }], ['drawBoss', { variant: 'blue' }]]) {
+        shadows.length = 0;
+        runtime.actor = { x: 640, y, age: 0, invulnerable: 0, ...extra };
+        vm.runInContext(`${name}(actor)`, runtime);
+        const expected = scene === 'backgroundTopdown' || y >= 720 * .34 ? 1 : 0;
+        assert.equal(shadows.length, expected, `${scene} ${name} y=${y}`);
+        if (name === 'drawBoss' && expected) {
+          assert.deepEqual(shadows[0].slice(3), [128, 27], `${scene} ${extra.variant} shadow size`);
+        }
+      }
+    }
+  }
+});
+
+test('universal parts HUD shows both existing special weapon icons with one count', () => {
+  const hud = html.match(/<div id="weapon-parts"[\s\S]*?<\/div>/)?.[0] || '';
+  assert.ok(hud.includes('ui-homing-missile.png'));
+  assert.ok(hud.includes('ui-laser-cannon.png'));
+  assert.equal((hud.match(/class="fragment-count"/g) || []).length, 1);
 });

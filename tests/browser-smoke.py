@@ -14,7 +14,7 @@ def main():
         if modal_only
         else "/tmp/airplane-clear-clouds.png"
         if perspective_only
-        else "/tmp/airplane-battle-v1.png"
+        else "/tmp/airplane-battle-v3.png"
     )
 
     with sync_playwright() as playwright:
@@ -108,264 +108,288 @@ def main():
             "assets/scenery/perspective-cloud-bank-far.png",
             "assets/scenery/perspective-cloud-bank-near.png",
         }.isdisjoint(assets["expected"]), f"Removed storm assets must not load: {assets}"
-        if modal_only:
-            def assert_inside(selector):
-                shell = page.locator("#game-shell").bounding_box()
-                panel = page.locator(selector).bounding_box()
-                assert shell and panel
-                assert panel["x"] >= shell["x"]
-                assert panel["y"] >= shell["y"]
-                assert panel["x"] + panel["width"] <= shell["x"] + shell["width"]
-                assert panel["y"] + panel["height"] <= shell["y"] + shell["height"]
+        stray_pixels = page.evaluate("""async () => {
+            const bat = new Image();
+            bat.src = 'assets/characters/bat.png';
+            await bat.decode();
+            const canvas = document.createElement('canvas');
+            canvas.width = bat.naturalWidth; canvas.height = bat.naturalHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(bat, 0, 0);
+            const pixels = context.getImageData(41, 218, 14, 5).data;
+            let opaque = 0;
+            for (let i = 3; i < pixels.length; i += 4) if (pixels[i] > 0) opaque++;
+            return opaque;
+        }""")
+        assert stray_pixels == 0, f"Bat lower-left stray pixels remain: {stray_pixels}"
 
-            for width, height in ((1280, 720), (1440, 900)):
+        def snapshot():
+            return page.evaluate("window.__gameTest.snapshot()")
+
+        def assert_inside(selector):
+            shell = page.locator("#game-shell").bounding_box()
+            panel = page.locator(selector).bounding_box()
+            assert shell and panel
+            assert panel["x"] >= shell["x"] - 1 and panel["y"] >= shell["y"] - 1
+            assert panel["x"] + panel["width"] <= shell["x"] + shell["width"] + 1
+            assert panel["y"] + panel["height"] <= shell["y"] + shell["height"] + 1
+            assert page.locator(selector).evaluate("node => node.scrollWidth <= node.clientWidth + 1")
+
+        def spawn_and_defeat(number, variant="brown"):
+            page.evaluate("([number, variant]) => { window.__gameTest.setState({bosses: number - 1}); window.__gameTest.spawnBoss(number, variant); window.__gameTest.defeatBoss(); }", [number, variant])
+            assert page.locator("#growth-modal").is_visible()
+            assert snapshot()["paused"]
+
+        # Real buttons drive every transition; hooks only prepare deterministic combat.
+        for width, height in ((1280, 720), (1440, 900)):
+            for theme in ("backgroundTopdown", "backgroundPerspective"):
+                if perspective_only and theme != "backgroundPerspective":
+                    continue
                 page.set_viewport_size({"width": width, "height": height})
                 page.reload()
                 page.wait_for_load_state("networkidle")
-                assert page.get_by_role("button", name="海岛俯瞰 俯视").is_visible()
-                assert page.get_by_role("button", name="海天远航 斜视").is_visible()
-                topdown_preview = page.get_by_role("button", name="海岛俯瞰 俯视").evaluate(
-                    "node => getComputedStyle(node, '::before').backgroundImage"
-                )
-                perspective_preview = page.get_by_role("button", name="海天远航 斜视").evaluate(
-                    "node => getComputedStyle(node, '::before').backgroundImage"
-                )
-                assert "scene-preview-topdown.png" in topdown_preview
-                assert "scene-preview-perspective.png" in perspective_preview
-                assert any(url.endswith("/assets/scenery/scene-preview-topdown.png") for url in preview_responses)
-                assert any(url.endswith("/assets/scenery/scene-preview-perspective.png") for url in preview_responses)
-                page.get_by_role("button", name="海天远航 斜视").click()
-                assert "selected" in page.get_by_role("button", name="海天远航 斜视").get_attribute("class")
-                assert "selected" not in page.get_by_role("button", name="海岛俯瞰 俯视").get_attribute("class")
-                selected_border = page.get_by_role("button", name="海天远航 斜视").evaluate(
-                    "node => getComputedStyle(node).borderColor"
-                )
-                idle_border = page.get_by_role("button", name="海岛俯瞰 俯视").evaluate(
-                    "node => getComputedStyle(node).borderColor"
-                )
-                assert selected_border != idle_border, "Selected scene needs a distinct gold border"
-                page.keyboard.press("Tab")
-                page.keyboard.press("Shift+Tab")
-                assert page.get_by_role("button", name="海天远航 斜视").evaluate(
-                    "node => node.matches(':focus-visible')"
-                )
-                assert float(page.get_by_role("button", name="海天远航 斜视").evaluate(
-                    "node => parseFloat(getComputedStyle(node).outlineWidth)"
-                )) >= 4, "Keyboard focus needs a clear outline"
-                if width == 1440:
-                    page.locator("#start-screen .panel").screenshot(path="/tmp/airplane-modal-focus.png")
-                page.evaluate("document.activeElement.blur()")
                 assert_inside("#start-screen .panel")
-                lead_lines = page.locator("#start-screen .lead").evaluate(
-                    "node => Math.round(node.scrollHeight / parseFloat(getComputedStyle(node).lineHeight))"
-                )
-                assert lead_lines == 2, f"Start instructions should use two lines, got {lead_lines}"
-                assert page.locator("#start-screen .panel").evaluate(
-                    "node => getComputedStyle(node).clipPath !== 'none'"
-                )
-                assert float(page.locator("#upgrade-modal .panel").evaluate(
-                    "node => parseFloat(getComputedStyle(node).borderRadius)"
-                )) >= 20, "Upgrade modal must retain its rounded panel style"
-                if width == 1440:
-                    page.locator("#start-screen .panel").screenshot(path="/tmp/airplane-modal-start.png")
-
+                scene = page.locator(f'[data-scene-theme="{theme}"]')
+                scene.click()
+                assert "selected" in scene.get_attribute("class")
+                assert "scene-preview-" in scene.evaluate("node => getComputedStyle(node, '::before').backgroundImage")
                 page.locator("#start-button").click()
                 assert page.locator("#start-screen").is_hidden()
-                page.evaluate("window.__gameTest.finish(12, 2, 3)")
-                assert page.locator("#game-over").is_visible()
-                assert_inside("#game-over .panel")
-                result_items = page.locator("#result-copy .result-stat")
-                assert result_items.count() == 3
-                assert result_items.nth(0).inner_text() == "怪物\n12"
-                assert result_items.nth(1).inner_text() == "BOSS\n2"
-                assert result_items.nth(2).inner_text() == "火球伤害\n8"
+                part_icons = page.locator("#weapon-parts img")
+                assert part_icons.count() == 2
+                assert part_icons.nth(0).get_attribute("src").endswith("ui-homing-missile.png")
+                assert part_icons.nth(1).get_attribute("src").endswith("ui-laser-cannon.png")
+                assert page.locator("#weapon-parts .fragment-count").count() == 1
+                assert_inside("#weapon-parts")
+                initial = snapshot()
+                assert initial["player"]["hp"] == 100
+                assert initial["attackLevel"] == 0 and initial["weaponParts"] == 0
+                assert initial["normalKills"] == 0 and initial["bosses"] == 0
+                assert initial["highestBoss"] == 0
+                assert page.locator("#growth-modal").is_hidden()
+                box = page.locator("#game-canvas").bounding_box()
+                page.mouse.move(box["x"] + box["width"] * .72, box["y"] + box["height"] * .7)
+                assert abs(snapshot()["player"]["x"] - 1280 * .72) < 2
+                assert abs(snapshot()["player"]["y"] - 720 * .7) < 2
+                page.mouse.move(box["x"] + 25, box["y"] + box["height"] - 25)
+                assert snapshot()["player"]["x"] == 105
+                assert snapshot()["player"]["y"] == 615
+                page.evaluate("window.__gameTest.setState({xp: 1000, weaponParts: 10})")
+                page.evaluate("window.__gameTest.upgrade('attack'); window.__gameTest.upgrade('homing')")
+                assert snapshot()["attackLevel"] == 0 and snapshot()["weaponLevels"]["homing"] == 0
+                page.evaluate("window.__gameTest.setState({xp: 0, weaponParts: 0})")
+
+                # Collision destroys the normal enemy without awarding experience/progress.
+                before = snapshot()
+                page.evaluate("window.__gameTest.collideEnemy('drone')")
+                after = snapshot()
+                assert after["xp"] == before["xp"] and after["normalKills"] == before["normalKills"]
+                assert after["player"]["hp"] == 70
+                page.evaluate("window.__gameTest.collideEnemy('bat')")
+                assert snapshot()["player"]["hp"] == 70
+                page.evaluate("window.__gameTest.setState({player: {hp: 100, invulnerable: 999}})")
+
+                # Actual kill resolver opens growth, even before special weapons are affordable.
+                spawn_and_defeat(1)
+                assert snapshot()["xp"] == 70 and snapshot()["weaponParts"] == 3
+                assert_inside("#growth-modal .panel")
+                assert page.locator("#growth-modal .panel").evaluate("node => getComputedStyle(node).clipPath !== 'none'")
+                growth_buttons = page.locator("#growth-modal .button-row button")
+                boxes = [growth_buttons.nth(i).bounding_box() for i in range(4)]
+                assert max(b["width"] for b in boxes) - min(b["width"] for b in boxes) <= 1
+                assert max(b["x"] for b in boxes) - min(b["x"] for b in boxes) <= 1
+                growth_icon_files = {
+                    "attack": "ui-attack-upgrade.png",
+                    "homing": "ui-homing-missile-upgrade.png",
+                    "laser": "ui-laser-upgrade.png",
+                }
+                for kind, filename in growth_icon_files.items():
+                    icon = page.locator(f"#growth-{kind} img")
+                    assert icon.get_attribute("src").endswith(filename)
+                    assert icon.evaluate("node => node.complete && node.naturalWidth > 0")
+                    assert float(page.locator(f"#growth-{kind}").evaluate("node => parseFloat(getComputedStyle(node).borderRadius)")) <= 3
+                assert "grayscale" in page.locator("#growth-homing img").evaluate("node => getComputedStyle(node).filter")
+                assert page.locator("#growth-modal button img").count() == 3
                 if width == 1440:
-                    page.locator("#game-over .panel").screenshot(path=str(screenshot))
+                    page.locator("#growth-modal .panel").screenshot(path=f"/tmp/airplane-v3-growth-ready-{theme}.png")
+                frozen = snapshot()["time"]
+                page.wait_for_timeout(150)
+                assert snapshot()["time"] == frozen
+                assert page.locator("#growth-homing").is_disabled()
+                assert float(page.locator("#growth-homing").evaluate("node => getComputedStyle(node).opacity")) < 1
+                page.locator("#growth-attack").click()
+                assert snapshot()["attackLevel"] == 1 and snapshot()["xp"] == 20
+                assert page.locator("#growth-modal").is_visible()
+                page.locator("#growth-continue").click()
+                assert not snapshot()["paused"]
+
+                spawn_and_defeat(2, "blue")
+                assert snapshot()["weaponParts"] == 6
+                page.locator("#growth-homing").click()
+                assert snapshot()["weaponLevels"]["homing"] == 1
+                assert snapshot()["weaponParts"] == 1
+                assert page.locator("#growth-laser").is_disabled()
+                page.locator("#growth-continue").click()
+
+                # One growth visit permits all affordable levels, and immediately converts XP.
+                page.evaluate("window.__gameTest.setState({xp: 1000, weaponParts: 10})")
+                spawn_and_defeat(3)
+                for _ in range(4):
+                    page.locator("#growth-attack").click()
+                assert snapshot()["attackLevel"] == 5
+                assert snapshot()["xp"] == 85
+                assert snapshot()["weaponParts"] == 18
+                page.locator("#growth-homing").click()
+                page.locator("#growth-homing").click()
+                page.locator("#growth-laser").click()
+                assert snapshot()["weaponLevels"] == {"homing": 3, "laser": 1}
+                assert snapshot()["weaponParts"] == 3
+                assert page.locator("#growth-modal button img").count() == 3
+                if width == 1440:
+                    page.locator("#growth-modal .panel").screenshot(path=f"/tmp/airplane-v3-growth-{theme}.png")
+                page.locator("#growth-continue").click()
+                page.locator("#laser-weapon").click()
+                assert snapshot()["activeWeapon"] == "laser"
+                page.locator("#homing-weapon").click()
+                assert snapshot()["activeWeapon"] == "homing"
+
+                spawn_and_defeat(4)
+                page.locator("#growth-continue").click()
+                spawn_and_defeat(5, "blue")
+                saved = snapshot()
+                page.locator("#growth-continue").click()
+                assert page.locator("#victory-screen").is_visible()
+                assert_inside("#victory-screen .panel")
+                primary_box = page.locator("#victory-endless").bounding_box()
+                secondary_box = page.locator("#victory-end").bounding_box()
+                assert abs(primary_box["width"] - secondary_box["width"]) <= 1
+                assert abs(primary_box["height"] - secondary_box["height"]) <= 1
+                assert float(page.locator("#victory-end").evaluate("node => parseFloat(getComputedStyle(node).borderRadius)")) <= 3
+                assert snapshot()["paused"]
+                if width == 1440:
+                    page.locator("#victory-screen .panel").screenshot(path=f"/tmp/airplane-v3-victory-{theme}.png")
+                page.locator("#victory-endless").click()
+                continued = snapshot()
+                for key in ("xp", "weaponParts", "attackLevel", "weaponLevels", "normalKills", "bosses"):
+                    assert continued[key] == saved[key], f"Endless reset {key}"
+                assert continued["player"]["hp"] == saved["player"]["hp"]
+                assert continued["endless"] and not continued["paused"]
+                spawn_and_defeat(6)
+                page.locator("#growth-continue").click()
+                assert page.locator("#victory-screen").is_hidden()
+                assert not snapshot()["paused"]
+
+                page.evaluate("window.__gameTest.finish(60, 6, 5)")
+                assert page.locator("#game-over").is_visible()
+                assert "无尽" in page.locator("#game-over").inner_text()
+                assert_inside("#game-over .panel")
+                assert page.locator("#result-copy .result-stat").count() >= 7
+                if width == 1440:
+                    page.locator("#game-over .panel").screenshot(path=f"/tmp/airplane-v3-result-{theme}.png")
                 page.locator("#restart-button").click()
-                assert page.locator("#game-over").is_hidden()
-                assert page.locator("#hud").is_visible()
+                fresh = snapshot()
+                assert fresh["player"]["hp"] == 100 and fresh["weaponParts"] == 0 and fresh["xp"] == 0
+                assert fresh["attackLevel"] == 0 and fresh["weaponLevels"] == {"homing": 0, "laser": 0}
+                assert fresh["bosses"] == 0 and fresh["highestBoss"] == 0 and not fresh["endless"]
+                assert fresh["activeWeapon"] is None
+                assert page.locator("#victory-screen").is_hidden()
+                assert page.locator("#growth-modal").is_hidden()
+                assert page.locator("#boss-panel").is_hidden()
 
-            assert not errors, f"Browser errors: {errors}"
-            browser.close()
-            print(f"modal browser smoke ok: {screenshot}")
-            return
-        if perspective_only:
-            assert {
-                "assets/scenery/perspective-clear-cloud-far.png",
-                "assets/scenery/perspective-clear-cloud-near.png",
-            } <= set(assets["loaded"])
-            page.locator('[data-scene-theme="backgroundPerspective"]').click()
-            page.evaluate("window.__renderStats.sceneryDraws = []")
-            page.locator("#start-button").click()
-            page.wait_for_timeout(500)
-            canvas = page.locator("#game-canvas")
-            before = canvas.screenshot()
-            page.wait_for_timeout(1000)
-            after = canvas.screenshot(path=str(screenshot))
-            assert before != after, "Perspective canvas should animate after the game starts"
-            page.wait_for_timeout(8500)
-            canvas.screenshot(path="/tmp/airplane-perspective-water-contact-far.png")
-            perspective_draws = page.evaluate("window.__renderStats.sceneryDraws")
-            assert "backgroundPerspective" in perspective_draws
-            assert "perspectiveClearCloudFar" in perspective_draws
-            assert "perspectiveClearCloudNear" in perspective_draws
-            assert "perspectiveWaterContact" in perspective_draws
-            assert "waterTopdownLoop" not in perspective_draws
-            assert not errors, f"Browser errors: {errors}"
-            browser.close()
-            print(f"perspective browser smoke ok: {screenshot}")
-            return
-        required = {
-            "assets/weapons/player-muzzle-flash.png",
-            "assets/weapons/wizard-magic-orb.png",
-            "assets/weapons/boss-orange-shell.png",
-            "assets/weapons/boss-blue-bolt.png",
-            "assets/shadows/player-wing-shadow.png",
-            "assets/shadows/boss-blue-thruster-shadow.png",
-            "assets/scenery/water-topdown-loop.png",
-            "assets/scenery/topdown-segment-01.png",
-            "assets/scenery/topdown-segment-06.png",
-            "assets/scenery/topdown-reef-01.png",
-            "assets/scenery/topdown-reef-02.png",
-            "assets/scenery/topdown-islet-01.png",
-            "assets/scenery/topdown-islet-02.png",
-        }
-        assert required <= set(assets["loaded"])
-        assert page.get_by_text("AIRPLANE BATTLE · V2.1", exact=True).is_visible()
-        assert page.get_by_role("button", name="🚀 开始出击").is_visible()
-        assert page.get_by_text("空中玩具战场 · V2.1").is_visible()
-        page.get_by_role("button", name="🚀 开始出击").click()
-        page.wait_for_timeout(300)
+                # Special MAX alone must not stop machinegun XP; its last upgrade turns XP into MAX.
+                page.evaluate("window.__gameTest.setState({attackLevel: 4, weaponLevels: {homing: 3, laser: 3}, xp: 200, weaponParts: 7})")
+                spawn_and_defeat(5)
+                assert snapshot()["xp"] == 350 and snapshot()["weaponParts"] == 7
+                page.locator("#growth-attack").click()
+                assert snapshot()["attackLevel"] == 5 and snapshot()["weaponParts"] == 7
+                assert page.locator("#xp-text").inner_text() == "MAX"
+                assert page.locator("#growth-attack").is_disabled()
+                assert page.locator("#growth-homing").is_disabled()
+                assert page.locator("#growth-laser").is_disabled()
+                # Victory's other action ends the run instead of starting endless mode.
+                page.locator("#growth-continue").click()
+                page.locator("#victory-end").click()
+                assert not snapshot()["running"]
+                assert not snapshot()["endless"]
+                page.locator("#restart-button").click()
+                page.evaluate("window.__gameTest.addTarget(); window.__gameTest.setState({player: {invulnerable: 999}})")
+                canvas = page.locator("#game-canvas")
+                before_frame = canvas.screenshot()
+                page.wait_for_timeout(500)
+                assert canvas.screenshot() != before_frame
+                if width == 1440:
+                    canvas.screenshot(path=f"/tmp/airplane-v3-play-{theme}.png")
+                # Observe real canvas draw calls for every actor above/at/below the horizon.
+                for actor_y in (120, 720 * .34 - 1, 720 * .34, 500):
+                    shadow_keys = page.evaluate("""async y => {
+                        const context = document.querySelector('#game-canvas').getContext('2d');
+                        const original = context.drawImage;
+                        const keys = [];
+                        context.drawImage = function(image, ...args) {
+                            if (image.src && image.src.includes('/assets/shadows/')) keys.push(image.src.split('/').pop());
+                            return original.call(this, image, ...args);
+                        };
+                        const types = ['eagle', 'drone', 'bat', 'wizard', 'boss', 'boss'];
+                        const enemies = types.map((type, i) => ({id: i + 100, type, x: 270 + i * 174,
+                            y, age: 0, phase: 'enter', variant: i === 5 ? 'blue' : 'brown',
+                            hp: 100, maxHp: 100, r: 25, charging: false, dead: false}));
+                        window.__gameTest.setState({paused: true, enemies, boss: null, bullets: [],
+                            enemyBullets: [], particles: [], impacts: [], floaters: [], damageEffects: [],
+                            laserFlash: null, shake: 0, player: {x: 100, y, invulnerable: 0}});
+                        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                        context.drawImage = original;
+                        return [...new Set(keys)];
+                    }""", actor_y)
+                    expected_count = 0 if theme == "backgroundPerspective" and actor_y < 720 * .34 else 7
+                    assert len(shadow_keys) == expected_count, (theme, actor_y, shadow_keys)
+                    if width == 1440 and actor_y in (120, 500):
+                        page.locator("#game-canvas").screenshot(path=f"/tmp/airplane-shadows-{theme}-{actor_y}.png")
+                page.evaluate("window.__gameTest.restart(); window.__gameTest.setState({player: {invulnerable: 999}})")
+                assert not errors, f"Browser errors: {errors}"
 
-        assert page.locator("#hud").is_visible()
-        asset_draws = page.evaluate("window.__renderStats.assetDraws")
-        assert {"player", "drone"} <= set(asset_draws), "Visible player and enemy must use local PNG assets"
-        scenery_draws = page.evaluate("window.__renderStats.sceneryDraws")
-        assert {
-            "waterTopdownLoop", "topdownIsland01", "topdownIsland02", "topdownIsland03",
-            "topdownReef01", "topdownReef02", "topdownIslet01", "topdownIslet02",
-        } <= set(scenery_draws), "Top-down background must draw the complete seven-item scenery sequence"
-        assert page.get_by_text("战机耐久", exact=True).is_visible()
-        assert page.get_by_text("作战经验", exact=True).is_visible()
-        assert page.get_by_text("本轮进度", exact=True).is_visible()
-        assert page.locator("#hp-text").inner_text() == "100"
-        assert page.locator("#kill-text").inner_text() == "0/10"
-        assert page.locator("#upgrade-attack").is_disabled()
-        assert "0/5" in page.locator("#homing-fragment").inner_text()
-        assert page.locator("#base-weapon").is_visible()
-        upgrade_box = page.locator("#upgrade-attack").bounding_box()
-        weapons_box = page.locator("#weapons").bounding_box()
-        fragments_box = page.locator("#fragments").bounding_box()
-        version_box = page.locator(".version").bounding_box()
-        shell_box = page.locator("#game-shell").bounding_box()
-        assert page.locator("#hud .hud-chip").count() == 3
-        assert "237, 123, 53" in page.locator("#upgrade-attack").evaluate(
-            "node => getComputedStyle(node).backgroundImage"
-        )
-        assert weapons_box["x"] > shell_box["x"] + shell_box["width"] * 0.7
-        assert upgrade_box["y"] > shell_box["y"] + shell_box["height"] * 0.75
-        assert upgrade_box["x"] > fragments_box["x"] + fragments_box["width"]
-        assert upgrade_box["x"] + upgrade_box["width"] < weapons_box["x"]
-        overlaps = not (
-            version_box["x"] + version_box["width"] <= weapons_box["x"]
-            or weapons_box["x"] + weapons_box["width"] <= version_box["x"]
-            or version_box["y"] + version_box["height"] <= weapons_box["y"]
-            or weapons_box["y"] + weapons_box["height"] <= version_box["y"]
-        )
-        assert not overlaps, "Version label must not overlap special weapon controls"
-
-        canvas = page.locator("#game-canvas")
-        box = canvas.bounding_box()
-        page.mouse.move(box["x"] + box["width"] * 0.72, box["y"] + box["height"] * 0.7)
-        page.wait_for_timeout(35)
-        player_red_pixels = page.evaluate(
-            """() => {
-              const context = document.querySelector('#game-canvas').getContext('2d');
-              const pixels = context.getImageData(850, 455, 145, 145).data;
-              let count = 0;
-              for (let i = 0; i < pixels.length; i += 4) {
-                if (pixels[i] > 155 && pixels[i + 1] < 115 && pixels[i + 2] < 130 && pixels[i + 3] > 180) count++;
-              }
-              return count;
-            }"""
-        )
-        assert player_red_pixels > 35, "Player should reach the pointer without visible lag"
-        page.mouse.move(
-            upgrade_box["x"] + upgrade_box["width"] / 2,
-            upgrade_box["y"] + upgrade_box["height"] / 2,
-        )
-        page.wait_for_timeout(35)
-        hud_pointer_red_pixels = page.evaluate(
-            """() => {
-              const context = document.querySelector('#game-canvas').getContext('2d');
-              const pixels = context.getImageData(560, 590, 160, 130).data;
-              let count = 0;
-              for (let i = 0; i < pixels.length; i += 4) {
-                if (pixels[i] > 155 && pixels[i + 1] < 115 && pixels[i + 2] < 130 && pixels[i + 3] > 180) count++;
-              }
-              return count;
-            }"""
-        )
-        assert hud_pointer_red_pixels > 35, "Player should follow the pointer over HUD controls"
-        clipped_plane_pixels = page.evaluate(
-            """() => {
-              const context = document.querySelector('#game-canvas').getContext('2d');
-              const pixels = context.getImageData(0, 710, 1280, 10).data;
-              let count = 0;
-              for (let i = 0; i < pixels.length; i += 4) {
-                const red = pixels[i] > 155 && pixels[i + 1] < 115 && pixels[i + 2] < 130;
-                const blue = pixels[i] < 85 && pixels[i + 1] < 145 && pixels[i + 2] > 95;
-                if ((red || blue) && pixels[i + 3] > 180) count++;
-              }
-              return count;
-            }"""
-        )
-        assert clipped_plane_pixels < 5, "Player aircraft should remain fully inside the canvas"
-        bottom_center_is_grass = page.evaluate(
-            """() => {
-              const pixel = document.querySelector('#game-canvas')
-                .getContext('2d').getImageData(640, 680, 1, 1).data;
-              return pixel[1] > pixel[0] + 20 && pixel[1] > pixel[2] + 15;
-            }"""
-        )
-        assert bottom_center_is_grass, "The oversized center runway should be replaced by open grassland"
-        foreground_lake_pixels = page.evaluate(
-            """() => {
-              const pixels = document.querySelector('#game-canvas')
-                .getContext('2d').getImageData(130, 490, 140, 100).data;
-              let count = 0;
-              for (let index = 0; index < pixels.length; index += 4) {
-                if (pixels[index + 2] > pixels[index + 1] + 20 && pixels[index + 1] > pixels[index] + 70) count++;
-              }
-              return count;
-            }"""
-        )
-        assert foreground_lake_pixels > 500, "The opening grassland should retain the left foreground lake"
-        page.evaluate("""() => {
-          window.__gameTest.addTarget();
-          window.__gameTest.equip('laser', 3);
-        }""")
-        page.wait_for_timeout(4200)
-        laser_hits = page.evaluate("window.__combatStats.laserHits")
-        assert len(laser_hits) >= 2, f"Laser should damage a locked target more than once; hits={laser_hits}"
-        assert all(b - a >= 1950 for a, b in zip(laser_hits, laser_hits[1:])), "Laser damage must be spaced by two seconds"
-        page.evaluate("window.__gameTest.equip('homing', 3)")
-        page.wait_for_timeout(3200)
-        homing_shots = page.evaluate("window.__combatStats.homingShots")
-        assert len(homing_shots) >= 2, "Homing weapon should fire repeatedly at a target"
-        assert all(b - a >= 1450 for a, b in zip(homing_shots, homing_shots[1:])), "Homing shots must be spaced by 1.5 seconds"
-        before = canvas.screenshot()
-        page.wait_for_timeout(2000)
-        after = canvas.screenshot(path=str(screenshot))
-        assert before != after, "Canvas should animate after the game starts"
-        audio_stats = page.evaluate("window.__audioStats")
-        assert audio_stats["fireOscillators"] <= 6, "Bullet sound should not create a new oscillator for every salvo"
-        assert audio_stats["bufferStarts"] >= 3, "Cached Web Audio buffers should produce game sounds"
-        assert page.evaluate("window.__renderStats.gradients") < 180, "Gradients should be cached instead of recreated every frame"
+        if not modal_only:
+            # Execute production boss behavior with reproducible combat inputs.
+            for variant, expected in (("brown", 7), ("blue", 3)):
+                page.evaluate("""variant => {
+                    const t = window.__gameTest;
+                    t.spawnBoss(7, variant);
+                    const boss = t.snapshot().boss;
+                    Object.assign(boss, {entered: true, y: 120, shootTimer: 0, actionTimer: 99,
+                        baseAttackCount: variant === 'brown' ? 2 : 11, hp: boss.maxHp * .49});
+                    t.setState({boss, enemies: [boss], enemyBullets: [], delayedAttacks: [], bullets: [],
+                        activeWeapon: null, player: {x: 640, y: 615, invulnerable: 999}});
+                    t.step(.01);
+                }""", variant)
+                state = snapshot()
+                assert len(state["enemyBullets"]) == expected, (variant, state)
+                if variant == "blue":
+                    assert state["boss"]["baseAttackCount"] == 12
+                    assert len(state["delayedAttacks"]) == 1
+                    page.evaluate("window.__gameTest.step(.35)")
+                    state = snapshot()
+                    assert len(state["enemyBullets"]) == 5
+                    assert state["boss"]["baseAttackCount"] == 12
+                page.locator("#game-canvas").screenshot(path=f"/tmp/airplane-v3-boss-{variant}.png")
+            page.evaluate("window.__gameTest.restart(); window.__gameTest.setState({player: {invulnerable: 999}})")
+            page.evaluate("window.__gameTest.addTarget(); window.__gameTest.equip('laser', 3); window.__combatStats.laserHits = []")
+            page.wait_for_timeout(3400)
+            laser_hits = page.evaluate("window.__combatStats.laserHits")
+            assert len(laser_hits) >= 2
+            assert all(b - a >= 1450 for a, b in zip(laser_hits, laser_hits[1:])), laser_hits
+            page.evaluate("window.__gameTest.equip('homing', 3); window.__combatStats.homingShots = []")
+            page.wait_for_timeout(3400)
+            homing_shots = page.evaluate("window.__combatStats.homingShots")
+            assert len(homing_shots) >= 2
+            assert all(b - a >= 1450 for a, b in zip(homing_shots, homing_shots[1:])), homing_shots
+            assert page.evaluate("window.__audioStats.bufferStarts") >= 3
+            assert page.evaluate("window.__renderStats.gradients") < 180
+            draws = page.evaluate("window.__renderStats.sceneryDraws")
+            assert "backgroundPerspective" in draws
+            assert "perspectiveClearCloudFar" in draws and "perspectiveWaterContact" in draws
         assert not errors, f"Browser errors: {errors}"
+        assert not external_requests, f"Unexpected network requests: {external_requests}"
         browser.close()
-
-    print(f"browser smoke ok: {screenshot}")
+    print("V3 browser smoke passed: growth, victory, endless, restart, two viewports and scenes, animation, assets, errors")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>飞机大战 V2.2</title>
+  <title>飞机大战 V3</title>
   <style>
     :root {
       --ink: #294f68;
@@ -196,7 +196,7 @@
     .weapon-button.locked { filter: grayscale(.7); opacity: .72; cursor: default; }
     .weapon-button.active { transform: translateY(-.32vw); outline: .22vw solid var(--sun); background: linear-gradient(145deg, #fff3b4, #f3c85a); }
     .base-weapon { display: grid; place-items: center; width: 4.8vw; min-width: 50px; aspect-ratio: 1; border: .15vw solid #fff; border-radius: 1vw; color: #9b542c; background: linear-gradient(145deg, #fff2c7, #ffc966); box-shadow: 0 .22vw 0 #d48a40, 0 .45vw .75vw rgba(83, 62, 31, .18); font-size: clamp(18px, 1.7vw, 32px); }
-    .screen, #upgrade-modal {
+    .screen, #growth-modal {
       position: absolute;
       z-index: 10;
       inset: 0;
@@ -266,6 +266,26 @@
       background: linear-gradient(180deg, #ffe36b 0 14%, #ffb43f 14% 55%, #ed762f 55% 100%);
       box-shadow: inset 0 4px 0 #fff4a9, inset 0 -5px 0 #bc4d25, 0 7px 0 #692f22;
     }
+    #growth-modal .panel { width: min(580px, 60vw); }
+    #growth-modal .button-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    #growth-modal button { width: 100%; min-width: 0; border-width: 4px; border-radius: 3px; }
+    #growth-modal .secondary, #victory-end {
+      border: 4px solid #0a2b46;
+      border-radius: 3px;
+      color: #e4f7ff;
+      background: linear-gradient(180deg, #71cce1 0 12%, #34799a 12% 56%, #22516e 56% 100%);
+      box-shadow: inset 0 3px 0 #a8ecf5, inset 0 -4px 0 #153951, 0 6px 0 #071f35;
+    }
+    #growth-modal .secondary { display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 8px 16px; text-align: left; }
+    #growth-modal .growth-icon { flex: 0 0 54px; width: 54px; height: 54px; object-fit: contain; image-rendering: pixelated; }
+    #growth-modal .growth-label { font-size: clamp(14px, 1.15vw, 17px); line-height: 1.45; }
+    #growth-modal .secondary:not(:disabled) { border-color: #a8e8f3; }
+    #growth-modal button:disabled { opacity: .78; cursor: default; color: #c1d0da; background: linear-gradient(#476071 0 12%, #30495c 12% 56%, #273d50 56%); box-shadow: inset 0 3px 0 #718b9c, inset 0 -4px 0 #172b3b, 0 6px 0 #071f35; }
+    #growth-modal button:disabled .growth-icon { filter: grayscale(1) brightness(.8); }
+    #growth-continue { margin-top: 4px; min-height: 52px; }
+    #victory-screen .button-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #victory-screen .button-row button { min-width: 0; width: 100%; padding-inline: 8px; }
+    #growth-modal button:focus-visible, #victory-screen .button-row button:focus-visible { outline: 3px solid #fff4a0; outline-offset: 3px; }
     #start-screen .modal-fighter { width: clamp(58px, 5.8vw, 88px); margin-bottom: .2rem; }
     #start-screen .eyebrow { margin-bottom: .3rem; }
     #start-screen .panel-version { margin-bottom: .35rem; }
@@ -273,6 +293,10 @@
     #game-over .modal-fighter { width: clamp(58px, 5.8vw, 88px); margin-bottom: .2rem; }
     #game-over .eyebrow, #game-over .panel-version { margin-bottom: .3rem; }
     #game-over h2 { font-size: clamp(22px, 2.5vw, 38px); }
+    #victory-screen .panel { width: min(620px, 62vw); padding-block: clamp(14px, 1.35vw, 20px); }
+    #victory-screen h2 { margin-bottom: .25rem; font-size: clamp(22px, 2.4vw, 36px); }
+    #victory-screen .lead { margin-bottom: .45rem; }
+    #victory-screen .result-grid { margin-block: .45rem .8rem; }
     .screen .scene-choices { gap: .85rem; margin-bottom: 1rem; }
     .screen .scene-choice {
       width: min(15rem, 25vw);
@@ -308,16 +332,15 @@
     <div class="hud-chip"><span class="hud-icon xp-icon" aria-hidden="true"></span><span class="hud-copy"><small>作战经验</small><span class="meter"><i id="xp-fill"></i></span></span><span id="xp-text" class="hud-value">0</span></div>
   </section>
 
-  <button id="upgrade-attack" class="hud-chip hidden" disabled><img class="weapon-asset" src="assets/weapons/ui-attack-upgrade.png" alt=""><span id="attack-upgrade-copy">攻击升级·50</span></button>
+  <button id="upgrade-attack" class="hud-chip hidden" disabled><img class="weapon-asset" src="assets/weapons/ui-attack-upgrade.png" alt=""><span id="attack-upgrade-copy">基础机枪 Lv.0</span></button>
 
   <section id="boss-panel" class="hidden" aria-label="BOSS 生命值">
     <span id="boss-name">BOSS</span>
     <div class="boss-meter"><div id="boss-fill"></div></div>
   </section>
 
-  <section id="fragments" class="hidden" aria-label="飞机碎片">
-    <button id="homing-fragment" class="fragment-button"><img src="assets/weapons/ui-homing-missile.png" alt=""><span>追踪碎片</span><span class="fragment-count">0/5</span></button>
-    <button id="laser-fragment" class="fragment-button"><img src="assets/weapons/ui-laser-cannon.png" alt=""><span>激光碎片</span><span class="fragment-count">0/5</span></button>
+  <section id="fragments" class="hidden" aria-label="通用武器零件">
+    <div id="weapon-parts" class="fragment-button"><img src="assets/weapons/ui-homing-missile.png" alt=""><img src="assets/weapons/ui-laser-cannon.png" alt=""><span>武器零件</span><span class="fragment-count">0</span></div>
   </section>
 
   <section id="weapons" class="hidden" aria-label="特殊武器">
@@ -333,8 +356,8 @@
       <p class="eyebrow pixel-copy">空中玩具战场 · 飞行机库</p>
       <img class="modal-fighter" src="assets/characters/player-fighter.png" alt="蓝白小战机">
       <h1>飞机大战</h1>
-      <p class="panel-version pixel-copy">飞机大战 · V2.2</p>
-      <p class="lead">移动鼠标驾驶战斗机，自动发射双列火球。<br>击败怪物、挑战 BOSS，收集碎片解锁追踪弹和激光枪！</p>
+      <p class="panel-version pixel-copy">飞机大战 · V3</p>
+      <p class="lead">移动鼠标驾驶战斗机，基础机枪自动射击。<br>击败 5 个 BOSS 完成闯关，战后使用武器零件升级特殊武器！</p>
       <div class="scene-choices" aria-label="选择游戏背景">
         <button class="scene-choice selected" type="button" data-scene-theme="backgroundTopdown" aria-label="海岛俯瞰 俯视"><span class="scene-name">海岛俯瞰</span><small class="scene-view">俯视</small></button>
         <button class="scene-choice" type="button" data-scene-theme="backgroundPerspective" aria-label="海天远航 斜视"><span class="scene-name">海天远航</span><small class="scene-view">斜视</small></button>
@@ -343,14 +366,37 @@
     </div>
   </section>
 
-  <section id="upgrade-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="upgrade-title">
+  <section id="growth-modal" class="screen hidden" role="dialog" aria-modal="true" aria-labelledby="growth-title">
     <div class="panel">
-      <p class="eyebrow">飞机碎片集齐了</p>
-      <h2 id="upgrade-title">可升级特殊武器</h2>
-      <p id="upgrade-copy" class="lead"></p>
+      <p class="eyebrow">战后成长</p>
+      <h2 id="growth-title">整备你的战机</h2>
+      <p id="growth-copy" class="lead">升级只在战后进行，资源可以留到下一轮。</p>
       <div class="button-row">
-        <button id="accept-upgrade" class="primary">立即升级</button>
-        <button id="defer-upgrade" class="secondary">暂不升级</button>
+        <button id="growth-attack" class="secondary"><img class="growth-icon" src="assets/weapons/ui-attack-upgrade.png" alt=""><span class="growth-label">基础机枪</span></button>
+        <button id="growth-homing" class="secondary"><img class="growth-icon" src="assets/weapons/ui-homing-missile-upgrade.png" alt=""><span class="growth-label">追踪导弹</span></button>
+        <button id="growth-laser" class="secondary"><img class="growth-icon" src="assets/weapons/ui-laser-upgrade.png" alt=""><span class="growth-label">激光枪</span></button>
+        <button id="growth-continue" class="primary">继续出击</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="victory-screen" class="screen hidden">
+    <div class="panel">
+      <p class="eyebrow pixel-copy">五战告捷</p>
+      <h2>闯关成功！</h2>
+      <p class="lead">你已击败 5 个 BOSS。可以带着当前成长继续无尽挑战。</p>
+      <div class="result-grid">
+        <div class="result-stat"><span>有效击杀</span><strong id="victory-monsters">0</strong></div>
+        <div class="result-stat"><span>BOSS</span><strong id="victory-bosses">0</strong></div>
+        <div class="result-stat"><span>最高 BOSS</span><strong id="victory-highest-boss">0</strong></div>
+        <div class="result-stat"><span>机枪</span><strong id="victory-damage">Lv.0 · 2</strong></div>
+        <div class="result-stat"><span>追踪导弹</span><strong id="victory-homing">Lv.0</strong></div>
+        <div class="result-stat"><span>激光枪</span><strong id="victory-laser">Lv.0</strong></div>
+        <div class="result-stat"><span>武器零件</span><strong id="victory-parts">0</strong></div>
+      </div>
+      <div class="button-row">
+        <button id="victory-endless" class="primary">继续无尽挑战</button>
+        <button id="victory-end" class="secondary">结束本局</button>
       </div>
     </div>
   </section>
@@ -360,11 +406,15 @@
       <p class="eyebrow pixel-copy">本次飞行结束</p>
       <img class="modal-fighter" src="assets/characters/player-fighter.png" alt="蓝白小战机">
       <h2>战斗机返航啦！</h2>
-      <p class="panel-version pixel-copy">飞机大战 · V2.2</p>
+      <p id="result-title" class="panel-version pixel-copy">飞机大战 · V3</p>
       <div id="result-copy" class="result-grid">
-        <div class="result-stat"><span>怪物</span><strong id="result-monsters">0</strong></div>
+        <div class="result-stat"><span>有效击杀</span><strong id="result-monsters">0</strong></div>
         <div class="result-stat"><span>BOSS</span><strong id="result-bosses">0</strong></div>
-        <div class="result-stat"><span>火球伤害</span><strong id="result-damage">2</strong></div>
+        <div class="result-stat"><span>最高 BOSS</span><strong id="result-highest-boss">0</strong></div>
+        <div class="result-stat"><span>机枪</span><strong id="result-damage">Lv.0 · 2</strong></div>
+        <div class="result-stat"><span>追踪导弹</span><strong id="result-homing">Lv.0</strong></div>
+        <div class="result-stat"><span>激光枪</span><strong id="result-laser">Lv.0</strong></div>
+        <div class="result-stat"><span>武器零件</span><strong id="result-parts">0</strong></div>
       </div>
       <button id="restart-button" class="primary">再来一局</button>
     </div>
@@ -376,7 +426,7 @@ globalThis.GameRules = {
   enemyStats: {
     eagle: { hp: 20, damage: 10 },
     drone: { hp: 30, damage: 30 },
-    bat: { hp: 10, dps: 10 },
+    bat: { hp: 10, damage: 10 },
     wizard: { hp: 50, damage: 30 }
   },
   maxAttackLevel() { return 5; },
@@ -388,8 +438,7 @@ globalThis.GameRules = {
     return ((anchorY + offset + reentryMargin) % sequenceLength) - reentryMargin;
   },
   bossHealthRange(number) {
-    const multiplier = 1.45 ** (number - 1);
-    return [Math.round(160 * multiplier), Math.round(220 * multiplier)];
+    return [180 + 100 * (number - 1), 220 + 120 * (number - 1)];
   },
   bulletDamage(level) {
     return 2 + 2 * Math.min(level, this.maxAttackLevel());
@@ -414,35 +463,39 @@ globalThis.GameRules = {
     };
   },
   bossScale(number) {
-    return { speed: 1 + Math.min(.04 * (number - 1), .28), cooldown: Math.max(.6, 1 - .06 * (number - 1)) };
+    return { speed: 1 + Math.min(.03 * (number - 1), .18), cooldown: Math.max(.8, 1 - .04 * (number - 1)) };
   },
+  bossMechanismLevel(number) { return Math.min(3, Math.floor((number - 1) / 2)); },
   advanceBossEntrance(boss, dt) {
     if (boss.entered) return { y: boss.y, entered: true };
     const y = Math.min(119, boss.y + 90 * boss.speedScale * dt);
     return { y, entered: y >= 119 };
   },
-  chooseFragmentDrop(fragments, weaponLevels, roll) {
-    const available = ['homing', 'laser'].filter(type => weaponLevels[type] < this.maxWeaponLevel(type));
-    if (!available.length) return null;
-    const lowest = Math.min(...available.map(type => weaponLevels[type]));
-    const candidates = available.filter(type => weaponLevels[type] === lowest);
-    return candidates.length === 2 ? candidates[Math.floor(roll * 2)] : candidates[0];
+  canUpgrade(parts, level = 0, type = 'homing') {
+    return parts >= 5 && level < this.maxWeaponLevel(type);
   },
-  canUpgrade(fragments, level = 0, type = 'homing') {
-    return fragments >= 5 && level < this.maxWeaponLevel(type);
+  applyPartsUpgrade(parts, level, accepted, type = 'homing') {
+    return accepted && this.canUpgrade(parts, level, type)
+      ? { parts: parts - 5, level: level + 1, upgraded: true }
+      : { parts, level, upgraded: false };
   },
-  applyFragmentUpgrade(fragments, level, accepted, type = 'homing') {
-    return accepted && this.canUpgrade(fragments, level, type)
-      ? { fragments: fragments - 5, level: level + 1 }
-      : { fragments, level };
-  },
+  attackUpgradeCost(level) { return [50, 75, 100, 150, 200][level] ?? null; },
   applyAttackUpgrade(xp, level) {
-    return xp >= 50 && level < this.maxAttackLevel()
-      ? { xp: xp - 50, level: level + 1, upgraded: true }
+    const cost = this.attackUpgradeCost(level);
+    return cost !== null && xp >= cost && level < this.maxAttackLevel()
+      ? { xp: xp - cost, level: level + 1, upgraded: true }
       : { xp, level, upgraded: false };
   },
-  killExperience(type, bossHp) {
-    return type === 'boss' ? bossHp : 5;
+  allWeaponsMaxed(attackLevel, weaponLevels) {
+    return attackLevel >= this.maxAttackLevel() && ['homing', 'laser'].every(type => weaponLevels[type] >= this.maxWeaponLevel(type));
+  },
+  convertMaxedExperience(xp, weaponLevels, attackLevel, parts = 0) {
+    if (attackLevel < this.maxAttackLevel() || ['homing', 'laser'].every(type => weaponLevels[type] >= this.maxWeaponLevel(type))) return { xp, parts };
+    const converted = Math.floor(xp / 100);
+    return { xp: xp % 100, parts: parts + converted };
+  },
+  killExperience(type, bossNumber) {
+    return type === 'boss' ? Math.min(200, 50 + 20 * bossNumber) : 5;
   },
   shouldSpawnBoss(normalKills) {
     return normalKills > 0 && normalKills % 10 === 0;
@@ -471,17 +524,25 @@ globalThis.GameRules = {
   },
   awardNormalKill(state) {
     const normalKills = state.normalKills + 1;
+    const allMaxed = this.allWeaponsMaxed(state.attackLevel || 0, state.weaponLevels || { homing: 0, laser: 0 });
+    const converted = this.convertMaxedExperience(state.xp + (allMaxed ? 0 : 5), state.weaponLevels || { homing: 0, laser: 0 }, state.attackLevel || 0, state.weaponParts || 0);
     return {
-      xp: state.xp + 5,
+      xp: converted.xp,
       normalKills,
-      bossPending: this.shouldSpawnBoss(normalKills)
+      bossPending: this.shouldSpawnBoss(normalKills),
+      weaponParts: converted.parts
     };
   },
-  awardBossKill(state, bossHp, fragmentType) {
+  awardBossKill(state) {
+    const bosses = state.bosses + 1;
+    const weaponLevels = state.weaponLevels || { homing: 0, laser: 0 };
+    const allMaxed = this.allWeaponsMaxed(state.attackLevel || 0, weaponLevels);
+    const specialNeedsParts = ['homing', 'laser'].some(type => weaponLevels[type] < this.maxWeaponLevel(type));
+    const converted = this.convertMaxedExperience(state.xp + (allMaxed ? 0 : this.killExperience('boss', bosses)), weaponLevels, state.attackLevel || 0, state.weaponParts || 0);
     return {
-      xp: state.xp + bossHp,
-      bosses: state.bosses + 1,
-      fragments: fragmentType ? { ...state.fragments, [fragmentType]: state.fragments[fragmentType] + 2 } : state.fragments
+      xp: converted.xp,
+      bosses,
+      weaponParts: converted.parts + (specialNeedsParts ? 3 : 0)
     };
   },
   canSpawnEnemy(activeNormalEnemies, bossActive) {
@@ -504,15 +565,15 @@ globalThis.GameRules = {
   skyPaint.addColorStop(1, '#eefcff');
   const ui = Object.fromEntries([
     'hud', 'hp-fill', 'hp-text', 'xp-fill', 'xp-text', 'kill-text', 'upgrade-attack', 'attack-upgrade-copy',
-    'boss-panel', 'boss-name', 'boss-fill', 'fragments', 'homing-fragment', 'laser-fragment',
+    'boss-panel', 'boss-name', 'boss-fill', 'fragments', 'weapon-parts',
     'weapons', 'homing-weapon', 'laser-weapon', 'start-screen', 'start-button',
-    'upgrade-modal', 'upgrade-title', 'upgrade-copy', 'accept-upgrade', 'defer-upgrade',
-    'game-over', 'result-copy', 'result-monsters', 'result-bosses', 'result-damage', 'restart-button', 'toast'
+    'growth-modal', 'growth-title', 'growth-copy', 'growth-attack', 'growth-homing', 'growth-laser', 'growth-continue',
+    'victory-screen', 'victory-monsters', 'victory-bosses', 'victory-highest-boss', 'victory-damage', 'victory-homing', 'victory-laser', 'victory-parts', 'victory-endless', 'victory-end', 'game-over', 'result-title', 'result-copy', 'result-monsters',
+    'result-bosses', 'result-highest-boss', 'result-damage', 'result-homing', 'result-laser', 'result-parts', 'restart-button', 'toast'
   ].map(id => [id, document.getElementById(id)]));
 
   let game;
   let lastTime = performance.now();
-  let modalWeapon = null;
   let toastTimer = 0;
   let nextId = 1;
   let audioContext = null;
@@ -1086,6 +1147,9 @@ globalThis.GameRules = {
     game = {
       running: false,
       paused: false,
+      stage: 'ready',
+      endless: false,
+      campaignCleared: false,
       time: 0,
       shake: 0,
       player: { id: 'player', x: W / 2, y: H - 105, tx: W / 2, ty: H - 105, r: 26, hp: 100, maxHp: 100, invulnerable: 0, hasTarget: false },
@@ -1101,8 +1165,9 @@ globalThis.GameRules = {
       xp: 0,
       normalKills: 0,
       bosses: 0,
+      highestBoss: 0,
       attackLevel: 0,
-      fragments: { homing: 0, laser: 0 },
+      weaponParts: 0,
       weaponLevels: { homing: 0, laser: 0 },
       activeWeapon: null,
       boss: null,
@@ -1113,6 +1178,7 @@ globalThis.GameRules = {
       laserTimer: 0,
       laserTargetId: null,
       laserFlash: null,
+      delayedAttacks: [],
       hudTimer: 0,
       laserTarget: null
     };
@@ -1122,7 +1188,36 @@ globalThis.GameRules = {
       window.__gameTest = {
         equip(type, level) { game.weaponLevels[type] = level; game.activeWeapon = type; game.specialTimer = 0; game.laserTimer = 0; game.laserTargetId = null; },
         addTarget() { game.spawnTimer = Infinity; game.enemies = [{ id: -1, type: 'drone', x: W / 2, y: 180, r: 25, hp: 100000, maxHp: 100000, dead: false, age: 0, phase: 'enter', shootTimer: 999, baseX: W / 2, targetY: 180, vx: 0, vy: 0, speedScale: .0001 }]; },
-        finish(normalKills, bosses, attackLevel) { game.normalKills = normalKills; game.bosses = bosses; game.attackLevel = attackLevel; endGame(); }
+        finish(normalKills, bosses, attackLevel) { game.normalKills = normalKills; game.bosses = bosses; game.attackLevel = attackLevel; endGame(); },
+        snapshot() {
+          return JSON.parse(JSON.stringify({
+            running: game.running, paused: game.paused, stage: game.stage, endless: game.endless,
+            campaignCleared: game.campaignCleared, xp: game.xp, weaponParts: game.weaponParts,
+            normalKills: game.normalKills, bosses: game.bosses, highestBoss: game.highestBoss,
+            attackLevel: game.attackLevel, weaponLevels: game.weaponLevels, activeWeapon: game.activeWeapon,
+            player: game.player, boss: game.boss, enemyBullets: game.enemyBullets, delayedAttacks: game.delayedAttacks, time: game.time
+          }));
+        },
+        setState(values) {
+          const { player, weaponLevels, ...rest } = values;
+          Object.assign(game, rest);
+          if (player) Object.assign(game.player, player);
+          if (weaponLevels) Object.assign(game.weaponLevels, weaponLevels);
+          updateHud();
+        },
+        spawnBoss(number, variant) { game.bosses = Math.max(0, number - 1); spawnBoss(number, variant); },
+        defeatBoss() { if (game.boss) { damageEnemy(game.boss, game.boss.hp, '#fff', ImpactVisuals.bullet); game.enemies = game.enemies.filter(enemy => !enemy.dead); } },
+        collideEnemy(type = 'eagle') {
+          const stat = GameRules.enemyStats[type];
+          const enemy = { id: nextId++, type, x: game.player.x, y: game.player.y, r: 25, hp: stat.hp, maxHp: stat.hp, dead: false };
+          game.enemies.push(enemy); resolveEnemyCollision(enemy, game.player);
+        },
+        step(dt) { update(dt); },
+        upgrade(type) { return type === 'attack' ? upgradeAttack() : upgradeSpecial(type); },
+        continueGrowth() { continueAfterGrowth(); },
+        continueEndless() { continueEndless(); },
+        endRun() { finishVictory(); },
+        restart() { startGame(); }
       };
     }
   }
@@ -1131,10 +1226,14 @@ globalThis.GameRules = {
     if (!assetsReady) return;
     resetGame();
     game.running = true;
+    game.stage = 'combat';
     playSound('start');
     ui['start-screen'].classList.add('hidden');
     ui['game-over'].classList.add('hidden');
-    for (const id of ['hud', 'fragments', 'weapons', 'upgrade-attack']) ui[id].classList.remove('hidden');
+    for (const id of ['hud', 'fragments', 'weapons']) ui[id].classList.remove('hidden');
+    ui['upgrade-attack'].classList.add('hidden');
+    ui['growth-modal'].classList.add('hidden');
+    ui['victory-screen'].classList.add('hidden');
     lastTime = performance.now();
   }
 
@@ -1205,10 +1304,16 @@ globalThis.GameRules = {
 
   function resolveEnemyCollision(enemy, player) {
     if (enemy.dead || !GameRules.circlesOverlap(enemy, player)) return false;
-    const damage = enemy.type === 'bat' ? GameRules.enemyStats.bat.dps : GameRules.enemyStats[enemy.type].damage;
+    const damage = GameRules.enemyStats[enemy.type].damage;
     damagePlayer(damage);
-    killEnemy(enemy);
+    destroyEnemy(enemy);
     return true;
+  }
+
+  function destroyEnemy(enemy) {
+    enemy.dead = true;
+    addParticle(enemy.x, enemy.y, '#fff3a1', 22, 220);
+    playSound(enemy.type === 'drone' ? 'explode-mechanical' : 'explode-soft');
   }
 
   function spawnEnemy() {
@@ -1225,20 +1330,23 @@ globalThis.GameRules = {
     game.enemies.push(enemy);
   }
 
-  function spawnBoss() {
-    const number = game.bosses + 1;
+  function spawnBoss(forcedNumber = game.bosses + 1, forcedVariant = null) {
+    if (!game.running || game.stage !== 'combat') return;
+    const number = forcedNumber;
     const [minHp, maxHp] = GameRules.bossHealthRange(number);
     const hp = Math.floor(random(minHp, maxHp + 1));
-    const variant = Math.random() < .5 ? 'brown' : 'blue';
+    const variant = forcedVariant || (Math.random() < .5 ? 'brown' : 'blue');
     const scale = GameRules.bossScale(number);
     const boss = {
       id: nextId++, type: 'boss', variant, number, x: W / 2, y: -100, r: 60,
-      hp, maxHp: hp, initialHp: hp, age: 0, shootTimer: 1.3 * scale.cooldown, actionTimer: variant === 'brown' ? 4 : 2.8,
-      charging: false, entered: false, vx: 0, vy: 0, speedScale: scale.speed, cooldownScale: scale.cooldown
+      hp, maxHp: hp, initialHp: hp, age: 0, shootTimer: (variant === 'brown' ? 1.55 : .82) * scale.cooldown, actionTimer: variant === 'brown' ? 4 : 2.8,
+      charging: false, entered: false, vx: 0, vy: 0, speedScale: scale.speed, cooldownScale: scale.cooldown,
+      mechanismLevel: GameRules.bossMechanismLevel(number), baseAttackCount: 0, blueBand: 'upper', bandTimer: 6
     };
     game.enemies.length = 0;
     game.enemyBullets.length = 0;
     game.boss = boss;
+    game.highestBoss = Math.max(game.highestBoss, number);
     game.enemies.push(boss);
     playSound('boss');
     ui['boss-panel'].classList.remove('hidden');
@@ -1253,9 +1361,10 @@ globalThis.GameRules = {
   function aimAngle(from, to) { return Math.atan2(to.y - from.y, to.x - from.x); }
 
   function updateEnemy(enemy, dt) {
+    if (enemy.dead) return;
     const speedScale = enemy.speedScale || 1;
-    enemy.age += dt * speedScale;
     if (enemy.type === 'boss') return updateBoss(enemy, dt);
+    enemy.age += dt * speedScale;
     const player = game.player;
     if (enemy.type === 'eagle') {
       if (enemy.phase === 'enter') {
@@ -1300,28 +1409,47 @@ globalThis.GameRules = {
     if (enemy.y > H + 100 || enemy.x < -160 || enemy.x > W + 160) enemy.dead = true;
   }
 
+  function fireBrownVolley(boss, count = 5) {
+    const base = aimAngle(boss, game.player);
+    playSound('orange-shot');
+    const center = (count - 1) / 2;
+    for (let i = 0; i < count; i++) shootEnemyBullet(boss.x, boss.y + 48, base + (i - center) * .18, 175, 15, '#ff6a45', false, EnemyProjectileVisuals[boss.variant]);
+  }
+
+  function fireBlueVolley(boss, includeCenter = false) {
+    const base = aimAngle(boss, game.player);
+    playSound('blue-shot');
+    shootEnemyBullet(boss.x - 55, boss.y + 30, base - .09, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
+    shootEnemyBullet(boss.x + 55, boss.y + 30, base + .09, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
+    if (includeCenter) shootEnemyBullet(boss.x, boss.y + 35, base, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
+  }
+
   function updateBoss(boss, dt) {
     boss.age += dt * boss.speedScale;
     const player = game.player;
+    const wasEntered = boss.entered;
     const entrance = GameRules.advanceBossEntrance(boss, dt);
     boss.y = entrance.y;
     boss.entered = entrance.entered;
     if (!boss.entered) {
       return;
     }
+    if (!wasEntered && boss.variant === 'brown' && boss.reentered && boss.mechanismLevel >= 1) fireBrownVolley(boss);
     boss.shootTimer -= dt;
     boss.actionTimer -= dt;
     if (boss.variant === 'brown') {
       if (boss.charging) {
         boss.y += boss.vy * boss.speedScale * dt;
         boss.x += boss.vx * boss.speedScale * dt;
-        if (boss.y > H + 100) { boss.x = random(180, W - 180); boss.y = -80; boss.charging = false; boss.entered = false; boss.actionTimer = 4.8; }
+        if (boss.y < -100 || boss.y > H + 100 || boss.x < -100 || boss.x > W + 100) {
+          boss.x = random(180, W - 180); boss.y = -80; boss.charging = false; boss.entered = false; boss.reentered = true;
+          boss.actionTimer = boss.mechanismLevel >= 2 && boss.hp / boss.maxHp < .5 ? 4 : 4.8;
+        }
       } else {
         boss.x = W / 2 + Math.sin(boss.age * .8) * 330;
         if (boss.shootTimer <= 0) {
-          const base = aimAngle(boss, player);
-          playSound('orange-shot');
-          for (let i = -2; i <= 2; i++) shootEnemyBullet(boss.x, boss.y + 48, base + i * .18, 175, 15, '#ff6a45', false, EnemyProjectileVisuals[boss.variant]);
+          boss.baseAttackCount++;
+          fireBrownVolley(boss, boss.mechanismLevel >= 3 && boss.baseAttackCount % 3 === 0 ? 7 : 5);
           boss.shootTimer = 1.55 * boss.cooldownScale;
         }
         if (boss.actionTimer <= 0) {
@@ -1334,16 +1462,34 @@ globalThis.GameRules = {
       }
     } else {
       boss.x = W / 2 + Math.sin(boss.age * 1.75) * 430;
-      boss.y = 120 + Math.sin(boss.age * 2.4) * 22;
+      boss.bandTimer -= dt;
+      if (boss.mechanismLevel >= 3 && boss.bandTimer <= 0) { boss.blueBand = boss.blueBand === 'upper' ? 'lower' : 'upper'; boss.bandTimer += 6; }
+      const upperMin = H * .1;
+      const upperMax = boss.mechanismLevel >= 3 && boss.blueBand === 'upper' ? H * .24 : H * .4;
+      const lowerMin = boss.mechanismLevel >= 3 && boss.blueBand === 'lower' ? H * .26 : upperMin;
+      const currentBandMin = boss.mechanismLevel >= 3 && boss.blueBand === 'lower' ? H * .26 : upperMin;
+      const targetMin = player.y < H / 2 ? currentBandMin : lowerMin;
+      const targetMax = player.y < H / 2 ? upperMin : Math.min(upperMax, player.y - 120 - boss.r);
+      const verticalTarget = targetMax <= targetMin ? targetMin : targetMin + (targetMax - targetMin) * (.5 + Math.sin(boss.age * 1.15) * .5);
+      boss.y += Math.sign(verticalTarget - boss.y) * Math.min(Math.abs(verticalTarget - boss.y), 95 * boss.speedScale * dt);
       if (boss.shootTimer <= 0) {
-        const base = aimAngle(boss, player);
-        playSound('blue-shot');
-        shootEnemyBullet(boss.x - 55, boss.y + 30, base - .09, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
-        shootEnemyBullet(boss.x + 55, boss.y + 30, base + .09, 240, 15, '#55e8ff', false, EnemyProjectileVisuals[boss.variant]);
+        boss.baseAttackCount++;
+        fireBlueVolley(boss, boss.mechanismLevel >= 1 && boss.baseAttackCount % 3 === 0);
+        if (boss.mechanismLevel >= 2 && boss.hp / boss.maxHp < .5 && boss.baseAttackCount % 4 === 0) game.delayedAttacks.push({ kind: 'blue-double', due: game.time + .35, bossId: boss.id });
         boss.shootTimer = .82 * boss.cooldownScale;
       }
     }
     if (GameRules.circlesOverlap({ ...boss, r: 48 }, player)) damagePlayer(20);
+  }
+
+  function updateDelayedAttacks() {
+    for (const attack of game.delayedAttacks) {
+      if (attack.done || attack.due > game.time) continue;
+      const boss = game.boss;
+      if (boss && boss.id === attack.bossId && !boss.dead) fireBlueVolley(boss);
+      attack.done = true;
+    }
+    game.delayedAttacks = game.delayedAttacks.filter(attack => !attack.done);
   }
 
   function firePlayer() {
@@ -1394,7 +1540,7 @@ globalThis.GameRules = {
   }
 
   function damageEnemy(enemy, damage, color = '#fff', impactKey = 'hitMachinegun') {
-    if (enemy.dead) return;
+    if (enemy.dead || !game.running || game.stage !== 'combat') return;
     enemy.hp -= damage;
     playSound(impactKey === ImpactVisuals.homing ? 'missile-hit' : impactKey === ImpactVisuals.laser ? 'laser' : 'hit');
     addFloater(enemy.x, enemy.y - enemy.r, `-${Math.round(damage)}`, color);
@@ -1403,24 +1549,30 @@ globalThis.GameRules = {
   }
 
   function killEnemy(enemy) {
+    if (enemy.dead || !game.running || game.stage !== 'combat') return;
     enemy.dead = true;
     addParticle(enemy.x, enemy.y, enemy.type === 'boss' ? '#ffd44a' : '#fff3a1', enemy.type === 'boss' ? 70 : 22, enemy.type === 'boss' ? 360 : 220);
     game.shake = enemy.type === 'boss' ? 18 : 5;
     playSound(enemy.type === 'boss' ? 'boss-explode' : enemy.type === 'drone' ? 'explode-mechanical' : 'explode-soft');
     if (enemy.type === 'boss') {
-      const fragmentType = GameRules.chooseFragmentDrop(game.fragments, game.weaponLevels, Math.random());
-      const result = GameRules.awardBossKill(game, enemy.initialHp, fragmentType);
+      const result = GameRules.awardBossKill(game);
       game.xp = result.xp;
       game.bosses = result.bosses;
-      game.fragments = result.fragments;
+      const partsAwarded = result.weaponParts - game.weaponParts;
+      game.weaponParts = result.weaponParts;
       game.boss = null;
+      game.enemyBullets.length = 0;
+      game.delayedAttacks.length = 0;
       ui['boss-panel'].classList.add('hidden');
-      if (fragmentType) playSound('fragment');
-      showToast(fragmentType ? `获得 2 枚${fragmentType === 'homing' ? '追踪弹' : '激光'}碎片！` : '装备已满级！');
-      if (fragmentType && GameRules.canUpgrade(game.fragments[fragmentType], game.weaponLevels[fragmentType], fragmentType)) setTimeout(() => openUpgrade(fragmentType), 450);
+      if (partsAwarded > 0) playSound('fragment');
+      showToast(partsAwarded > 0 ? `获得 ${partsAwarded} 个武器零件！` : '战斗胜利！');
+      openGrowth();
     } else {
+      const previousParts = game.weaponParts;
       const result = GameRules.awardNormalKill(game);
       game.xp = result.xp;
+      if (result.weaponParts !== undefined) game.weaponParts = result.weaponParts;
+      if (game.weaponParts > previousParts) playSound('fragment');
       game.normalKills = result.normalKills;
       if (result.bossPending) spawnBoss();
     }
@@ -1558,7 +1710,10 @@ globalThis.GameRules = {
       }
     }
     for (const enemy of game.enemies) updateEnemy(enemy, dt);
+    if (!game.running || game.paused) return;
     updateBullets(dt);
+    if (!game.running || game.paused) return;
+    updateDelayedAttacks();
     updateLaser(dt);
     checkCollisions();
     updateParticles(dt);
@@ -1807,7 +1962,9 @@ globalThis.GameRules = {
     ctx.restore();
   }
 
-  function drawShadow(key, x, y, width, height, alpha = 1) {
+  function drawShadow(key, x, y, width, height, alpha = 1, actorY = y) {
+    // The background sea starts at 34%; scenery enters farther below at 42%.
+    if (activeSceneBackground === 'backgroundPerspective' && actorY < H * .34) return;
     const image = assets[key];
     if (!image) return;
     ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = alpha;
@@ -1817,7 +1974,7 @@ globalThis.GameRules = {
 
   function drawPlayer(player) {
     const alpha = player.invulnerable > 0 && Math.floor(player.invulnerable * 12) % 2 === 0 ? .35 : 1;
-    drawShadow('playerWingShadow', player.x, player.y + 36, 74, 22, alpha);
+    drawShadow('playerWingShadow', player.x, player.y + 36, 74, 22, alpha, player.y);
     if (game.activeWeapon === 'laser' && game.weaponLevels.laser > 0) {
       drawAsset('playerLaser', player.x, player.y - 12, 93, 68, 0, alpha);
     } else if (game.activeWeapon === 'homing' && game.weaponLevels.homing > 0) {
@@ -1834,17 +1991,17 @@ globalThis.GameRules = {
 
   function drawEagle(enemy) {
     const angle = enemy.phase === 'dive' ? Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2 : Math.sin(enemy.age * 5) * .15;
-    drawShadow('owlWingShadow', enemy.x, enemy.y + 34, 72, 22);
+    drawShadow('owlWingShadow', enemy.x, enemy.y + 34, 72, 22, 1, enemy.y);
     drawAsset('owl', enemy.x, enemy.y, 112, 90, angle);
   }
 
-  function drawDrone(enemy) { drawShadow('droneBodyShadow', enemy.x, enemy.y + 29, 68, 18); drawAsset('drone', enemy.x, enemy.y, 92, 108, Math.sin(enemy.age * 3) * .12); }
-  function drawBat(enemy) { drawShadow('batWingShadow', enemy.x, enemy.y + 29, 76, 18); drawAsset('bat', enemy.x, enemy.y, 122, 95, Math.sin(enemy.age * 7) * .08); }
-  function drawWizard(enemy) { drawShadow('wizardRobesShadow', enemy.x, enemy.y + 37, 78, 21); drawAsset('wizard', enemy.x, enemy.y, 110, 96, Math.sin(enemy.age * 3) * .04); }
+  function drawDrone(enemy) { drawShadow('droneBodyShadow', enemy.x, enemy.y + 29, 68, 18, 1, enemy.y); drawAsset('drone', enemy.x, enemy.y, 92, 108, Math.sin(enemy.age * 3) * .12); }
+  function drawBat(enemy) { drawShadow('batWingShadow', enemy.x, enemy.y + 29, 76, 18, 1, enemy.y); drawAsset('bat', enemy.x, enemy.y, 122, 95, Math.sin(enemy.age * 7) * .08); }
+  function drawWizard(enemy) { drawShadow('wizardRobesShadow', enemy.x, enemy.y + 37, 78, 21, 1, enemy.y); drawAsset('wizard', enemy.x, enemy.y, 110, 96, Math.sin(enemy.age * 3) * .04); }
   function drawBoss(boss) {
     const angle = boss.charging ? Math.atan2(boss.vy, boss.vx) - Math.PI / 2 : 0;
     const key = boss.variant === 'brown' ? 'orangeBoss' : 'blueBoss';
-    drawShadow(boss.variant === 'brown' ? 'bossOrangeEngineShadow' : 'bossBlueThrusterShadow', boss.x, boss.y + 62, 170, 36);
+    drawShadow(boss.variant === 'brown' ? 'bossOrangeEngineShadow' : 'bossBlueThrusterShadow', boss.x, boss.y + 62, 128, 27, 1, boss.y);
     drawAsset(key, boss.x, boss.y, boss.variant === 'brown' ? 230 : 210, boss.variant === 'brown' ? 104 : 150, angle);
   }
 
@@ -1905,42 +2062,57 @@ globalThis.GameRules = {
   function updateHud() {
     if(!game)return;
     ui['hp-fill'].style.width=`${game.player.hp}%`;ui['hp-text'].textContent=Math.ceil(game.player.hp);
-    ui['xp-fill'].style.width=`${Math.min(100,(game.xp/50)*100)}%`;ui['xp-text'].textContent=game.xp;
+    const allMaxed=GameRules.allWeaponsMaxed(game.attackLevel,game.weaponLevels);const cost=GameRules.attackUpgradeCost(game.attackLevel);
+    ui['xp-fill'].style.width=allMaxed?'100%':`${Math.min(100,cost?(game.xp/cost)*100:0)}%`;ui['xp-text'].textContent=allMaxed?'MAX':game.xp;
     ui['kill-text'].textContent=`${game.normalKills%10}/10`;
-    const attackMaxed=game.attackLevel>=GameRules.maxAttackLevel();ui['upgrade-attack'].disabled=attackMaxed||game.xp<50;ui['attack-upgrade-copy'].textContent=attackMaxed?'攻击已满级':`攻击升级·50 · 当前 ${GameRules.bulletDamage(game.attackLevel)}`;
+    const attackMaxed=game.attackLevel>=GameRules.maxAttackLevel();ui['upgrade-attack'].disabled=true;ui['attack-upgrade-copy'].textContent=attackMaxed?'基础机枪 Lv.5':`基础机枪 Lv.${game.attackLevel}`;
+    ui['weapon-parts'].querySelector('.fragment-count').textContent=`${game.weaponParts}`;ui['weapon-parts'].classList.toggle('ready',['homing','laser'].some(type=>GameRules.canUpgrade(game.weaponParts,game.weaponLevels[type],type)));
     for(const type of ['homing','laser']){
-      const fragmentButton=ui[`${type}-fragment`];fragmentButton.querySelector('.fragment-count').textContent=`${game.fragments[type]}/5`;fragmentButton.classList.toggle('ready',GameRules.canUpgrade(game.fragments[type],game.weaponLevels[type],type));
       const weaponButton=ui[`${type}-weapon`];const level=game.weaponLevels[type];weaponButton.querySelector('small').textContent=`Lv.${level}`;weaponButton.classList.toggle('locked',level===0);weaponButton.classList.toggle('active',game.activeWeapon===type);
     }
     if(game.boss){ui['boss-fill'].style.width=`${Math.max(0,game.boss.hp/game.boss.maxHp*100)}%`;}
   }
 
   function upgradeAttack() {
+    if(game.stage!=='growth')return false;
     const result=GameRules.applyAttackUpgrade(game.xp,game.attackLevel);if(!result.upgraded)return;
-    game.xp=result.xp;game.attackLevel=result.level;playSound('upgrade');showToast(`双列火球伤害提升为 ${GameRules.bulletDamage(game.attackLevel)}！`);updateHud();
+    game.xp=result.xp;game.attackLevel=result.level;
+    const previousParts=game.weaponParts;const converted=GameRules.convertMaxedExperience(game.xp,game.weaponLevels,game.attackLevel,game.weaponParts);game.xp=converted.xp;game.weaponParts=converted.parts;
+    playSound('upgrade');if(game.weaponParts>previousParts)playSound('fragment');showToast(`基础机枪伤害提升为 ${GameRules.bulletDamage(game.attackLevel)}！`);updateGrowth();updateHud();return true;
   }
 
-  function openUpgrade(type) {
-    if(!GameRules.canUpgrade(game.fragments[type],game.weaponLevels[type],type))return;
-    modalWeapon=type;game.paused=true;ui['upgrade-modal'].classList.remove('hidden');
-    const name=type==='homing'?'追踪弹':'激光枪';const next=game.weaponLevels[type]+1;
-    ui['upgrade-title'].textContent=`${name} 可升到 Lv.${next}`;
-        ui['upgrade-copy'].textContent=type==='homing'?`升级后每枚自动追踪弹造成 ${GameRules.specialDamage(type,next)} 伤害。`:`升级后激光每 1.5 秒造成 ${GameRules.specialDamage(type,next)} 伤害。`;
+  function upgradeSpecial(type) {
+    if(game.stage!=='growth')return false;
+    const result=GameRules.applyPartsUpgrade(game.weaponParts,game.weaponLevels[type],true,type);if(!result.upgraded)return false;
+    game.weaponParts=result.parts;game.weaponLevels[type]=result.level;if(!game.activeWeapon)game.activeWeapon=type;
+    playSound('upgrade');showToast(`${type==='homing'?'追踪导弹':'激光枪'}升到 Lv.${result.level}！`);updateGrowth();updateHud();return true;
   }
 
-  function acceptUpgrade() {
-    if(!modalWeapon)return;const result=GameRules.applyFragmentUpgrade(game.fragments[modalWeapon],game.weaponLevels[modalWeapon],true,modalWeapon);if(!result.upgraded&&result.level===game.weaponLevels[modalWeapon])return;
-    game.fragments[modalWeapon]=result.fragments;game.weaponLevels[modalWeapon]=result.level;if(!game.activeWeapon)game.activeWeapon=modalWeapon;
-    playSound('upgrade');showToast(`${modalWeapon==='homing'?'追踪弹':'激光枪'}升到 Lv.${result.level}！`);closeUpgrade();
+  function updateGrowth(){
+    const cost=GameRules.attackUpgradeCost(game.attackLevel);ui['growth-attack'].querySelector('.growth-label').textContent=cost===null?'基础机枪 Lv.5 · MAX':`基础机枪 Lv.${game.attackLevel} → ${game.attackLevel+1} · ${cost} 经验`;ui['growth-attack'].disabled=cost===null||game.xp<cost;
+    for(const type of ['homing','laser']){const level=game.weaponLevels[type];const button=ui[`growth-${type}`];button.querySelector('.growth-label').textContent=`${type==='homing'?'追踪导弹':'激光枪'} Lv.${level}${level>=3?' · MAX':` → ${level+1} · 5 零件`}`;button.disabled=!GameRules.canUpgrade(game.weaponParts,level,type);}
+    ui['growth-copy'].textContent=`经验 ${GameRules.allWeaponsMaxed(game.attackLevel,game.weaponLevels)?'MAX':game.xp} · 武器零件 ${game.weaponParts}`;
   }
 
-  function closeUpgrade(){modalWeapon=null;game.paused=false;ui['upgrade-modal'].classList.add('hidden');updateHud();lastTime=performance.now();}
+  function openGrowth(){game.stage='growth';game.paused=true;game.bullets.length=0;game.laserFlash=null;ui['growth-modal'].classList.remove('hidden');updateGrowth();updateHud();}
+  function continueAfterGrowth(){
+    if(game.stage!=='growth')return;ui['growth-modal'].classList.add('hidden');
+    if(game.bosses===5&&!game.endless){game.stage='victory';game.paused=true;game.campaignCleared=true;updateResults('victory');ui['victory-screen'].classList.remove('hidden');return;}
+    game.stage='combat';game.paused=false;game.spawnTimer=.7;lastTime=performance.now();
+  }
+  function continueEndless(){if(game.stage!=='victory')return;game.endless=true;game.stage='combat';game.paused=false;ui['victory-screen'].classList.add('hidden');game.spawnTimer=.7;lastTime=performance.now();}
+  function finishVictory(){if(game.stage!=='victory')return;ui['victory-screen'].classList.add('hidden');endGame('victory');}
   function setSpecialWeapon(type){if(game.weaponLevels[type]<=0)return;const changed=game.activeWeapon!==type;game.activeWeapon=type;game.specialTimer=0;game.laserTimer=0;game.laserTargetId=null;if(changed)playSound('weapon-switch');showToast(type==='homing'?'已切换追踪弹':'已切换激光枪');updateHud();}
 
-  function endGame(){
-    if(!game.running)return;game.running=false;game.paused=false;
-    playSound('game-over');
-    ui['result-monsters'].textContent=game.normalKills;ui['result-bosses'].textContent=game.bosses;ui['result-damage'].textContent=GameRules.bulletDamage(game.attackLevel);
+  function updateResults(prefix='result'){
+    ui[`${prefix}-monsters`].textContent=game.normalKills;ui[`${prefix}-bosses`].textContent=game.bosses;ui[`${prefix}-highest-boss`].textContent=game.highestBoss;ui[`${prefix}-damage`].textContent=`Lv.${game.attackLevel} · ${GameRules.bulletDamage(game.attackLevel)}`;ui[`${prefix}-homing`].textContent=`Lv.${game.weaponLevels.homing}`;ui[`${prefix}-laser`].textContent=`Lv.${game.weaponLevels.laser}`;ui[`${prefix}-parts`].textContent=game.weaponParts;
+  }
+
+  function endGame(result='defeat'){
+    if(!game.running)return;game.running=false;game.paused=true;game.stage='ended';game.delayedAttacks.length=0;game.enemyBullets.length=0;
+    if(result!=='victory')playSound('game-over');
+    ui['result-title'].textContent=result==='victory'?'闯关完成':game.endless?'无尽挑战结束':'本次飞行结束';
+    updateResults();
     ui['game-over'].classList.remove('hidden');
   }
 
@@ -1948,10 +2120,10 @@ globalThis.GameRules = {
 
   shell.addEventListener('pointermove',event=>{if(!game?.running||game.paused)return;const rect=canvas.getBoundingClientRect();const point=GameRules.clampPoint((event.clientX-rect.left)/rect.width*W,(event.clientY-rect.top)/rect.height*H,W,H,105);game.player.x=point.x;game.player.y=point.y;game.player.tx=point.x;game.player.ty=point.y;game.player.hasTarget=true;});
   shell.addEventListener('pointerleave',()=>{if(game)game.player.hasTarget=false;});
-  ui['start-button'].addEventListener('click',startGame);ui['restart-button'].addEventListener('click',startGame);ui['upgrade-attack'].addEventListener('click',upgradeAttack);
-  ui['homing-fragment'].addEventListener('click',()=>openUpgrade('homing'));ui['laser-fragment'].addEventListener('click',()=>openUpgrade('laser'));
+  ui['start-button'].addEventListener('click',startGame);ui['restart-button'].addEventListener('click',startGame);
   ui['homing-weapon'].addEventListener('click',()=>setSpecialWeapon('homing'));ui['laser-weapon'].addEventListener('click',()=>setSpecialWeapon('laser'));
-  ui['accept-upgrade'].addEventListener('click',acceptUpgrade);ui['defer-upgrade'].addEventListener('click',closeUpgrade);
+  ui['growth-attack'].addEventListener('click',upgradeAttack);ui['growth-homing'].addEventListener('click',()=>upgradeSpecial('homing'));ui['growth-laser'].addEventListener('click',()=>upgradeSpecial('laser'));ui['growth-continue'].addEventListener('click',continueAfterGrowth);
+  ui['victory-endless'].addEventListener('click',continueEndless);ui['victory-end'].addEventListener('click',finishVictory);
   document.querySelectorAll('[data-scene-theme]').forEach(button => button.addEventListener('click', () => setSceneTheme(button.dataset.sceneTheme)));
 
   buildSpriteCache();resetGame();preloadAssets();requestAnimationFrame(loop);
